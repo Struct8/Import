@@ -57,11 +57,6 @@ import {
 }
 
 import {
-  to = aws_autoscaling_group.oregon-asg-group
-  id = "oregon-asg-group"
-}
-
-import {
   to = aws_subnet.oregon-net-public-a
   id = "subnet-00779ed65ce3f7870"
 }
@@ -94,11 +89,6 @@ import {
 import {
   to = aws_vpc_peering_connection.pcx-0659fe288fc855311
   id = "pcx-0659fe288fc855311"
-}
-
-import {
-  to = aws_security_group.oregon-asg-nodes
-  id = "sg-03276c140e8a25c32"
 }
 
 import {
@@ -174,14 +164,4 @@ import {
 import {
   to = aws_network_acl_rule.out_infra_oregon-asg-nacl_port_53_udp
   id = "acl-09b3a9f00f5142610:15340:udp:true"
-}
-
-import {
-  to = aws_security_group_rule.rule_oregon_asg_nodes_egress_all_protocols
-  id = "sg-03276c140e8a25c32_egress_all_0_0_0.0.0.0/0"
-}
-
-import {
-  to = aws_security_group_rule.rule_oregon_asg_nodes_ingress_tcp_443
-  id = "sg-03276c140e8a25c32_ingress_tcp_443_443_10.20.0.0/16"
 }
