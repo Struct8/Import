@@ -132,33 +132,8 @@ import {
 }
 
 import {
-  to = aws_network_acl_rule.in_internet_return_tcp_oregon-asg-nacl_ephemeral
-  id = "acl-09b3a9f00f5142610:1001:tcp:false"
-}
-
-import {
-  to = aws_network_acl_rule.in_internet_return_udp_oregon-asg-nacl_ephemeral
-  id = "acl-09b3a9f00f5142610:1002:udp:false"
-}
-
-import {
-  to = aws_network_acl_rule.out_internet_oregon-asg-nacl_port_123_udp
-  id = "acl-09b3a9f00f5142610:4479:udp:true"
-}
-
-import {
-  to = aws_network_acl_rule.out_internet_oregon-asg-nacl_port_443_tcp
-  id = "acl-09b3a9f00f5142610:25911:tcp:true"
-}
-
-import {
-  to = aws_network_acl_rule.out_internet_oregon-asg-nacl_port_53_tcp
-  id = "acl-09b3a9f00f5142610:11123:tcp:true"
-}
-
-import {
-  to = aws_network_acl_rule.out_internet_oregon-asg-nacl_port_53_udp
-  id = "acl-09b3a9f00f5142610:21753:udp:true"
+  to = aws_network_acl_rule.out_acl-09b3a9f00f5142610_100_egress_0_0_0_0_0_all_proto
+  id = "acl-09b3a9f00f5142610:100:-1:true"
 }
 
 import {
