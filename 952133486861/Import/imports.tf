@@ -2,16 +2,6 @@
 # Every block below points at a resource that ALREADY exists.
 
 import {
-  to = aws_iam_openid_connect_provider.token_actions_githubusercontent_com
-  id = "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com"
-}
-
-import {
-  to = aws_iam_role.Struct8-Gitops-Struct8-import
-  id = "Struct8-Gitops-Struct8-import"
-}
-
-import {
   to = aws_vpc.oregon-net-vpc
   id = "vpc-08828afdee9c7b661"
 }
