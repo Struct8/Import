@@ -1,0 +1,64 @@
+{
+ "version": 1,
+ "requestId": "1b5019ce-f9c5-498f-a8b4-1b32ade5c3b2",
+ "region": "us-west-2",
+ "accountId": null,
+ "scope": {
+  "vpcIds": [],
+  "tagFilters": [],
+  "cfnTypeCount": 479,
+  "cfnDetailTypeCount": 90
+ },
+ "items": [],
+ "detailUnread": null,
+ "errors": [
+  {
+   "source": "iam list-policies",
+   "message": "\naws: [ERROR]: An error occurred (InvalidClientTokenId) when calling the ListPolicies operation: The security token included in the request is invalid.\n"
+  },
+  {
+   "source": "ssm list-documents",
+   "message": "\naws: [ERROR]: An error occurred (UnrecognizedClientException) when calling the ListDocuments operation: The security token included in the request is invalid.\n"
+  },
+  {
+   "source": "cloudcontrol",
+   "message": "no credentials: profile [target] in /home/runner/.aws/credentials has no key pair"
+  },
+  {
+   "source": "ec2 describe-vpcs",
+   "message": "\naws: [ERROR]: An error occurred (AuthFailure) when calling the DescribeVpcs operation: Authorization header or parameters are not formatted correctly.\n"
+  },
+  {
+   "source": "ec2 describe-subnets",
+   "message": "\naws: [ERROR]: An error occurred (AuthFailure) when calling the DescribeSubnets operation: Authorization header or parameters are not formatted correctly.\n"
+  },
+  {
+   "source": "ec2 describe-internet-gateways",
+   "message": "\naws: [ERROR]: An error occurred (AuthFailure) when calling the DescribeInternetGateways operation: Authorization header or parameters are not formatted correctly.\n"
+  },
+  {
+   "source": "ec2 describe-nat-gateways",
+   "message": "\naws: [ERROR]: An error occurred (AuthFailure) when calling the DescribeNatGateways operation: Authorization header or parameters are not formatted correctly.\n"
+  },
+  {
+   "source": "ec2 describe-route-tables",
+   "message": "\naws: [ERROR]: An error occurred (AuthFailure) when calling the DescribeRouteTables operation: Authorization header or parameters are not formatted correctly.\n"
+  },
+  {
+   "source": "ec2 describe-network-acls",
+   "message": "\naws: [ERROR]: An error occurred (AuthFailure) when calling the DescribeNetworkAcls operation: Authorization header or parameters are not formatted correctly.\n"
+  },
+  {
+   "source": "ec2 describe-security-groups",
+   "message": "\naws: [ERROR]: An error occurred (AuthFailure) when calling the DescribeSecurityGroups operation: Authorization header or parameters are not formatted correctly.\n"
+  },
+  {
+   "source": "events list-event-buses",
+   "message": "\naws: [ERROR]: An error occurred (UnrecognizedClientException) when calling the ListEventBuses operation: The security token included in the request is invalid.\n"
+  },
+  {
+   "source": "sts get-caller-identity",
+   "message": "\naws: [ERROR]: An error occurred (InvalidClientTokenId) when calling the GetCallerIdentity operation: The security token included in the request is invalid.\n"
+  }
+ ]
+}
