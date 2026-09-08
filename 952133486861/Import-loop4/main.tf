@@ -21,6 +21,45 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### CATEGORY: IAM ###
+
+resource "aws_iam_instance_profile" "Instance_profile" {
+  name = "Instance_profile"
+  role = aws_iam_role.Instance_role.name
+  tags = {
+    Name           = "Instance_profile"
+    State          = "Import-loop4"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role" "Instance_role" {
+  name = "Instance_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "Instance_role"
+    State          = "Import-loop4"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "oregon-net-vpc" {
@@ -374,6 +413,17 @@ resource "aws_network_acl_rule" "out_internet_oregon-asg-nacl_port_53_udp" {
   }
 }
 
+resource "aws_security_group" "instance_Instance_group" {
+  name                   = "instance_Instance_group"
+  vpc_id                 = aws_vpc.oregon-net-vpc.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "instance_Instance_group"
+    State          = "Import-loop4"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_security_group" "oregon-asg-nodes" {
   name        = "oregon-asg-nodes"
   vpc_id      = aws_vpc.oregon-net-vpc.id
@@ -387,6 +437,15 @@ resource "aws_security_group" "oregon-asg-nodes" {
     State          = "Import-loop4"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_security_group_rule" "rule_instance_Instance_group_egress_all_protocols" {
+  security_group_id = aws_security_group.instance_Instance_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
 }
 
 resource "aws_security_group_rule" "rule_oregon_asg_nodes_egress_all_protocols" {
@@ -411,6 +470,34 @@ resource "aws_security_group_rule" "rule_oregon_asg_nodes_ingress_tcp_443" {
 
 
 ### CATEGORY: COMPUTE ###
+
+resource "aws_instance" "Instance" {
+  subnet_id                   = aws_subnet.oregon-net-private-b.id
+  associate_public_ip_address = false
+  iam_instance_profile        = aws_iam_instance_profile.Instance_profile.name
+  instance_type               = "t3.micro"
+  user_data_replace_on_change = false
+  vpc_security_group_ids      = [aws_security_group.instance_Instance_group.id]
+  lifecycle {
+    ignore_changes = [user_data]
+  }
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+  root_block_device {
+    encrypted   = true
+    iops        = 3000
+    throughput  = 125
+    volume_size = 8
+    volume_type = "gp3"
+  }
+  tags = {
+    Name           = "Instance"
+    State          = "Import-loop4"
+    Struct8Creator = "Contato Struct"
+  }
+}
 
 resource "aws_launch_template" "lt-0c672bbb12a42eab9" {
   image_id        = "ami-08a26983500a08011"
