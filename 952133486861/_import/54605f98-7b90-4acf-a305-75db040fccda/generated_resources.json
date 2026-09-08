@@ -1,0 +1,1111 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.5.7",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_route_table_association.subnet-00779ed65ce3f7870_rtb-06de1785070037b00",
+          "mode": "managed",
+          "type": "aws_route_table_association",
+          "name": "subnet-00779ed65ce3f7870_rtb-06de1785070037b00",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "gateway_id": "",
+            "id": "rtbassoc-07a9c96e8fe0e72d9",
+            "route_table_id": "rtb-06de1785070037b00",
+            "subnet_id": "subnet-00779ed65ce3f7870",
+            "timeouts": null
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_route_table_association.subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00",
+          "mode": "managed",
+          "type": "aws_route_table_association",
+          "name": "subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "gateway_id": "",
+            "id": "rtbassoc-059ce7a448998aa06",
+            "route_table_id": "rtb-06de1785070037b00",
+            "subnet_id": "subnet-03a4a9adc0cb3b101",
+            "timeouts": null
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_route_table_association.subnet-0592d1e9583f7bbcb_rtb-060eaf458d6754e72",
+          "mode": "managed",
+          "type": "aws_route_table_association",
+          "name": "subnet-0592d1e9583f7bbcb_rtb-060eaf458d6754e72",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "gateway_id": "",
+            "id": "rtbassoc-0c5c149122dd70c2f",
+            "route_table_id": "rtb-060eaf458d6754e72",
+            "subnet_id": "subnet-0592d1e9583f7bbcb",
+            "timeouts": null
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_route_table_association.subnet-0897192a2fe08a7e9_rtb-06de1785070037b00",
+          "mode": "managed",
+          "type": "aws_route_table_association",
+          "name": "subnet-0897192a2fe08a7e9_rtb-06de1785070037b00",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "gateway_id": "",
+            "id": "rtbassoc-02b6402d820f2188b",
+            "route_table_id": "rtb-06de1785070037b00",
+            "subnet_id": "subnet-0897192a2fe08a7e9",
+            "timeouts": null
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_route_table_association.subnet-08d0bbf639413d65c_rtb-09104aa275e57925a",
+          "mode": "managed",
+          "type": "aws_route_table_association",
+          "name": "subnet-08d0bbf639413d65c_rtb-09104aa275e57925a",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "gateway_id": "",
+            "id": "rtbassoc-0ef3d96fe48939001",
+            "route_table_id": "rtb-09104aa275e57925a",
+            "subnet_id": "subnet-08d0bbf639413d65c",
+            "timeouts": null
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_route_table_association.subnet-0930bc02de849cf54_rtb-08f9cf7f023267381",
+          "mode": "managed",
+          "type": "aws_route_table_association",
+          "name": "subnet-0930bc02de849cf54_rtb-08f9cf7f023267381",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "gateway_id": "",
+            "id": "rtbassoc-0f85f6c52bee4fc95",
+            "route_table_id": "rtb-08f9cf7f023267381",
+            "subnet_id": "subnet-0930bc02de849cf54",
+            "timeouts": null
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_vpc_endpoint.vpce-01809868ad046f260",
+          "mode": "managed",
+          "type": "aws_vpc_endpoint",
+          "name": "vpce-01809868ad046f260",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "arn": "arn:aws:ec2:us-west-2:952133486861:vpc-endpoint/vpce-01809868ad046f260",
+            "auto_accept": null,
+            "cidr_blocks": [
+              "52.94.28.0/23",
+              "52.94.10.0/24",
+              "35.71.64.0/22"
+            ],
+            "dns_entry": [],
+            "dns_options": [
+              {
+                "dns_record_ip_type": "service-defined",
+                "private_dns_only_for_inbound_resolver_endpoint": false
+              }
+            ],
+            "id": "vpce-01809868ad046f260",
+            "ip_address_type": "ipv4",
+            "network_interface_ids": [],
+            "owner_id": "952133486861",
+            "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}",
+            "prefix_list_id": "pl-00a54069",
+            "private_dns_enabled": false,
+            "requester_managed": false,
+            "resource_configuration_arn": "",
+            "route_table_ids": [
+              "rtb-060eaf458d6754e72",
+              "rtb-08f9cf7f023267381",
+              "rtb-09104aa275e57925a"
+            ],
+            "security_group_ids": [],
+            "service_name": "com.amazonaws.us-west-2.dynamodb",
+            "service_network_arn": "",
+            "service_region": "us-west-2",
+            "state": "available",
+            "subnet_configuration": [],
+            "subnet_ids": [],
+            "tags": {
+              "Name": "oregon-net-vpce-dynamodb",
+              "Project": "oregon-net"
+            },
+            "tags_all": {
+              "Name": "oregon-net-vpce-dynamodb",
+              "Project": "oregon-net"
+            },
+            "timeouts": null,
+            "vpc_endpoint_type": "Gateway",
+            "vpc_id": "vpc-0a43534eefc21fcb1"
+          },
+          "sensitive_values": {
+            "cidr_blocks": [
+              false,
+              false,
+              false
+            ],
+            "dns_entry": [],
+            "dns_options": [
+              {}
+            ],
+            "network_interface_ids": [],
+            "route_table_ids": [
+              false,
+              false,
+              false
+            ],
+            "security_group_ids": [],
+            "subnet_configuration": [],
+            "subnet_ids": [],
+            "tags": {},
+            "tags_all": {}
+          }
+        },
+        {
+          "address": "aws_vpc_endpoint.vpce-07b8c24111b4f21ca",
+          "mode": "managed",
+          "type": "aws_vpc_endpoint",
+          "name": "vpce-07b8c24111b4f21ca",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "arn": "arn:aws:ec2:us-west-2:952133486861:vpc-endpoint/vpce-07b8c24111b4f21ca",
+            "auto_accept": null,
+            "cidr_blocks": [
+              "3.5.76.0/22",
+              "16.12.96.0/20",
+              "16.12.112.0/21",
+              "3.5.80.0/21",
+              "16.15.32.0/20",
+              "18.34.48.0/20",
+              "18.34.244.0/22",
+              "16.12.88.0/21",
+              "52.92.128.0/17",
+              "52.218.128.0/17"
+            ],
+            "dns_entry": [],
+            "dns_options": [
+              {
+                "dns_record_ip_type": "service-defined",
+                "private_dns_only_for_inbound_resolver_endpoint": false
+              }
+            ],
+            "id": "vpce-07b8c24111b4f21ca",
+            "ip_address_type": "ipv4",
+            "network_interface_ids": [],
+            "owner_id": "952133486861",
+            "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}",
+            "prefix_list_id": "pl-68a54001",
+            "private_dns_enabled": false,
+            "requester_managed": false,
+            "resource_configuration_arn": "",
+            "route_table_ids": [
+              "rtb-060eaf458d6754e72",
+              "rtb-08f9cf7f023267381",
+              "rtb-09104aa275e57925a"
+            ],
+            "security_group_ids": [],
+            "service_name": "com.amazonaws.us-west-2.s3",
+            "service_network_arn": "",
+            "service_region": "us-west-2",
+            "state": "available",
+            "subnet_configuration": [],
+            "subnet_ids": [],
+            "tags": {
+              "Name": "oregon-net-vpce-s3",
+              "Project": "oregon-net"
+            },
+            "tags_all": {
+              "Name": "oregon-net-vpce-s3",
+              "Project": "oregon-net"
+            },
+            "timeouts": null,
+            "vpc_endpoint_type": "Gateway",
+            "vpc_id": "vpc-0a43534eefc21fcb1"
+          },
+          "sensitive_values": {
+            "cidr_blocks": [
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ],
+            "dns_entry": [],
+            "dns_options": [
+              {}
+            ],
+            "network_interface_ids": [],
+            "route_table_ids": [
+              false,
+              false,
+              false
+            ],
+            "security_group_ids": [],
+            "subnet_configuration": [],
+            "subnet_ids": [],
+            "tags": {},
+            "tags_all": {}
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_route_table_association.subnet-00779ed65ce3f7870_rtb-06de1785070037b00",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "subnet-00779ed65ce3f7870_rtb-06de1785070037b00",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "no-op"
+        ],
+        "before": {
+          "gateway_id": "",
+          "id": "rtbassoc-07a9c96e8fe0e72d9",
+          "route_table_id": "rtb-06de1785070037b00",
+          "subnet_id": "subnet-00779ed65ce3f7870",
+          "timeouts": null
+        },
+        "after": {
+          "gateway_id": "",
+          "id": "rtbassoc-07a9c96e8fe0e72d9",
+          "route_table_id": "rtb-06de1785070037b00",
+          "subnet_id": "subnet-00779ed65ce3f7870",
+          "timeouts": null
+        },
+        "after_unknown": {},
+        "before_sensitive": {},
+        "after_sensitive": {},
+        "importing": {
+          "id": "subnet-00779ed65ce3f7870/rtb-06de1785070037b00"
+        },
+        "generated_config": "resource \"aws_route_table_association\" \"subnet-00779ed65ce3f7870_rtb-06de1785070037b00\" {\n  gateway_id     = null\n  route_table_id = \"rtb-06de1785070037b00\"\n  subnet_id      = \"subnet-00779ed65ce3f7870\"\n}"
+      }
+    },
+    {
+      "address": "aws_route_table_association.subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "no-op"
+        ],
+        "before": {
+          "gateway_id": "",
+          "id": "rtbassoc-059ce7a448998aa06",
+          "route_table_id": "rtb-06de1785070037b00",
+          "subnet_id": "subnet-03a4a9adc0cb3b101",
+          "timeouts": null
+        },
+        "after": {
+          "gateway_id": "",
+          "id": "rtbassoc-059ce7a448998aa06",
+          "route_table_id": "rtb-06de1785070037b00",
+          "subnet_id": "subnet-03a4a9adc0cb3b101",
+          "timeouts": null
+        },
+        "after_unknown": {},
+        "before_sensitive": {},
+        "after_sensitive": {},
+        "importing": {
+          "id": "subnet-03a4a9adc0cb3b101/rtb-06de1785070037b00"
+        },
+        "generated_config": "resource \"aws_route_table_association\" \"subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00\" {\n  gateway_id     = null\n  route_table_id = \"rtb-06de1785070037b00\"\n  subnet_id      = \"subnet-03a4a9adc0cb3b101\"\n}"
+      }
+    },
+    {
+      "address": "aws_route_table_association.subnet-0592d1e9583f7bbcb_rtb-060eaf458d6754e72",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "subnet-0592d1e9583f7bbcb_rtb-060eaf458d6754e72",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "no-op"
+        ],
+        "before": {
+          "gateway_id": "",
+          "id": "rtbassoc-0c5c149122dd70c2f",
+          "route_table_id": "rtb-060eaf458d6754e72",
+          "subnet_id": "subnet-0592d1e9583f7bbcb",
+          "timeouts": null
+        },
+        "after": {
+          "gateway_id": "",
+          "id": "rtbassoc-0c5c149122dd70c2f",
+          "route_table_id": "rtb-060eaf458d6754e72",
+          "subnet_id": "subnet-0592d1e9583f7bbcb",
+          "timeouts": null
+        },
+        "after_unknown": {},
+        "before_sensitive": {},
+        "after_sensitive": {},
+        "importing": {
+          "id": "subnet-0592d1e9583f7bbcb/rtb-060eaf458d6754e72"
+        },
+        "generated_config": "resource \"aws_route_table_association\" \"subnet-0592d1e9583f7bbcb_rtb-060eaf458d6754e72\" {\n  gateway_id     = null\n  route_table_id = \"rtb-060eaf458d6754e72\"\n  subnet_id      = \"subnet-0592d1e9583f7bbcb\"\n}"
+      }
+    },
+    {
+      "address": "aws_route_table_association.subnet-0897192a2fe08a7e9_rtb-06de1785070037b00",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "subnet-0897192a2fe08a7e9_rtb-06de1785070037b00",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "no-op"
+        ],
+        "before": {
+          "gateway_id": "",
+          "id": "rtbassoc-02b6402d820f2188b",
+          "route_table_id": "rtb-06de1785070037b00",
+          "subnet_id": "subnet-0897192a2fe08a7e9",
+          "timeouts": null
+        },
+        "after": {
+          "gateway_id": "",
+          "id": "rtbassoc-02b6402d820f2188b",
+          "route_table_id": "rtb-06de1785070037b00",
+          "subnet_id": "subnet-0897192a2fe08a7e9",
+          "timeouts": null
+        },
+        "after_unknown": {},
+        "before_sensitive": {},
+        "after_sensitive": {},
+        "importing": {
+          "id": "subnet-0897192a2fe08a7e9/rtb-06de1785070037b00"
+        },
+        "generated_config": "resource \"aws_route_table_association\" \"subnet-0897192a2fe08a7e9_rtb-06de1785070037b00\" {\n  gateway_id     = null\n  route_table_id = \"rtb-06de1785070037b00\"\n  subnet_id      = \"subnet-0897192a2fe08a7e9\"\n}"
+      }
+    },
+    {
+      "address": "aws_route_table_association.subnet-08d0bbf639413d65c_rtb-09104aa275e57925a",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "subnet-08d0bbf639413d65c_rtb-09104aa275e57925a",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "no-op"
+        ],
+        "before": {
+          "gateway_id": "",
+          "id": "rtbassoc-0ef3d96fe48939001",
+          "route_table_id": "rtb-09104aa275e57925a",
+          "subnet_id": "subnet-08d0bbf639413d65c",
+          "timeouts": null
+        },
+        "after": {
+          "gateway_id": "",
+          "id": "rtbassoc-0ef3d96fe48939001",
+          "route_table_id": "rtb-09104aa275e57925a",
+          "subnet_id": "subnet-08d0bbf639413d65c",
+          "timeouts": null
+        },
+        "after_unknown": {},
+        "before_sensitive": {},
+        "after_sensitive": {},
+        "importing": {
+          "id": "subnet-08d0bbf639413d65c/rtb-09104aa275e57925a"
+        },
+        "generated_config": "resource \"aws_route_table_association\" \"subnet-08d0bbf639413d65c_rtb-09104aa275e57925a\" {\n  gateway_id     = null\n  route_table_id = \"rtb-09104aa275e57925a\"\n  subnet_id      = \"subnet-08d0bbf639413d65c\"\n}"
+      }
+    },
+    {
+      "address": "aws_route_table_association.subnet-0930bc02de849cf54_rtb-08f9cf7f023267381",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "subnet-0930bc02de849cf54_rtb-08f9cf7f023267381",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "no-op"
+        ],
+        "before": {
+          "gateway_id": "",
+          "id": "rtbassoc-0f85f6c52bee4fc95",
+          "route_table_id": "rtb-08f9cf7f023267381",
+          "subnet_id": "subnet-0930bc02de849cf54",
+          "timeouts": null
+        },
+        "after": {
+          "gateway_id": "",
+          "id": "rtbassoc-0f85f6c52bee4fc95",
+          "route_table_id": "rtb-08f9cf7f023267381",
+          "subnet_id": "subnet-0930bc02de849cf54",
+          "timeouts": null
+        },
+        "after_unknown": {},
+        "before_sensitive": {},
+        "after_sensitive": {},
+        "importing": {
+          "id": "subnet-0930bc02de849cf54/rtb-08f9cf7f023267381"
+        },
+        "generated_config": "resource \"aws_route_table_association\" \"subnet-0930bc02de849cf54_rtb-08f9cf7f023267381\" {\n  gateway_id     = null\n  route_table_id = \"rtb-08f9cf7f023267381\"\n  subnet_id      = \"subnet-0930bc02de849cf54\"\n}"
+      }
+    },
+    {
+      "address": "aws_vpc_endpoint.vpce-01809868ad046f260",
+      "mode": "managed",
+      "type": "aws_vpc_endpoint",
+      "name": "vpce-01809868ad046f260",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "no-op"
+        ],
+        "before": {
+          "arn": "arn:aws:ec2:us-west-2:952133486861:vpc-endpoint/vpce-01809868ad046f260",
+          "auto_accept": null,
+          "cidr_blocks": [
+            "52.94.28.0/23",
+            "52.94.10.0/24",
+            "35.71.64.0/22"
+          ],
+          "dns_entry": [],
+          "dns_options": [
+            {
+              "dns_record_ip_type": "service-defined",
+              "private_dns_only_for_inbound_resolver_endpoint": false
+            }
+          ],
+          "id": "vpce-01809868ad046f260",
+          "ip_address_type": "ipv4",
+          "network_interface_ids": [],
+          "owner_id": "952133486861",
+          "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}",
+          "prefix_list_id": "pl-00a54069",
+          "private_dns_enabled": false,
+          "requester_managed": false,
+          "resource_configuration_arn": "",
+          "route_table_ids": [
+            "rtb-060eaf458d6754e72",
+            "rtb-08f9cf7f023267381",
+            "rtb-09104aa275e57925a"
+          ],
+          "security_group_ids": [],
+          "service_name": "com.amazonaws.us-west-2.dynamodb",
+          "service_network_arn": "",
+          "service_region": "us-west-2",
+          "state": "available",
+          "subnet_configuration": [],
+          "subnet_ids": [],
+          "tags": {
+            "Name": "oregon-net-vpce-dynamodb",
+            "Project": "oregon-net"
+          },
+          "tags_all": {
+            "Name": "oregon-net-vpce-dynamodb",
+            "Project": "oregon-net"
+          },
+          "timeouts": null,
+          "vpc_endpoint_type": "Gateway",
+          "vpc_id": "vpc-0a43534eefc21fcb1"
+        },
+        "after": {
+          "arn": "arn:aws:ec2:us-west-2:952133486861:vpc-endpoint/vpce-01809868ad046f260",
+          "auto_accept": null,
+          "cidr_blocks": [
+            "52.94.28.0/23",
+            "52.94.10.0/24",
+            "35.71.64.0/22"
+          ],
+          "dns_entry": [],
+          "dns_options": [
+            {
+              "dns_record_ip_type": "service-defined",
+              "private_dns_only_for_inbound_resolver_endpoint": false
+            }
+          ],
+          "id": "vpce-01809868ad046f260",
+          "ip_address_type": "ipv4",
+          "network_interface_ids": [],
+          "owner_id": "952133486861",
+          "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}",
+          "prefix_list_id": "pl-00a54069",
+          "private_dns_enabled": false,
+          "requester_managed": false,
+          "resource_configuration_arn": "",
+          "route_table_ids": [
+            "rtb-060eaf458d6754e72",
+            "rtb-08f9cf7f023267381",
+            "rtb-09104aa275e57925a"
+          ],
+          "security_group_ids": [],
+          "service_name": "com.amazonaws.us-west-2.dynamodb",
+          "service_network_arn": "",
+          "service_region": "us-west-2",
+          "state": "available",
+          "subnet_configuration": [],
+          "subnet_ids": [],
+          "tags": {
+            "Name": "oregon-net-vpce-dynamodb",
+            "Project": "oregon-net"
+          },
+          "tags_all": {
+            "Name": "oregon-net-vpce-dynamodb",
+            "Project": "oregon-net"
+          },
+          "timeouts": null,
+          "vpc_endpoint_type": "Gateway",
+          "vpc_id": "vpc-0a43534eefc21fcb1"
+        },
+        "after_unknown": {},
+        "before_sensitive": {
+          "cidr_blocks": [
+            false,
+            false,
+            false
+          ],
+          "dns_entry": [],
+          "dns_options": [
+            {}
+          ],
+          "network_interface_ids": [],
+          "route_table_ids": [
+            false,
+            false,
+            false
+          ],
+          "security_group_ids": [],
+          "subnet_configuration": [],
+          "subnet_ids": [],
+          "tags": {},
+          "tags_all": {}
+        },
+        "after_sensitive": {
+          "cidr_blocks": [
+            false,
+            false,
+            false
+          ],
+          "dns_entry": [],
+          "dns_options": [
+            {}
+          ],
+          "network_interface_ids": [],
+          "route_table_ids": [
+            false,
+            false,
+            false
+          ],
+          "security_group_ids": [],
+          "subnet_configuration": [],
+          "subnet_ids": [],
+          "tags": {},
+          "tags_all": {}
+        },
+        "importing": {
+          "id": "vpce-01809868ad046f260"
+        },
+        "generated_config": "resource \"aws_vpc_endpoint\" \"vpce-01809868ad046f260\" {\n  auto_accept                = null\n  ip_address_type            = \"ipv4\"\n  policy                     = \"{\\\"Statement\\\":[{\\\"Action\\\":\\\"*\\\",\\\"Effect\\\":\\\"Allow\\\",\\\"Principal\\\":\\\"*\\\",\\\"Resource\\\":\\\"*\\\"}],\\\"Version\\\":\\\"2008-10-17\\\"}\"\n  private_dns_enabled        = false\n  resource_configuration_arn = null\n  route_table_ids            = [\"rtb-060eaf458d6754e72\", \"rtb-08f9cf7f023267381\", \"rtb-09104aa275e57925a\"]\n  security_group_ids         = []\n  service_name               = \"com.amazonaws.us-west-2.dynamodb\"\n  service_network_arn        = null\n  service_region             = \"us-west-2\"\n  subnet_ids                 = []\n  tags = {\n    Name    = \"oregon-net-vpce-dynamodb\"\n    Project = \"oregon-net\"\n  }\n  tags_all = {\n    Name    = \"oregon-net-vpce-dynamodb\"\n    Project = \"oregon-net\"\n  }\n  vpc_endpoint_type = \"Gateway\"\n  vpc_id            = \"vpc-0a43534eefc21fcb1\"\n  dns_options {\n    dns_record_ip_type                             = \"service-defined\"\n    private_dns_only_for_inbound_resolver_endpoint = false\n  }\n}"
+      }
+    },
+    {
+      "address": "aws_vpc_endpoint.vpce-07b8c24111b4f21ca",
+      "mode": "managed",
+      "type": "aws_vpc_endpoint",
+      "name": "vpce-07b8c24111b4f21ca",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "no-op"
+        ],
+        "before": {
+          "arn": "arn:aws:ec2:us-west-2:952133486861:vpc-endpoint/vpce-07b8c24111b4f21ca",
+          "auto_accept": null,
+          "cidr_blocks": [
+            "3.5.76.0/22",
+            "16.12.96.0/20",
+            "16.12.112.0/21",
+            "3.5.80.0/21",
+            "16.15.32.0/20",
+            "18.34.48.0/20",
+            "18.34.244.0/22",
+            "16.12.88.0/21",
+            "52.92.128.0/17",
+            "52.218.128.0/17"
+          ],
+          "dns_entry": [],
+          "dns_options": [
+            {
+              "dns_record_ip_type": "service-defined",
+              "private_dns_only_for_inbound_resolver_endpoint": false
+            }
+          ],
+          "id": "vpce-07b8c24111b4f21ca",
+          "ip_address_type": "ipv4",
+          "network_interface_ids": [],
+          "owner_id": "952133486861",
+          "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}",
+          "prefix_list_id": "pl-68a54001",
+          "private_dns_enabled": false,
+          "requester_managed": false,
+          "resource_configuration_arn": "",
+          "route_table_ids": [
+            "rtb-060eaf458d6754e72",
+            "rtb-08f9cf7f023267381",
+            "rtb-09104aa275e57925a"
+          ],
+          "security_group_ids": [],
+          "service_name": "com.amazonaws.us-west-2.s3",
+          "service_network_arn": "",
+          "service_region": "us-west-2",
+          "state": "available",
+          "subnet_configuration": [],
+          "subnet_ids": [],
+          "tags": {
+            "Name": "oregon-net-vpce-s3",
+            "Project": "oregon-net"
+          },
+          "tags_all": {
+            "Name": "oregon-net-vpce-s3",
+            "Project": "oregon-net"
+          },
+          "timeouts": null,
+          "vpc_endpoint_type": "Gateway",
+          "vpc_id": "vpc-0a43534eefc21fcb1"
+        },
+        "after": {
+          "arn": "arn:aws:ec2:us-west-2:952133486861:vpc-endpoint/vpce-07b8c24111b4f21ca",
+          "auto_accept": null,
+          "cidr_blocks": [
+            "3.5.76.0/22",
+            "16.12.96.0/20",
+            "16.12.112.0/21",
+            "3.5.80.0/21",
+            "16.15.32.0/20",
+            "18.34.48.0/20",
+            "18.34.244.0/22",
+            "16.12.88.0/21",
+            "52.92.128.0/17",
+            "52.218.128.0/17"
+          ],
+          "dns_entry": [],
+          "dns_options": [
+            {
+              "dns_record_ip_type": "service-defined",
+              "private_dns_only_for_inbound_resolver_endpoint": false
+            }
+          ],
+          "id": "vpce-07b8c24111b4f21ca",
+          "ip_address_type": "ipv4",
+          "network_interface_ids": [],
+          "owner_id": "952133486861",
+          "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}",
+          "prefix_list_id": "pl-68a54001",
+          "private_dns_enabled": false,
+          "requester_managed": false,
+          "resource_configuration_arn": "",
+          "route_table_ids": [
+            "rtb-060eaf458d6754e72",
+            "rtb-08f9cf7f023267381",
+            "rtb-09104aa275e57925a"
+          ],
+          "security_group_ids": [],
+          "service_name": "com.amazonaws.us-west-2.s3",
+          "service_network_arn": "",
+          "service_region": "us-west-2",
+          "state": "available",
+          "subnet_configuration": [],
+          "subnet_ids": [],
+          "tags": {
+            "Name": "oregon-net-vpce-s3",
+            "Project": "oregon-net"
+          },
+          "tags_all": {
+            "Name": "oregon-net-vpce-s3",
+            "Project": "oregon-net"
+          },
+          "timeouts": null,
+          "vpc_endpoint_type": "Gateway",
+          "vpc_id": "vpc-0a43534eefc21fcb1"
+        },
+        "after_unknown": {},
+        "before_sensitive": {
+          "cidr_blocks": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "dns_entry": [],
+          "dns_options": [
+            {}
+          ],
+          "network_interface_ids": [],
+          "route_table_ids": [
+            false,
+            false,
+            false
+          ],
+          "security_group_ids": [],
+          "subnet_configuration": [],
+          "subnet_ids": [],
+          "tags": {},
+          "tags_all": {}
+        },
+        "after_sensitive": {
+          "cidr_blocks": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "dns_entry": [],
+          "dns_options": [
+            {}
+          ],
+          "network_interface_ids": [],
+          "route_table_ids": [
+            false,
+            false,
+            false
+          ],
+          "security_group_ids": [],
+          "subnet_configuration": [],
+          "subnet_ids": [],
+          "tags": {},
+          "tags_all": {}
+        },
+        "importing": {
+          "id": "vpce-07b8c24111b4f21ca"
+        },
+        "generated_config": "resource \"aws_vpc_endpoint\" \"vpce-07b8c24111b4f21ca\" {\n  auto_accept                = null\n  ip_address_type            = \"ipv4\"\n  policy                     = \"{\\\"Statement\\\":[{\\\"Action\\\":\\\"*\\\",\\\"Effect\\\":\\\"Allow\\\",\\\"Principal\\\":\\\"*\\\",\\\"Resource\\\":\\\"*\\\"}],\\\"Version\\\":\\\"2008-10-17\\\"}\"\n  private_dns_enabled        = false\n  resource_configuration_arn = null\n  route_table_ids            = [\"rtb-060eaf458d6754e72\", \"rtb-08f9cf7f023267381\", \"rtb-09104aa275e57925a\"]\n  security_group_ids         = []\n  service_name               = \"com.amazonaws.us-west-2.s3\"\n  service_network_arn        = null\n  service_region             = \"us-west-2\"\n  subnet_ids                 = []\n  tags = {\n    Name    = \"oregon-net-vpce-s3\"\n    Project = \"oregon-net\"\n  }\n  tags_all = {\n    Name    = \"oregon-net-vpce-s3\"\n    Project = \"oregon-net\"\n  }\n  vpc_endpoint_type = \"Gateway\"\n  vpc_id            = \"vpc-0a43534eefc21fcb1\"\n  dns_options {\n    dns_record_ip_type                             = \"service-defined\"\n    private_dns_only_for_inbound_resolver_endpoint = false\n  }\n}"
+      }
+    }
+  ],
+  "prior_state": {
+    "format_version": "1.0",
+    "terraform_version": "1.5.7",
+    "values": {
+      "root_module": {
+        "resources": [
+          {
+            "address": "aws_route_table_association.subnet-00779ed65ce3f7870_rtb-06de1785070037b00",
+            "mode": "managed",
+            "type": "aws_route_table_association",
+            "name": "subnet-00779ed65ce3f7870_rtb-06de1785070037b00",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "gateway_id": "",
+              "id": "rtbassoc-07a9c96e8fe0e72d9",
+              "route_table_id": "rtb-06de1785070037b00",
+              "subnet_id": "subnet-00779ed65ce3f7870",
+              "timeouts": null
+            },
+            "sensitive_values": {}
+          },
+          {
+            "address": "aws_route_table_association.subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00",
+            "mode": "managed",
+            "type": "aws_route_table_association",
+            "name": "subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "gateway_id": "",
+              "id": "rtbassoc-059ce7a448998aa06",
+              "route_table_id": "rtb-06de1785070037b00",
+              "subnet_id": "subnet-03a4a9adc0cb3b101",
+              "timeouts": null
+            },
+            "sensitive_values": {}
+          },
+          {
+            "address": "aws_route_table_association.subnet-0592d1e9583f7bbcb_rtb-060eaf458d6754e72",
+            "mode": "managed",
+            "type": "aws_route_table_association",
+            "name": "subnet-0592d1e9583f7bbcb_rtb-060eaf458d6754e72",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "gateway_id": "",
+              "id": "rtbassoc-0c5c149122dd70c2f",
+              "route_table_id": "rtb-060eaf458d6754e72",
+              "subnet_id": "subnet-0592d1e9583f7bbcb",
+              "timeouts": null
+            },
+            "sensitive_values": {}
+          },
+          {
+            "address": "aws_route_table_association.subnet-0897192a2fe08a7e9_rtb-06de1785070037b00",
+            "mode": "managed",
+            "type": "aws_route_table_association",
+            "name": "subnet-0897192a2fe08a7e9_rtb-06de1785070037b00",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "gateway_id": "",
+              "id": "rtbassoc-02b6402d820f2188b",
+              "route_table_id": "rtb-06de1785070037b00",
+              "subnet_id": "subnet-0897192a2fe08a7e9",
+              "timeouts": null
+            },
+            "sensitive_values": {}
+          },
+          {
+            "address": "aws_route_table_association.subnet-08d0bbf639413d65c_rtb-09104aa275e57925a",
+            "mode": "managed",
+            "type": "aws_route_table_association",
+            "name": "subnet-08d0bbf639413d65c_rtb-09104aa275e57925a",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "gateway_id": "",
+              "id": "rtbassoc-0ef3d96fe48939001",
+              "route_table_id": "rtb-09104aa275e57925a",
+              "subnet_id": "subnet-08d0bbf639413d65c",
+              "timeouts": null
+            },
+            "sensitive_values": {}
+          },
+          {
+            "address": "aws_route_table_association.subnet-0930bc02de849cf54_rtb-08f9cf7f023267381",
+            "mode": "managed",
+            "type": "aws_route_table_association",
+            "name": "subnet-0930bc02de849cf54_rtb-08f9cf7f023267381",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "gateway_id": "",
+              "id": "rtbassoc-0f85f6c52bee4fc95",
+              "route_table_id": "rtb-08f9cf7f023267381",
+              "subnet_id": "subnet-0930bc02de849cf54",
+              "timeouts": null
+            },
+            "sensitive_values": {}
+          },
+          {
+            "address": "aws_vpc_endpoint.vpce-01809868ad046f260",
+            "mode": "managed",
+            "type": "aws_vpc_endpoint",
+            "name": "vpce-01809868ad046f260",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "arn": "arn:aws:ec2:us-west-2:952133486861:vpc-endpoint/vpce-01809868ad046f260",
+              "auto_accept": null,
+              "cidr_blocks": [
+                "52.94.28.0/23",
+                "52.94.10.0/24",
+                "35.71.64.0/22"
+              ],
+              "dns_entry": [],
+              "dns_options": [
+                {
+                  "dns_record_ip_type": "service-defined",
+                  "private_dns_only_for_inbound_resolver_endpoint": false
+                }
+              ],
+              "id": "vpce-01809868ad046f260",
+              "ip_address_type": "ipv4",
+              "network_interface_ids": [],
+              "owner_id": "952133486861",
+              "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}",
+              "prefix_list_id": "pl-00a54069",
+              "private_dns_enabled": false,
+              "requester_managed": false,
+              "resource_configuration_arn": "",
+              "route_table_ids": [
+                "rtb-060eaf458d6754e72",
+                "rtb-08f9cf7f023267381",
+                "rtb-09104aa275e57925a"
+              ],
+              "security_group_ids": [],
+              "service_name": "com.amazonaws.us-west-2.dynamodb",
+              "service_network_arn": "",
+              "service_region": "us-west-2",
+              "state": "available",
+              "subnet_configuration": [],
+              "subnet_ids": [],
+              "tags": {
+                "Name": "oregon-net-vpce-dynamodb",
+                "Project": "oregon-net"
+              },
+              "tags_all": {
+                "Name": "oregon-net-vpce-dynamodb",
+                "Project": "oregon-net"
+              },
+              "timeouts": null,
+              "vpc_endpoint_type": "Gateway",
+              "vpc_id": "vpc-0a43534eefc21fcb1"
+            },
+            "sensitive_values": {
+              "cidr_blocks": [
+                false,
+                false,
+                false
+              ],
+              "dns_entry": [],
+              "dns_options": [
+                {}
+              ],
+              "network_interface_ids": [],
+              "route_table_ids": [
+                false,
+                false,
+                false
+              ],
+              "security_group_ids": [],
+              "subnet_configuration": [],
+              "subnet_ids": [],
+              "tags": {},
+              "tags_all": {}
+            }
+          },
+          {
+            "address": "aws_vpc_endpoint.vpce-07b8c24111b4f21ca",
+            "mode": "managed",
+            "type": "aws_vpc_endpoint",
+            "name": "vpce-07b8c24111b4f21ca",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "arn": "arn:aws:ec2:us-west-2:952133486861:vpc-endpoint/vpce-07b8c24111b4f21ca",
+              "auto_accept": null,
+              "cidr_blocks": [
+                "3.5.76.0/22",
+                "16.12.96.0/20",
+                "16.12.112.0/21",
+                "3.5.80.0/21",
+                "16.15.32.0/20",
+                "18.34.48.0/20",
+                "18.34.244.0/22",
+                "16.12.88.0/21",
+                "52.92.128.0/17",
+                "52.218.128.0/17"
+              ],
+              "dns_entry": [],
+              "dns_options": [
+                {
+                  "dns_record_ip_type": "service-defined",
+                  "private_dns_only_for_inbound_resolver_endpoint": false
+                }
+              ],
+              "id": "vpce-07b8c24111b4f21ca",
+              "ip_address_type": "ipv4",
+              "network_interface_ids": [],
+              "owner_id": "952133486861",
+              "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}",
+              "prefix_list_id": "pl-68a54001",
+              "private_dns_enabled": false,
+              "requester_managed": false,
+              "resource_configuration_arn": "",
+              "route_table_ids": [
+                "rtb-060eaf458d6754e72",
+                "rtb-08f9cf7f023267381",
+                "rtb-09104aa275e57925a"
+              ],
+              "security_group_ids": [],
+              "service_name": "com.amazonaws.us-west-2.s3",
+              "service_network_arn": "",
+              "service_region": "us-west-2",
+              "state": "available",
+              "subnet_configuration": [],
+              "subnet_ids": [],
+              "tags": {
+                "Name": "oregon-net-vpce-s3",
+                "Project": "oregon-net"
+              },
+              "tags_all": {
+                "Name": "oregon-net-vpce-s3",
+                "Project": "oregon-net"
+              },
+              "timeouts": null,
+              "vpc_endpoint_type": "Gateway",
+              "vpc_id": "vpc-0a43534eefc21fcb1"
+            },
+            "sensitive_values": {
+              "cidr_blocks": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ],
+              "dns_entry": [],
+              "dns_options": [
+                {}
+              ],
+              "network_interface_ids": [],
+              "route_table_ids": [
+                false,
+                false,
+                false
+              ],
+              "security_group_ids": [],
+              "subnet_configuration": [],
+              "subnet_ids": [],
+              "tags": {},
+              "tags_all": {}
+            }
+          }
+        ]
+      }
+    }
+  },
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": "~> 5.0",
+        "expressions": {
+          "region": {
+            "constant_value": "us-west-2"
+          }
+        }
+      }
+    },
+    "root_module": {}
+  },
+  "timestamp": "2026-09-08T18:18:54Z",
+  "redacted_attributes": []
+}
