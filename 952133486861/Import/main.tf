@@ -21,6 +21,21 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### RENAMES ###
+
+moved {
+  from = aws_route_table_association.aws_route_table_association_oregon_net_public_a_oregon_net_rt_public
+  to   = aws_route_table_association.aws_route_table_association_oregon_net_public_ax_oregon_net_rt_public
+}
+
+moved {
+  from = aws_subnet.oregon-net-public-a
+  to   = aws_subnet.oregon-net-public-ax
+}
+
+
+
+
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "oregon-net-vpc" {
@@ -108,7 +123,7 @@ resource "aws_subnet" "oregon-net-private-c" {
   }
 }
 
-resource "aws_subnet" "oregon-net-public-a" {
+resource "aws_subnet" "oregon-net-public-ax" {
   vpc_id                              = aws_vpc.oregon-net-vpc.id
   availability_zone                   = "us-west-2a"
   cidr_block                          = "10.20.0.0/24"
@@ -221,9 +236,9 @@ resource "aws_route_table_association" "aws_route_table_association_oregon_net_p
   subnet_id      = aws_subnet.oregon-net-private-c.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_oregon_net_public_a_oregon_net_rt_public" {
+resource "aws_route_table_association" "aws_route_table_association_oregon_net_public_ax_oregon_net_rt_public" {
   route_table_id = aws_route_table.oregon-net-rt-public.id
-  subnet_id      = aws_subnet.oregon-net-public-a.id
+  subnet_id      = aws_subnet.oregon-net-public-ax.id
 }
 
 resource "aws_route_table_association" "aws_route_table_association_oregon_net_public_b_oregon_net_rt_public" {
