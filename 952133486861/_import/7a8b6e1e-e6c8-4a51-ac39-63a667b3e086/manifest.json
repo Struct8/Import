@@ -1,0 +1,34 @@
+{
+  "external_repositories": [],
+  "action": "scan",
+  "trigger_id": "1788890291603",
+  "triggered_by": "Contato Struct",
+  "engine_ref": "devlocal",
+  "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
+  "backend_global_config": {
+    "provider": "aws",
+    "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+    "region": "us-west-2",
+    "bucket": "struct8-import"
+  },
+  "pipeline_stages": [
+    {
+      "stage_name": "Import: scan us-west-2",
+      "parallel_execution": false,
+      "states": [
+        {
+          "path": "952133486861/_import/7a8b6e1e-e6c8-4a51-ac39-63a667b3e086",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2"
+          }
+        }
+      ]
+    }
+  ],
+  "import_scope": {
+    "region": "us-west-2",
+    "accountId": "952133486861"
+  }
+}
