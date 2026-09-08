@@ -80,24 +80,6 @@ resource "aws_vpc_endpoint" "oregon-net-vpce-s3_S3" {
   }
 }
 
-resource "aws_vpc_peering_connection" "pcx-0659fe288fc855311" {
-  peer_vpc_id = aws_vpc.oregon-asg-vpc2.id
-  vpc_id      = aws_vpc.oregon-net-vpc.id
-  auto_accept = true
-  accepter {
-    allow_remote_vpc_dns_resolution = false
-  }
-  requester {
-    allow_remote_vpc_dns_resolution = false
-  }
-  tags = {
-    Name           = "oregon-asg-pcx"
-    Project        = "oregon-asg"
-    State          = "Import-loop3"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_subnet" "oregon-net-private-a" {
   vpc_id                              = aws_vpc.oregon-net-vpc.id
   availability_zone                   = "us-west-2a"
@@ -190,12 +172,6 @@ resource "aws_internet_gateway" "oregon-net-igw" {
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
-}
-
-resource "aws_route" "route_oregon-net-rt-public_to_pcx-0659fe288fc855311_10_20_0_0_16" {
-  route_table_id            = aws_route_table.oregon-net-rt-public.id
-  vpc_peering_connection_id = aws_vpc_peering_connection.pcx-0659fe288fc855311.id
-  destination_cidr_block    = "10.20.0.0/16"
 }
 
 resource "aws_route_table" "oregon-net-rt-private-a" {
