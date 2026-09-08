@@ -7,33 +7,8 @@ import {
 }
 
 import {
-  to = aws_cloudwatch_metric_alarm.TargetTracking-oregon-asg-group-AlarmHigh-e7c4c194-70b2-42d9-97e1-6be2ecfb75b1
-  id = "TargetTracking-oregon-asg-group-AlarmHigh-e7c4c194-70b2-42d9-97e1-6be2ecfb75b1"
-}
-
-import {
-  to = aws_cloudwatch_metric_alarm.TargetTracking-oregon-asg-group-AlarmLow-fd52bd60-2ef8-4aee-b3c2-b26fe987d593
-  id = "TargetTracking-oregon-asg-group-AlarmLow-fd52bd60-2ef8-4aee-b3c2-b26fe987d593"
-}
-
-import {
-  to = aws_iam_openid_connect_provider.token_actions_githubusercontent_com
-  id = "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com"
-}
-
-import {
-  to = aws_iam_role.Struct8-Gitops-Struct8-import
-  id = "Struct8-Gitops-Struct8-import"
-}
-
-import {
   to = aws_vpc.oregon-asg-vpc2
   id = "vpc-0b2cb48f01ccce0c2"
-}
-
-import {
-  to = aws_egress_only_internet_gateway.eigw-083dc9b065af87635
-  id = "eigw-083dc9b065af87635"
 }
 
 import {
@@ -49,11 +24,6 @@ import {
 import {
   to = aws_internet_gateway.oregon-net-igw
   id = "igw-0fc6487d32e5b1fea"
-}
-
-import {
-  to = aws_launch_template.lt-0c672bbb12a42eab9
-  id = "lt-0c672bbb12a42eab9"
 }
 
 import {
