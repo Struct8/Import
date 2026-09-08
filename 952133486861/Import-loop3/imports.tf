@@ -62,11 +62,6 @@ import {
 }
 
 import {
-  to = aws_network_acl.oregon-asg-nacl
-  id = "acl-09b3a9f00f5142610"
-}
-
-import {
   to = aws_subnet.oregon-net-private-b
   id = "subnet-0592d1e9583f7bbcb"
 }
@@ -124,44 +119,4 @@ import {
 import {
   to = aws_route_table_association.aws_route_table_association_oregon_net_public_c_oregon_net_rt_public
   id = "subnet-03a4a9adc0cb3b101/rtb-06de1785070037b00"
-}
-
-import {
-  to = aws_network_acl_rule.in_acl-09b3a9f00f5142610_100_ingress_0_0_0_0_0_tcp_port_443
-  id = "acl-09b3a9f00f5142610:100:tcp:false"
-}
-
-import {
-  to = aws_network_acl_rule.in_acl-09b3a9f00f5142610_110_ingress_0_0_0_0_0_tcp_ports_1024_65535
-  id = "acl-09b3a9f00f5142610:110:tcp:false"
-}
-
-import {
-  to = aws_network_acl_rule.in_infra_return_tcp_oregon-asg-nacl
-  id = "acl-09b3a9f00f5142610:1001:tcp:false"
-}
-
-import {
-  to = aws_network_acl_rule.in_infra_return_udp_oregon-asg-nacl
-  id = "acl-09b3a9f00f5142610:1002:udp:false"
-}
-
-import {
-  to = aws_network_acl_rule.out_infra_oregon-asg-nacl_port_123_udp
-  id = "acl-09b3a9f00f5142610:23233:udp:true"
-}
-
-import {
-  to = aws_network_acl_rule.out_infra_oregon-asg-nacl_port_443_tcp
-  id = "acl-09b3a9f00f5142610:28986:tcp:true"
-}
-
-import {
-  to = aws_network_acl_rule.out_infra_oregon-asg-nacl_port_53_tcp
-  id = "acl-09b3a9f00f5142610:29875:tcp:true"
-}
-
-import {
-  to = aws_network_acl_rule.out_infra_oregon-asg-nacl_port_53_udp
-  id = "acl-09b3a9f00f5142610:15340:udp:true"
 }
