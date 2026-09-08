@@ -1,7 +1,7 @@
 {
   "external_repositories": [],
-  "action": "scan",
-  "trigger_id": "1788898428878",
+  "action": "read",
+  "trigger_id": "1788898721364",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -13,7 +13,7 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "Import: scan us-west-2",
+      "stage_name": "Import: read us-west-2",
       "parallel_execution": false,
       "states": [
         {
