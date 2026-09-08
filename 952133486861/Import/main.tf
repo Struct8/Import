@@ -21,21 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
-
-moved {
-  from = aws_route_table_association.aws_route_table_association_oregon_net_public_a_oregon_net_rt_public
-  to   = aws_route_table_association.aws_route_table_association_oregon_net_public_ax_oregon_net_rt_public
-}
-
-moved {
-  from = aws_subnet.oregon-net-public-a
-  to   = aws_subnet.oregon-net-public-ax
-}
-
-
-
-
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "oregon-net-vpc" {
@@ -51,16 +36,15 @@ resource "aws_vpc" "oregon-net-vpc" {
   }
 }
 
-resource "aws_vpc_endpoint" "oregon-net-vpce-dynamodb_DynamoDB" {
+resource "aws_vpc_endpoint" "oregon-net-vpce-s3_DynamoDB" {
   service_name      = "com.amazonaws.us-west-2.dynamodb"
   vpc_id            = aws_vpc.oregon-net-vpc.id
   policy            = "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}"
   route_table_ids   = [aws_route_table.oregon-net-rt-private-a.id, aws_route_table.oregon-net-rt-private-c.id, aws_route_table.oregon-net-rt-private-b.id]
   vpc_endpoint_type = "Gateway"
   tags = {
-    Project        = "oregon-net"
-    DifName        = "oregon-net-vpce-dynamodb"
-    Name           = "oregon-net-vpce-dynamodb"
+    DifName        = "oregon-net-vpce-s3_DynamoDB"
+    Name           = "oregon-net-vpce-s3"
     State          = "Import"
     Struct8Creator = "Contato Struct"
   }
@@ -73,7 +57,6 @@ resource "aws_vpc_endpoint" "oregon-net-vpce-s3_S3" {
   route_table_ids   = [aws_route_table.oregon-net-rt-private-a.id, aws_route_table.oregon-net-rt-private-c.id, aws_route_table.oregon-net-rt-private-b.id]
   vpc_endpoint_type = "Gateway"
   tags = {
-    Project        = "oregon-net"
     DifName        = "oregon-net-vpce-s3"
     Name           = "oregon-net-vpce-s3"
     State          = "Import"
