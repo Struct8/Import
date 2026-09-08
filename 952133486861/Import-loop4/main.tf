@@ -282,34 +282,6 @@ resource "aws_network_acl_rule" "in_acl-09b3a9f00f5142610_110_ingress_0_0_0_0_0_
   to_port        = 65535
 }
 
-resource "aws_network_acl_rule" "in_internet_return_tcp_oregon-asg-nacl_ephemeral" {
-  network_acl_id = aws_network_acl.oregon-asg-nacl.id
-  cidr_block     = "0.0.0.0/0"
-  egress         = false
-  from_port      = 32768
-  protocol       = "tcp"
-  rule_action    = "allow"
-  rule_number    = 1001
-  to_port        = 61000
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_network_acl_rule" "in_internet_return_udp_oregon-asg-nacl_ephemeral" {
-  network_acl_id = aws_network_acl.oregon-asg-nacl.id
-  cidr_block     = "0.0.0.0/0"
-  egress         = false
-  from_port      = 32768
-  protocol       = "udp"
-  rule_action    = "allow"
-  rule_number    = 1002
-  to_port        = 61000
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
 resource "aws_network_acl_rule" "out_acl-09b3a9f00f5142610_100_egress_0_0_0_0_0_all_proto" {
   network_acl_id = aws_network_acl.oregon-asg-nacl.id
   cidr_block     = "0.0.0.0/0"
@@ -317,62 +289,6 @@ resource "aws_network_acl_rule" "out_acl-09b3a9f00f5142610_100_egress_0_0_0_0_0_
   protocol       = "-1"
   rule_action    = "allow"
   rule_number    = 100
-}
-
-resource "aws_network_acl_rule" "out_internet_oregon-asg-nacl_port_123_udp" {
-  network_acl_id = aws_network_acl.oregon-asg-nacl.id
-  cidr_block     = "0.0.0.0/0"
-  egress         = true
-  from_port      = 123
-  protocol       = "udp"
-  rule_action    = "allow"
-  rule_number    = 4479
-  to_port        = 123
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_network_acl_rule" "out_internet_oregon-asg-nacl_port_443_tcp" {
-  network_acl_id = aws_network_acl.oregon-asg-nacl.id
-  cidr_block     = "0.0.0.0/0"
-  egress         = true
-  from_port      = 443
-  protocol       = "tcp"
-  rule_action    = "allow"
-  rule_number    = 25911
-  to_port        = 443
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_network_acl_rule" "out_internet_oregon-asg-nacl_port_53_tcp" {
-  network_acl_id = aws_network_acl.oregon-asg-nacl.id
-  cidr_block     = "0.0.0.0/0"
-  egress         = true
-  from_port      = 53
-  protocol       = "tcp"
-  rule_action    = "allow"
-  rule_number    = 11123
-  to_port        = 53
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_network_acl_rule" "out_internet_oregon-asg-nacl_port_53_udp" {
-  network_acl_id = aws_network_acl.oregon-asg-nacl.id
-  cidr_block     = "0.0.0.0/0"
-  egress         = true
-  from_port      = 53
-  protocol       = "udp"
-  rule_action    = "allow"
-  rule_number    = 21753
-  to_port        = 53
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 resource "aws_security_group" "oregon-asg-nodes" {
