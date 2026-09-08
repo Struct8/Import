@@ -1,6 +1,6 @@
 {
  "version": 1,
- "requestId": "fc47a6b0-3989-4c1c-aeae-8c58c5d28a61",
+ "requestId": "aea70210-89f2-4056-84d8-6f97ed8ba3b6",
  "region": "us-west-2",
  "accountId": "952133486861",
  "scope": {
@@ -197,14 +197,6 @@
   {
    "arn": null,
    "cfnType": "AWS::IAM::ManagedPolicy",
-   "importId": "arn:aws:iam::952133486861:policy/edge-rewrite-logs",
-   "referencedBy": [
-    "edge-rewrite-origin-request_role"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::ManagedPolicy",
    "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_ConverteTabelaLivros_State_State",
    "referencedBy": [
     "IAM_Role_aws_lambda_function_ConverteTabelaLivros"
@@ -301,14 +293,6 @@
    "importId": "arn:aws:iam::952133486861:policy/lambda_function_BudgetAlarm_BudgetAlarm_role_st_CUR",
    "referencedBy": [
     "BudgetAlarm_role"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::ManagedPolicy",
-   "importId": "arn:aws:iam::952133486861:policy/edge-abtest-logs",
-   "referencedBy": [
-    "edge-abtest-viewer-response_role"
    ]
   },
   {
@@ -542,14 +526,6 @@
   {
    "arn": null,
    "cfnType": "AWS::IAM::ManagedPolicy",
-   "importId": "arn:aws:iam::952133486861:policy/edge-headers-logs",
-   "referencedBy": [
-    "edge-security-headers-origin-response_role"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::ManagedPolicy",
    "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_CogUPoolOIC_State_CognitoIOC",
    "referencedBy": [
     "IAM_Role_aws_cognito_user_pool_CogUPoolOIC"
@@ -672,14 +648,6 @@
   {
    "arn": null,
    "cfnType": "AWS::IAM::ManagedPolicy",
-   "importId": "arn:aws:iam::952133486861:policy/edge-auth-logs",
-   "referencedBy": [
-    "edge-auth-viewer-request_role"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::ManagedPolicy",
    "importId": "arn:aws:iam::952133486861:policy/Lambda_InterfaceAI-dev_St_AWSBackend-dev"
   },
   {
@@ -723,6 +691,26 @@
   },
   {
    "arn": null,
+   "cfnType": "AWS::AppConfig::DeploymentStrategy",
+   "importId": "AppConfig.AllAtOnce"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::DeploymentStrategy",
+   "importId": "AppConfig.Linear50PercentEvery30Seconds"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::DeploymentStrategy",
+   "importId": "AppConfig.Canary10Percent20Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::DeploymentStrategy",
+   "importId": "AppConfig.Linear20PercentEvery6Minutes"
+  },
+  {
+   "arn": null,
    "cfnType": "AWS::AppConfig::Extension",
    "importId": "AWS.AppConfig.FeatureFlags"
   },
@@ -753,57 +741,13 @@
   },
   {
    "arn": null,
-   "cfnType": "AWS::AppConfig::DeploymentStrategy",
-   "importId": "AppConfig.AllAtOnce"
+   "cfnType": "AWS::Athena::WorkGroup",
+   "importId": "primary"
   },
   {
    "arn": null,
-   "cfnType": "AWS::AppConfig::DeploymentStrategy",
-   "importId": "AppConfig.Linear50PercentEvery30Seconds"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::AppConfig::DeploymentStrategy",
-   "importId": "AppConfig.Canary10Percent20Minutes"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::AppConfig::DeploymentStrategy",
-   "importId": "AppConfig.Linear20PercentEvery6Minutes"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::AutoScaling::ScalingPolicy",
-   "importId": "arn:aws:autoscaling:us-west-2:952133486861:scalingPolicy:e75439c3-3434-4882-82ee-10d9b2f53968:autoScalingGroupName/oregon-asg-group:policyName/oregon-asg-cpu60",
-   "referencedBy": [
-    "TargetTracking-oregon-asg-group-AlarmHigh-e7c4c194-70b2-42d9-97e1-6be2ecfb75b1",
-    "TargetTracking-oregon-asg-group-AlarmLow-fd52bd60-2ef8-4aee-b3c2-b26fe987d593"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::BCM::Dashboard",
-   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-4dc5619130f2463687fc45e003e4b930"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::BCM::Dashboard",
-   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-b0e4f3ab71454cf48a7d148287222f9d"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::BCM::Dashboard",
-   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-d2effbcc2dfd44eeb8ebec3f6e83382a"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::BCM::Dashboard",
-   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-a8f4e2b1c3d6490ea1b7f5c8d2e94a03"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::BCM::Dashboard",
-   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-7b3c91d4e5f2a0186c4d8e9f1a2b3c4d"
+   "cfnType": "AWS::Athena::DataCatalog",
+   "importId": "AwsDataCatalog"
   },
   {
    "arn": null,
@@ -816,16 +760,6 @@
   },
   {
    "arn": null,
-   "cfnType": "AWS::Athena::WorkGroup",
-   "importId": "primary"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::Athena::DataCatalog",
-   "importId": "AwsDataCatalog"
-  },
-  {
-   "arn": null,
    "cfnType": "AWS::CloudFormation::Stack",
    "importId": "arn:aws:cloudformation:us-west-2:952133486861:stack/Struct8-Gitops-Struct8-import/e22ea810-ab83-11f1-ab5e-0a76c5e37f13",
    "referencedBy": [
@@ -834,93 +768,12 @@
   },
   {
    "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "E2EKU7RY4MXHLV"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "E2ZOMSDQIK9FZB"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "EXCM6N94PRJR8"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "E1OY53OXPHOXQJ"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "EDUKWJW6301HG"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "E2LCGX4FI0I654"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "E13ODDD15I0EON"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "ETCQY1FCKM0H2"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "E3TH32XPES0PCN"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "E3TN849CRW5ZKF"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "E1RETM7Y38GM7O"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::Distribution",
-   "importId": "E1USHMPV38WL57"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::KeyValueStore",
-   "importId": "Count"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginAccessControl",
-   "importId": "EXT4342PWGLWL"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginAccessControl",
-   "importId": "E9JKA5MDRSH65"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginAccessControl",
-   "importId": "E3DM44PZL6A9MK"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginAccessControl",
-   "importId": "EF7Y33FHZ71KH"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginAccessControl",
-   "importId": "E36KM6UIH2RSO9"
+   "cfnType": "AWS::AutoScaling::ScalingPolicy",
+   "importId": "arn:aws:autoscaling:us-west-2:952133486861:scalingPolicy:e75439c3-3434-4882-82ee-10d9b2f53968:autoScalingGroupName/oregon-asg-group:policyName/oregon-asg-cpu60",
+   "referencedBy": [
+    "TargetTracking-oregon-asg-group-AlarmHigh-e7c4c194-70b2-42d9-97e1-6be2ecfb75b1",
+    "TargetTracking-oregon-asg-group-AlarmLow-fd52bd60-2ef8-4aee-b3c2-b26fe987d593"
+   ]
   },
   {
    "arn": null,
@@ -999,6 +852,231 @@
   },
   {
    "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E2EKU7RY4MXHLV"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E2ZOMSDQIK9FZB"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "EXCM6N94PRJR8"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E1OY53OXPHOXQJ"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "EDUKWJW6301HG"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E2LCGX4FI0I654"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E13ODDD15I0EON"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "ETCQY1FCKM0H2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E3TH32XPES0PCN"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E3TN849CRW5ZKF"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E1RETM7Y38GM7O"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E1USHMPV38WL57"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "EXT4342PWGLWL"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "E9JKA5MDRSH65"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "E3DM44PZL6A9MK"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "EF7Y33FHZ71KH"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "E36KM6UIH2RSO9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3HM85MICY6C8M"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E35F5K6V1B1KZC"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3H12HR9EYDVZR"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E2ST2CGOV90PZ4"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E1DDKREDXDGFMZ"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E2UGH8YAHNZDPS"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E24AHNE0PZBSMO"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3BKQSGI82B5X3"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E269DOXTPG7JWT"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E214LGW6M5SB84"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E1SUJ4IWSOQ26E"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E1S5GHJ7NLK9UU"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E2OG03JMVMTKAK"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E2ITAF6K68B28U"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3MVILA761NLBE"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3PCLM1PJ8LKE6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3F3JXBV0U24RF"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::KeyValueStore",
+   "importId": "Count"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "acba4595-bd28-49b8-b9fe-13317c0390fa"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "216adef6-5c7f-47e4-b989-5492eafa07d3"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "59781a5b-3903-41f3-afcb-af62929ccde1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "775133bc-15f2-49f9-abea-afb2e0bf67d2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "33f36d7e-f396-46d9-90e0-52428a34d9dc"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "bf0718e1-ba1e-49d1-88b1-f726733018ae"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudWatch::Alarm",
+   "importId": "TargetTracking-oregon-asg-group-AlarmHigh-e7c4c194-70b2-42d9-97e1-6be2ecfb75b1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudWatch::Alarm",
+   "importId": "TargetTracking-oregon-asg-group-AlarmLow-fd52bd60-2ef8-4aee-b3c2-b26fe987d593"
+  },
+  {
+   "arn": null,
    "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
    "importId": "60669652-455b-4ae9-85a4-c4c02393f86c"
   },
@@ -1041,16 +1119,6 @@
    "arn": null,
    "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
    "importId": "8551aa85-55ad-4ce5-957c-89059f20eb0b"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudWatch::Alarm",
-   "importId": "TargetTracking-oregon-asg-group-AlarmHigh-e7c4c194-70b2-42d9-97e1-6be2ecfb75b1"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudWatch::Alarm",
-   "importId": "TargetTracking-oregon-asg-group-AlarmLow-fd52bd60-2ef8-4aee-b3c2-b26fe987d593"
   },
   {
    "arn": null,
@@ -1136,46 +1204,6 @@
    "arn": null,
    "cfnType": "AWS::CodeDeploy::DeploymentConfig",
    "importId": "CodeDeployDefault.LambdaCanary10Percent5Minutes"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
-   "importId": "acba4595-bd28-49b8-b9fe-13317c0390fa"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
-   "importId": "216adef6-5c7f-47e4-b989-5492eafa07d3"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
-   "importId": "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
-   "importId": "59781a5b-3903-41f3-afcb-af62929ccde1"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
-   "importId": "775133bc-15f2-49f9-abea-afb2e0bf67d2"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
-   "importId": "33f36d7e-f396-46d9-90e0-52428a34d9dc"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
-   "importId": "b689b0a8-53d0-40ab-baf2-68738e2966ac"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
-   "importId": "bf0718e1-ba1e-49d1-88b1-f726733018ae"
   },
   {
    "arn": null,
@@ -1349,31 +1377,8 @@
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::FlowLog",
-   "importId": "fl-08937cd6e98fae4dc"
-  },
-  {
-   "arn": null,
    "cfnType": "AWS::EC2::EgressOnlyInternetGateway",
    "importId": "eigw-083dc9b065af87635"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::InternetGateway",
-   "importId": "igw-04f6deddf62c8a242"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::InternetGateway",
-   "importId": "igw-0fc6487d32e5b1fea"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::LaunchTemplate",
-   "importId": "lt-0c672bbb12a42eab9",
-   "referencedBy": [
-    "oregon-asg-group"
-   ]
   },
   {
    "arn": null,
@@ -1387,50 +1392,50 @@
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::RouteTable",
-   "importId": "rtb-060eaf458d6754e72",
+   "cfnType": "AWS::EC2::LaunchTemplate",
+   "importId": "lt-0c672bbb12a42eab9",
    "referencedBy": [
-    "vpce-01809868ad046f260",
-    "vpce-07b8c24111b4f21ca"
+    "oregon-asg-group"
    ]
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::RouteTable",
-   "importId": "rtb-06de1785070037b00"
+   "cfnType": "AWS::EC2::InternetGateway",
+   "importId": "igw-04f6deddf62c8a242"
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::RouteTable",
-   "importId": "rtb-09956f73169984fe3"
+   "cfnType": "AWS::EC2::InternetGateway",
+   "importId": "igw-0fc6487d32e5b1fea"
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::RouteTable",
-   "importId": "rtb-0e7b517ab4de923b7"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::RouteTable",
-   "importId": "rtb-09104aa275e57925a",
+   "cfnType": "AWS::EC2::NetworkAcl",
+   "importId": "acl-030e4672c6858d71d",
    "referencedBy": [
-    "vpce-01809868ad046f260",
-    "vpce-07b8c24111b4f21ca"
+    "vpc-0a43534eefc21fcb1"
    ]
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::RouteTable",
-   "importId": "rtb-08f9cf7f023267381",
+   "cfnType": "AWS::EC2::NetworkAcl",
+   "importId": "acl-09b3a9f00f5142610"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::NetworkAcl",
+   "importId": "acl-075b8a910647e284d",
    "referencedBy": [
-    "vpce-01809868ad046f260",
-    "vpce-07b8c24111b4f21ca"
+    "vpc-0b2cb48f01ccce0c2"
    ]
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::RouteTable",
-   "importId": "rtb-05f6096714de29699"
+   "cfnType": "AWS::EC2::NetworkAcl",
+   "importId": "acl-0579210fd1ba25c27",
+   "referencedBy": [
+    "vpc-06dc29d92c035b319"
+   ]
   },
   {
    "arn": null,
@@ -1514,162 +1519,134 @@
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroupIngress",
-   "importId": "sgr-0df5ec17fa5f0e48d"
+   "cfnType": "AWS::EC2::SecurityGroupEgress",
+   "importId": "sgr-0019dfe5b5e1d2711"
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroupIngress",
-   "importId": "sgr-0e9015d9fea9818ac"
+   "cfnType": "AWS::EC2::SecurityGroupEgress",
+   "importId": "sgr-04ff708fbd138e9d8"
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroupIngress",
-   "importId": "sgr-04c276c65d6b519fd"
+   "cfnType": "AWS::EC2::SecurityGroupEgress",
+   "importId": "sgr-0560528f4d31f1465"
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroupIngress",
-   "importId": "sgr-03a39c1168be2f39f"
+   "cfnType": "AWS::EC2::SecurityGroupEgress",
+   "importId": "sgr-079dfd10c0769bda7"
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::NetworkAcl",
-   "importId": "acl-030e4672c6858d71d",
+   "cfnType": "AWS::EC2::SecurityGroupEgress",
+   "importId": "sgr-025cd37c1baa05c98"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::RouteTable",
+   "importId": "rtb-060eaf458d6754e72",
    "referencedBy": [
-    "vpc-0a43534eefc21fcb1"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::NetworkAcl",
-   "importId": "acl-09b3a9f00f5142610"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::NetworkAcl",
-   "importId": "acl-075b8a910647e284d",
-   "referencedBy": [
-    "vpc-0b2cb48f01ccce0c2"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::NetworkAcl",
-   "importId": "acl-0579210fd1ba25c27",
-   "referencedBy": [
-    "vpc-06dc29d92c035b319"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroup",
-   "importId": "sg-09d084d48c218d887",
-   "referencedBy": [
-    "vpc-0b2cb48f01ccce0c2"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroup",
-   "importId": "sg-03276c140e8a25c32"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroup",
-   "importId": "sg-002a0933ca184c2c5",
-   "referencedBy": [
-    "vpc-06dc29d92c035b319"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroup",
-   "importId": "sg-0cc98fa8b001a8519",
-   "referencedBy": [
-    "vpc-0a43534eefc21fcb1"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::VPCDHCPOptionsAssociation",
-   "importId": "dopt-03b17c556ffb1011e|vpc-0a43534eefc21fcb1"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::VPCDHCPOptionsAssociation",
-   "importId": "dopt-03b17c556ffb1011e|vpc-06dc29d92c035b319"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::VPCDHCPOptionsAssociation",
-   "importId": "dopt-03b17c556ffb1011e|vpc-0b2cb48f01ccce0c2"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::VPCEndpoint",
-   "importId": "vpce-07b8c24111b4f21ca"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::VPCEndpoint",
-   "importId": "vpce-01809868ad046f260"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::VPC",
-   "importId": "vpc-06dc29d92c035b319",
-   "referencedBy": [
-    "acl-0579210fd1ba25c27",
-    "rtb-0e7b517ab4de923b7",
-    "sg-002a0933ca184c2c5",
-    "subnet-01187e52cc4abdec9",
-    "subnet-05d9fc7d5f1a88294",
-    "subnet-07d00e98f9dca5a69",
-    "subnet-0b4dc3b85082c72ad"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::VPC",
-   "importId": "vpc-0a43534eefc21fcb1",
-   "referencedBy": [
-    "acl-030e4672c6858d71d",
-    "acl-09b3a9f00f5142610",
-    "pcx-0659fe288fc855311",
-    "rtb-060eaf458d6754e72",
-    "rtb-06de1785070037b00",
-    "rtb-08f9cf7f023267381",
-    "rtb-09104aa275e57925a",
-    "rtb-09956f73169984fe3",
-    "sg-03276c140e8a25c32",
-    "sg-0cc98fa8b001a8519",
-    "subnet-00779ed65ce3f7870",
-    "subnet-03a4a9adc0cb3b101",
-    "subnet-0592d1e9583f7bbcb",
-    "subnet-0897192a2fe08a7e9",
-    "subnet-08d0bbf639413d65c",
-    "subnet-0930bc02de849cf54",
     "vpce-01809868ad046f260",
     "vpce-07b8c24111b4f21ca"
    ]
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::VPC",
-   "importId": "vpc-0b2cb48f01ccce0c2",
+   "cfnType": "AWS::EC2::RouteTable",
+   "importId": "rtb-06de1785070037b00"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::RouteTable",
+   "importId": "rtb-09956f73169984fe3"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::RouteTable",
+   "importId": "rtb-0e7b517ab4de923b7"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::RouteTable",
+   "importId": "rtb-09104aa275e57925a",
    "referencedBy": [
-    "acl-075b8a910647e284d",
-    "eigw-083dc9b065af87635",
-    "pcx-0659fe288fc855311",
-    "rtb-05f6096714de29699",
-    "sg-09d084d48c218d887"
+    "vpce-01809868ad046f260",
+    "vpce-07b8c24111b4f21ca"
    ]
   },
   {
    "arn": null,
-   "cfnType": "AWS::EC2::VPCPeeringConnection",
-   "importId": "pcx-0659fe288fc855311"
+   "cfnType": "AWS::EC2::RouteTable",
+   "importId": "rtb-08f9cf7f023267381",
+   "referencedBy": [
+    "vpce-01809868ad046f260",
+    "vpce-07b8c24111b4f21ca"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::RouteTable",
+   "importId": "rtb-05f6096714de29699"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-01187e52cc4abdec9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-0897192a2fe08a7e9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-00779ed65ce3f7870"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-07d00e98f9dca5a69"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-0592d1e9583f7bbcb",
+   "referencedBy": [
+    "oregon-asg-group"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-0b4dc3b85082c72ad"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-0930bc02de849cf54",
+   "referencedBy": [
+    "oregon-asg-group"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-03a4a9adc0cb3b101"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-05d9fc7d5f1a88294"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-08d0bbf639413d65c",
+   "referencedBy": [
+    "oregon-asg-group"
+   ]
   },
   {
    "arn": null,
@@ -1753,6 +1730,147 @@
   },
   {
    "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroupIngress",
+   "importId": "sgr-0df5ec17fa5f0e48d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroupIngress",
+   "importId": "sgr-0e9015d9fea9818ac"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroupIngress",
+   "importId": "sgr-04c276c65d6b519fd"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroupIngress",
+   "importId": "sgr-03a39c1168be2f39f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
+   "importId": "rtbassoc-0c5c149122dd70c2f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
+   "importId": "rtbassoc-07a9c96e8fe0e72d9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
+   "importId": "rtbassoc-059ce7a448998aa06"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
+   "importId": "rtbassoc-02b6402d820f2188b"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
+   "importId": "rtbassoc-08358666c2b7d92c2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
+   "importId": "rtbassoc-05e6f6fd2d1efa41e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
+   "importId": "rtbassoc-0ef3d96fe48939001"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
+   "importId": "rtbassoc-0f85f6c52bee4fc95"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
+   "importId": "rtbassoc-0cfdcb8c46f32e66d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPCDHCPOptionsAssociation",
+   "importId": "dopt-03b17c556ffb1011e|vpc-0a43534eefc21fcb1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPCDHCPOptionsAssociation",
+   "importId": "dopt-03b17c556ffb1011e|vpc-06dc29d92c035b319"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPCDHCPOptionsAssociation",
+   "importId": "dopt-03b17c556ffb1011e|vpc-0b2cb48f01ccce0c2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPCEndpoint",
+   "importId": "vpce-07b8c24111b4f21ca"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPCEndpoint",
+   "importId": "vpce-01809868ad046f260"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPC",
+   "importId": "vpc-06dc29d92c035b319",
+   "referencedBy": [
+    "acl-0579210fd1ba25c27",
+    "rtb-0e7b517ab4de923b7",
+    "sg-002a0933ca184c2c5",
+    "subnet-01187e52cc4abdec9",
+    "subnet-05d9fc7d5f1a88294",
+    "subnet-07d00e98f9dca5a69",
+    "subnet-0b4dc3b85082c72ad"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPC",
+   "importId": "vpc-0a43534eefc21fcb1",
+   "referencedBy": [
+    "acl-030e4672c6858d71d",
+    "acl-09b3a9f00f5142610",
+    "pcx-0659fe288fc855311",
+    "rtb-060eaf458d6754e72",
+    "rtb-06de1785070037b00",
+    "rtb-08f9cf7f023267381",
+    "rtb-09104aa275e57925a",
+    "rtb-09956f73169984fe3",
+    "sg-03276c140e8a25c32",
+    "sg-0cc98fa8b001a8519",
+    "subnet-00779ed65ce3f7870",
+    "subnet-03a4a9adc0cb3b101",
+    "subnet-0592d1e9583f7bbcb",
+    "subnet-0897192a2fe08a7e9",
+    "subnet-08d0bbf639413d65c",
+    "subnet-0930bc02de849cf54",
+    "vpce-01809868ad046f260",
+    "vpce-07b8c24111b4f21ca"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPC",
+   "importId": "vpc-0b2cb48f01ccce0c2",
+   "referencedBy": [
+    "acl-075b8a910647e284d",
+    "eigw-083dc9b065af87635",
+    "pcx-0659fe288fc855311",
+    "rtb-05f6096714de29699",
+    "sg-09d084d48c218d887"
+   ]
+  },
+  {
+   "arn": null,
    "cfnType": "AWS::EC2::VPCGatewayAttachment",
    "importId": "IGW|vpc-06dc29d92c035b319"
   },
@@ -1763,13 +1881,8 @@
   },
   {
    "arn": null,
-   "cfnType": "AWS::ECS::CapacityProvider",
-   "importId": "FARGATE"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::ECS::CapacityProvider",
-   "importId": "FARGATE_SPOT"
+   "cfnType": "AWS::EC2::VPCPeeringConnection",
+   "importId": "pcx-0659fe288fc855311"
   },
   {
    "arn": null,
@@ -1878,7 +1991,7 @@
   },
   {
    "arn": null,
-   "cfnType": "AWS::Events::EventBus",
+   "cfnType": "AWS::ElastiCache::User",
    "importId": "default"
   },
   {
@@ -1886,11 +1999,6 @@
    "cfnType": "AWS::Events::Rule",
    "importId": "arn:aws:events:us-west-2:952133486861:rule/ecs-managed-capacity-provider-rule",
    "ownedBy": "ecs.amazonaws.com"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::ElastiCache::User",
-   "importId": "default"
   },
   {
    "arn": null,
@@ -1906,17 +2014,6 @@
    "arn": null,
    "cfnType": "AWS::IAM::InstanceProfile",
    "importId": "profile_Instance4"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::OIDCProvider",
-   "importId": "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com",
-   "referencedBy": [
-    "CloudManActions",
-    "Struct8-Gitops-Struct8-CloudManV2CICD",
-    "Struct8-Gitops-Struct8-import",
-    "Struct8-Gitops-Struct8-structCICDTest"
-   ]
   },
   {
    "arn": null,
@@ -2412,26 +2509,6 @@
   {
    "arn": null,
    "cfnType": "AWS::IAM::Role",
-   "importId": "edge-abtest-viewer-response_role"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::Role",
-   "importId": "edge-auth-viewer-request_role"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::Role",
-   "importId": "edge-rewrite-origin-request_role"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::Role",
-   "importId": "edge-security-headers-origin-response_role"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::Role",
    "importId": "EdgeTest-role-1b0lykv1"
   },
   {
@@ -2483,6 +2560,27 @@
    "arn": null,
    "cfnType": "AWS::IAM::Role",
    "importId": "IAM_Role_aws_codebuild_project_BackendStandAlone-cons"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::User",
+   "importId": "CloudMan",
+   "referencedBy": [
+    "CodeBuild_DeployTerraformNew-dev",
+    "Lambda_CallBack-dev",
+    "Lambda_ExecTerraformNew-dev",
+    "Lambda_GitHubAuthServiceLambda-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::User",
+   "importId": "suporteupd8"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::User",
+   "importId": "SveltAcessBucketTemplate"
   },
   {
    "arn": null,
@@ -3435,99 +3533,14 @@
   },
   {
    "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/acm"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/codecommit"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/dynamodb"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/ebs"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/elasticfilesystem"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/es"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/glue"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/kinesisvideo"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/lambda"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/rds"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/redshift"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/s3"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/secretsmanager"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/ssm"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::KMS::Alias",
-   "importId": "alias/aws/xray"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::User",
-   "importId": "CloudMan",
+   "cfnType": "AWS::IAM::OIDCProvider",
+   "importId": "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com",
    "referencedBy": [
-    "CodeBuild_DeployTerraformNew-dev",
-    "Lambda_CallBack-dev",
-    "Lambda_ExecTerraformNew-dev",
-    "Lambda_GitHubAuthServiceLambda-dev"
+    "CloudManActions",
+    "Struct8-Gitops-Struct8-CloudManV2CICD",
+    "Struct8-Gitops-Struct8-import",
+    "Struct8-Gitops-Struct8-structCICDTest"
    ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::User",
-   "importId": "suporteupd8"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::IAM::User",
-   "importId": "SveltAcessBucketTemplate"
   },
   {
    "arn": null,
@@ -3538,6 +3551,27 @@
    "arn": null,
    "cfnType": "AWS::Organizations::Organization",
    "importId": "o-w3w6mkkk4j"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Organizations::Account",
+   "importId": "952133486861",
+   "referencedBy": [
+    "0710922d-c890-4bfb-bcae-bc0ef5543f54",
+    "081d3c6c-ad92-4c90-93bf-5939d005aeb1",
+    "8952ba44-f039-42e2-8bb8-fc13a4a0f9f5",
+    "9834eb9b-44a4-4fbe-ae38-0f68010f426e",
+    "FinOpsAgentOperatorRole-46b657e2",
+    "FinOpsAgentRole-97fb4465",
+    "c3fbe491-f20e-4438-856a-7f9cef27b6c4",
+    "e3e4fc18-bb22-4652-9ff1-1e622b82ce74",
+    "f019f965-2340-4c77-b976-182a1c3460ab",
+    "pcx-0659fe288fc855311",
+    "sg-002a0933ca184c2c5",
+    "sg-09d084d48c218d887",
+    "sg-0cc98fa8b001a8519",
+    "tag-sync-role-us-east-1-hxc7e7tb"
+   ]
   },
   {
    "arn": null,
@@ -4231,28 +4265,18 @@
   },
   {
    "arn": null,
+   "cfnType": "AWS::ResourceExplorer2::View",
+   "importId": "arn:aws:resource-explorer-2:us-west-2:952133486861:view/us-west-2/255a3c6a-ab7d-4c1a-b72e-9ce56ce754b5"
+  },
+  {
+   "arn": null,
    "cfnType": "AWS::RDS::OptionGroup",
    "importId": "default:mysql-8-0"
   },
   {
    "arn": null,
-   "cfnType": "AWS::ResourceExplorer2::Index",
-   "importId": "arn:aws:resource-explorer-2:ca-central-1:952133486861:index/c1dcb276-fb25-4f1c-9b8e-923377df735a"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::ResourceExplorer2::Index",
-   "importId": "arn:aws:resource-explorer-2:mx-central-1:952133486861:index/f5d03d83-f6ce-4c42-b80a-253ce3797b3a"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::ResourceExplorer2::Index",
-   "importId": "arn:aws:resource-explorer-2:us-east-1:952133486861:index/ba03c334-7bfe-44e0-b970-5d300afb4b23"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::ResourceExplorer2::Index",
-   "importId": "arn:aws:resource-explorer-2:us-west-2:952133486861:index/05a37c6c-0d58-4f05-8064-1f01cb5158a1"
+   "cfnType": "AWS::Route53::HostedZone",
+   "importId": "Z04251074NSF989QRSG9"
   },
   {
    "arn": null,
@@ -4276,6 +4300,26 @@
   },
   {
    "arn": null,
+   "cfnType": "AWS::ResourceExplorer2::Index",
+   "importId": "arn:aws:resource-explorer-2:ca-central-1:952133486861:index/c1dcb276-fb25-4f1c-9b8e-923377df735a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ResourceExplorer2::Index",
+   "importId": "arn:aws:resource-explorer-2:mx-central-1:952133486861:index/f5d03d83-f6ce-4c42-b80a-253ce3797b3a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ResourceExplorer2::Index",
+   "importId": "arn:aws:resource-explorer-2:us-east-1:952133486861:index/ba03c334-7bfe-44e0-b970-5d300afb4b23"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ResourceExplorer2::Index",
+   "importId": "arn:aws:resource-explorer-2:us-west-2:952133486861:index/05a37c6c-0d58-4f05-8064-1f01cb5158a1"
+  },
+  {
+   "arn": null,
    "cfnType": "AWS::Route53Resolver::ResolverRuleAssociation",
    "importId": "rslvr-autodefined-assoc-vpc-06dc29d92c035b319-internet-resolver"
   },
@@ -4293,16 +4337,6 @@
    "arn": null,
    "cfnType": "AWS::S3::Bucket",
    "importId": "struct8-import"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::Route53Resolver::ResolverRule",
-   "importId": "rslvr-autodefined-rr-internet-resolver"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::ResourceExplorer2::View",
-   "importId": "arn:aws:resource-explorer-2:us-west-2:952133486861:view/us-west-2/255a3c6a-ab7d-4c1a-b72e-9ce56ce754b5"
   },
   {
    "arn": null,
@@ -4411,253 +4445,169 @@
   },
   {
    "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E3HM85MICY6C8M"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E35F5K6V1B1KZC"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E3H12HR9EYDVZR"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E2ST2CGOV90PZ4"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E1DDKREDXDGFMZ"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E2UGH8YAHNZDPS"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E24AHNE0PZBSMO"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E3BKQSGI82B5X3"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E269DOXTPG7JWT"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E214LGW6M5SB84"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E1SUJ4IWSOQ26E"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E1S5GHJ7NLK9UU"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E2OG03JMVMTKAK"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E2ITAF6K68B28U"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E3MVILA761NLBE"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E3PCLM1PJ8LKE6"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
-   "importId": "E3F3JXBV0U24RF"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::Subnet",
-   "importId": "subnet-01187e52cc4abdec9"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::Subnet",
-   "importId": "subnet-0897192a2fe08a7e9"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::Subnet",
-   "importId": "subnet-00779ed65ce3f7870"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::Subnet",
-   "importId": "subnet-07d00e98f9dca5a69"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::Subnet",
-   "importId": "subnet-0592d1e9583f7bbcb",
-   "referencedBy": [
-    "oregon-asg-group"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::Subnet",
-   "importId": "subnet-0b4dc3b85082c72ad"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::Subnet",
-   "importId": "subnet-0930bc02de849cf54",
-   "referencedBy": [
-    "oregon-asg-group"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::Subnet",
-   "importId": "subnet-03a4a9adc0cb3b101"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::Subnet",
-   "importId": "subnet-05d9fc7d5f1a88294"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::Subnet",
-   "importId": "subnet-08d0bbf639413d65c",
-   "referencedBy": [
-    "oregon-asg-group"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroupEgress",
-   "importId": "sgr-0019dfe5b5e1d2711"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroupEgress",
-   "importId": "sgr-04ff708fbd138e9d8"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroupEgress",
-   "importId": "sgr-0560528f4d31f1465"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroupEgress",
-   "importId": "sgr-079dfd10c0769bda7"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SecurityGroupEgress",
-   "importId": "sgr-025cd37c1baa05c98"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
-   "importId": "rtbassoc-0c5c149122dd70c2f"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
-   "importId": "rtbassoc-02b6402d820f2188b"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
-   "importId": "rtbassoc-07a9c96e8fe0e72d9"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
-   "importId": "rtbassoc-059ce7a448998aa06"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
-   "importId": "rtbassoc-08358666c2b7d92c2"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
-   "importId": "rtbassoc-05e6f6fd2d1efa41e"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
-   "importId": "rtbassoc-0ef3d96fe48939001"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
-   "importId": "rtbassoc-0f85f6c52bee4fc95"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
-   "importId": "rtbassoc-0cfdcb8c46f32e66d"
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::Organizations::Account",
-   "importId": "952133486861",
-   "referencedBy": [
-    "0710922d-c890-4bfb-bcae-bc0ef5543f54",
-    "081d3c6c-ad92-4c90-93bf-5939d005aeb1",
-    "8952ba44-f039-42e2-8bb8-fc13a4a0f9f5",
-    "9834eb9b-44a4-4fbe-ae38-0f68010f426e",
-    "FinOpsAgentOperatorRole-46b657e2",
-    "FinOpsAgentRole-97fb4465",
-    "c3fbe491-f20e-4438-856a-7f9cef27b6c4",
-    "e3e4fc18-bb22-4652-9ff1-1e622b82ce74",
-    "f019f965-2340-4c77-b976-182a1c3460ab",
-    "pcx-0659fe288fc855311",
-    "sg-002a0933ca184c2c5",
-    "sg-09d084d48c218d887",
-    "sg-0cc98fa8b001a8519",
-    "tag-sync-role-us-east-1-hxc7e7tb"
-   ]
-  },
-  {
-   "arn": null,
-   "cfnType": "AWS::Route53::HostedZone",
-   "importId": "Z04251074NSF989QRSG9"
-  },
-  {
-   "arn": null,
    "cfnType": "AWS::XRay::SamplingRule",
    "importId": "arn:aws:xray:us-west-2:952133486861:sampling-rule/Default"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::BCM::Dashboard",
+   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-4dc5619130f2463687fc45e003e4b930"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::BCM::Dashboard",
+   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-b0e4f3ab71454cf48a7d148287222f9d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::BCM::Dashboard",
+   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-d2effbcc2dfd44eeb8ebec3f6e83382a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::BCM::Dashboard",
+   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-a8f4e2b1c3d6490ea1b7f5c8d2e94a03"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::BCM::Dashboard",
+   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-7b3c91d4e5f2a0186c4d8e9f1a2b3c4d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroup",
+   "importId": "sg-09d084d48c218d887",
+   "referencedBy": [
+    "vpc-0b2cb48f01ccce0c2"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroup",
+   "importId": "sg-03276c140e8a25c32"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroup",
+   "importId": "sg-002a0933ca184c2c5",
+   "referencedBy": [
+    "vpc-06dc29d92c035b319"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroup",
+   "importId": "sg-0cc98fa8b001a8519",
+   "referencedBy": [
+    "vpc-0a43534eefc21fcb1"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::FlowLog",
+   "importId": "fl-08937cd6e98fae4dc"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ECS::CapacityProvider",
+   "importId": "FARGATE"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ECS::CapacityProvider",
+   "importId": "FARGATE_SPOT"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Events::EventBus",
+   "importId": "default"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/acm"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/codecommit"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/dynamodb"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/ebs"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/elasticfilesystem"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/es"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/glue"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/kinesisvideo"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/lambda"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/rds"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/redshift"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/s3"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/secretsmanager"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/ssm"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/xray"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Route53Resolver::ResolverRule",
+   "importId": "rslvr-autodefined-rr-internet-resolver"
   },
   {
    "arn": "arn:aws:ec2:us-west-2:952133486861:vpc/vpc-0a43534eefc21fcb1",
    "tags": {
     "Name": "oregon-net-vpc",
+    "State": "Import-loop3",
+    "Struct8Creator": "Contato Struct",
     "Project": "oregon-net"
    },
    "isDefault": false
@@ -4671,7 +4621,9 @@
    "arn": "arn:aws:ec2:us-west-2:952133486861:vpc/vpc-0b2cb48f01ccce0c2",
    "tags": {
     "Name": "oregon-asg-vpc2",
-    "Project": "oregon-asg"
+    "Project": "oregon-asg",
+    "State": "Import-loop3",
+    "Struct8Creator": "Contato Struct"
    },
    "isDefault": false
   },
@@ -4683,14 +4635,18 @@
   {
    "arn": "arn:aws:ec2:us-west-2:952133486861:subnet/subnet-0897192a2fe08a7e9",
    "tags": {
+    "Struct8Creator": "Contato Struct",
     "Name": "oregon-net-public-b",
-    "Project": "oregon-net"
+    "Project": "oregon-net",
+    "State": "Import-loop3"
    },
    "vpcId": "vpc-0a43534eefc21fcb1"
   },
   {
    "arn": "arn:aws:ec2:us-west-2:952133486861:subnet/subnet-00779ed65ce3f7870",
    "tags": {
+    "State": "Import-loop3",
+    "Struct8Creator": "Contato Struct",
     "Project": "oregon-net",
     "Name": "oregon-net-public-a"
    },
@@ -4705,6 +4661,8 @@
    "arn": "arn:aws:ec2:us-west-2:952133486861:subnet/subnet-0592d1e9583f7bbcb",
    "tags": {
     "Name": "oregon-net-private-b",
+    "State": "Import-loop3",
+    "Struct8Creator": "Contato Struct",
     "Project": "oregon-net"
    },
    "vpcId": "vpc-0a43534eefc21fcb1"
@@ -4718,6 +4676,8 @@
    "arn": "arn:aws:ec2:us-west-2:952133486861:subnet/subnet-0930bc02de849cf54",
    "tags": {
     "Name": "oregon-net-private-a",
+    "State": "Import-loop3",
+    "Struct8Creator": "Contato Struct",
     "Project": "oregon-net"
    },
    "vpcId": "vpc-0a43534eefc21fcb1"
@@ -4726,7 +4686,9 @@
    "arn": "arn:aws:ec2:us-west-2:952133486861:subnet/subnet-03a4a9adc0cb3b101",
    "tags": {
     "Project": "oregon-net",
-    "Name": "oregon-net-public-c"
+    "Name": "oregon-net-public-c",
+    "State": "Import-loop3",
+    "Struct8Creator": "Contato Struct"
    },
    "vpcId": "vpc-0a43534eefc21fcb1"
   },
@@ -4739,6 +4701,8 @@
    "arn": "arn:aws:ec2:us-west-2:952133486861:subnet/subnet-08d0bbf639413d65c",
    "tags": {
     "Project": "oregon-net",
+    "State": "Import-loop3",
+    "Struct8Creator": "Contato Struct",
     "Name": "oregon-net-private-c"
    },
    "vpcId": "vpc-0a43534eefc21fcb1"
@@ -4751,7 +4715,9 @@
   {
    "arn": "arn:aws:ec2:us-west-2:952133486861:internet-gateway/igw-0fc6487d32e5b1fea",
    "tags": {
+    "Struct8Creator": "Contato Struct",
     "Project": "oregon-net",
+    "State": "Import-loop3",
     "Name": "oregon-net-igw"
    },
    "vpcId": "vpc-0a43534eefc21fcb1"
@@ -4759,7 +4725,9 @@
   {
    "arn": "arn:aws:ec2:us-west-2:952133486861:route-table/rtb-060eaf458d6754e72",
    "tags": {
+    "Struct8Creator": "Contato Struct",
     "Project": "oregon-net",
+    "State": "Import-loop3",
     "Name": "oregon-net-rt-private-b"
    },
    "vpcId": "vpc-0a43534eefc21fcb1",
@@ -4776,7 +4744,9 @@
    "arn": "arn:aws:ec2:us-west-2:952133486861:route-table/rtb-06de1785070037b00",
    "tags": {
     "Name": "oregon-net-rt-public",
-    "Project": "oregon-net"
+    "Project": "oregon-net",
+    "State": "Import-loop3",
+    "Struct8Creator": "Contato Struct"
    },
    "vpcId": "vpc-0a43534eefc21fcb1",
    "isDefault": false
@@ -4791,15 +4761,15 @@
   {
    "arn": "",
    "terraformTypeHint": "aws_route_table_association",
-   "importId": "subnet-0897192a2fe08a7e9/rtb-06de1785070037b00",
-   "nameHint": "subnet-0897192a2fe08a7e9_rtb-06de1785070037b00",
+   "importId": "subnet-03a4a9adc0cb3b101/rtb-06de1785070037b00",
+   "nameHint": "subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00",
    "vpcId": "vpc-0a43534eefc21fcb1"
   },
   {
    "arn": "",
    "terraformTypeHint": "aws_route_table_association",
-   "importId": "subnet-03a4a9adc0cb3b101/rtb-06de1785070037b00",
-   "nameHint": "subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00",
+   "importId": "subnet-0897192a2fe08a7e9/rtb-06de1785070037b00",
+   "nameHint": "subnet-0897192a2fe08a7e9_rtb-06de1785070037b00",
    "vpcId": "vpc-0a43534eefc21fcb1"
   },
   {
@@ -4817,8 +4787,10 @@
   {
    "arn": "arn:aws:ec2:us-west-2:952133486861:route-table/rtb-09104aa275e57925a",
    "tags": {
+    "State": "Import-loop3",
     "Name": "oregon-net-rt-private-c",
-    "Project": "oregon-net"
+    "Project": "oregon-net",
+    "Struct8Creator": "Contato Struct"
    },
    "vpcId": "vpc-0a43534eefc21fcb1",
    "isDefault": false
@@ -4833,8 +4805,10 @@
   {
    "arn": "arn:aws:ec2:us-west-2:952133486861:route-table/rtb-08f9cf7f023267381",
    "tags": {
+    "State": "Import-loop3",
     "Name": "oregon-net-rt-private-a",
-    "Project": "oregon-net"
+    "Project": "oregon-net",
+    "Struct8Creator": "Contato Struct"
    },
    "vpcId": "vpc-0a43534eefc21fcb1",
    "isDefault": false
@@ -4930,7 +4904,7 @@
  ],
  "detailUnread": {
   "count": 1,
-  "of": 354,
+  "of": 350,
   "by": {
    "no longer there": 1
   },
