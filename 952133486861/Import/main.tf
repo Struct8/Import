@@ -114,7 +114,7 @@ resource "aws_subnet" "oregon-net-public-ax" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Project        = "oregon-net"
-    Name           = "oregon-net-public-a"
+    Name           = "oregon-net-public-ax"
     State          = "Import"
     Struct8Creator = "Contato Struct"
   }
