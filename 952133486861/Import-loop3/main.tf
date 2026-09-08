@@ -30,8 +30,8 @@ resource "aws_vpc" "oregon-asg-vpc2" {
   instance_tenancy                     = "default"
   ipv6_cidr_block_network_border_group = "us-west-2"
   tags = {
-    Name           = "oregon-asg-vpc2"
     Project        = "oregon-asg"
+    Name           = "oregon-asg-vpc2"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -43,8 +43,8 @@ resource "aws_vpc" "oregon-net-vpc" {
   enable_dns_support   = true
   instance_tenancy     = "default"
   tags = {
-    Name           = "oregon-net-vpc"
     Project        = "oregon-net"
+    Name           = "oregon-net-vpc"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -57,9 +57,9 @@ resource "aws_vpc_endpoint" "oregon-net-vpce-dynamodb_DynamoDB" {
   route_table_ids   = [aws_route_table.oregon-net-rt-private-b.id, aws_route_table.oregon-net-rt-private-a.id, aws_route_table.oregon-net-rt-private-c.id]
   vpc_endpoint_type = "Gateway"
   tags = {
-    Name           = "oregon-net-vpce-dynamodb"
     Project        = "oregon-net"
     DifName        = "oregon-net-vpce-dynamodb"
+    Name           = "oregon-net-vpce-dynamodb"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -72,9 +72,9 @@ resource "aws_vpc_endpoint" "oregon-net-vpce-s3_S3" {
   route_table_ids   = [aws_route_table.oregon-net-rt-private-b.id, aws_route_table.oregon-net-rt-private-a.id, aws_route_table.oregon-net-rt-private-c.id]
   vpc_endpoint_type = "Gateway"
   tags = {
-    Name           = "oregon-net-vpce-s3"
     Project        = "oregon-net"
     DifName        = "oregon-net-vpce-s3"
+    Name           = "oregon-net-vpce-s3"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -87,8 +87,8 @@ resource "aws_subnet" "oregon-net-private-a" {
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "oregon-net-private-a"
     Project        = "oregon-net"
+    Name           = "oregon-net-private-a"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -101,8 +101,8 @@ resource "aws_subnet" "oregon-net-private-b" {
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "oregon-net-private-b"
     Project        = "oregon-net"
+    Name           = "oregon-net-private-b"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -115,8 +115,8 @@ resource "aws_subnet" "oregon-net-private-c" {
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "oregon-net-private-c"
     Project        = "oregon-net"
+    Name           = "oregon-net-private-c"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -129,8 +129,8 @@ resource "aws_subnet" "oregon-net-public-a" {
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "oregon-net-public-a"
     Project        = "oregon-net"
+    Name           = "oregon-net-public-a"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -143,8 +143,8 @@ resource "aws_subnet" "oregon-net-public-b" {
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "oregon-net-public-b"
     Project        = "oregon-net"
+    Name           = "oregon-net-public-b"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -157,8 +157,8 @@ resource "aws_subnet" "oregon-net-public-c" {
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "oregon-net-public-c"
     Project        = "oregon-net"
+    Name           = "oregon-net-public-c"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -167,8 +167,8 @@ resource "aws_subnet" "oregon-net-public-c" {
 resource "aws_internet_gateway" "oregon-net-igw" {
   vpc_id = aws_vpc.oregon-net-vpc.id
   tags = {
-    Name           = "oregon-net-igw"
     Project        = "oregon-net"
+    Name           = "oregon-net-igw"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -177,8 +177,8 @@ resource "aws_internet_gateway" "oregon-net-igw" {
 resource "aws_route_table" "oregon-net-rt-private-a" {
   vpc_id = aws_vpc.oregon-net-vpc.id
   tags = {
-    Name           = "oregon-net-rt-private-a"
     Project        = "oregon-net"
+    Name           = "oregon-net-rt-private-a"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -187,8 +187,8 @@ resource "aws_route_table" "oregon-net-rt-private-a" {
 resource "aws_route_table" "oregon-net-rt-private-b" {
   vpc_id = aws_vpc.oregon-net-vpc.id
   tags = {
-    Name           = "oregon-net-rt-private-b"
     Project        = "oregon-net"
+    Name           = "oregon-net-rt-private-b"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -197,8 +197,8 @@ resource "aws_route_table" "oregon-net-rt-private-b" {
 resource "aws_route_table" "oregon-net-rt-private-c" {
   vpc_id = aws_vpc.oregon-net-vpc.id
   tags = {
-    Name           = "oregon-net-rt-private-c"
     Project        = "oregon-net"
+    Name           = "oregon-net-rt-private-c"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
@@ -207,8 +207,8 @@ resource "aws_route_table" "oregon-net-rt-private-c" {
 resource "aws_route_table" "oregon-net-rt-public" {
   vpc_id = aws_vpc.oregon-net-vpc.id
   tags = {
-    Name           = "oregon-net-rt-public"
     Project        = "oregon-net"
+    Name           = "oregon-net-rt-public"
     State          = "Import-loop3"
     Struct8Creator = "Contato Struct"
   }
