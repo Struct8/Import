@@ -82,16 +82,6 @@ import {
 }
 
 import {
-  to = aws_vpc_peering_connection.pcx-0659fe288fc855311
-  id = "pcx-0659fe288fc855311"
-}
-
-import {
-  to = aws_route.route_oregon-net-rt-public_to_pcx-0659fe288fc855311_10_20_0_0_16
-  id = "rtb-06de1785070037b00_10.20.0.0/16"
-}
-
-import {
   to = aws_route_table_association.aws_route_table_association_oregon_net_private_a_oregon_net_rt_private_a
   id = "subnet-0930bc02de849cf54/rtb-08f9cf7f023267381"
 }
