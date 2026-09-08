@@ -21,21 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
-
-moved {
-  from = aws_route_table_association.aws_route_table_association_oregon_net_public_ax_oregon_net_rt_public
-  to   = aws_route_table_association.aws_route_table_association_oregon_net_public_ay_oregon_net_rt_public
-}
-
-moved {
-  from = aws_subnet.oregon-net-public-ax
-  to   = aws_subnet.oregon-net-public-ay
-}
-
-
-
-
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "oregon-net-vpc" {
