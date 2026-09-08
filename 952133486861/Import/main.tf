@@ -21,38 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### CATEGORY: IAM ###
-
-resource "aws_iam_openid_connect_provider" "token_actions_githubusercontent_com" {
-  name = "token_actions_githubusercontent_com"
-  tags = {
-    Name           = "token_actions_githubusercontent_com"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_iam_role" "Struct8-Gitops-Struct8-import" {
-  name                  = "Struct8-Gitops-Struct8-import"
-  assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRoleWithWebIdentity\",\"Condition\":{\"StringEquals\":{\"token.actions.githubusercontent.com:aud\":\"sts.amazonaws.com\"},\"StringEqualsIgnoreCase\":{\"token.actions.githubusercontent.com:sub\":[\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/engine.yml@refs/heads/devlocal\",\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/engine.yml@refs/heads/dev\",\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/engine.yml@refs/heads/test\",\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/engine.yml@refs/heads/alpha\",\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/engine.yml@refs/heads/main\",\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/lambda-sync.yml@refs/heads/main\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Federated\":\"arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com\"}}],\"Version\":\"2012-10-17\"}"
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  inline_policy {
-    name   = "Struct8ProtectOwnTrust"
-    policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"iam:UpdateAssumeRolePolicy\",\"iam:UpdateRole\",\"iam:DeleteRole\",\"iam:PutRolePolicy\",\"iam:DeleteRolePolicy\",\"iam:AttachRolePolicy\",\"iam:DetachRolePolicy\",\"iam:PutRolePermissionsBoundary\",\"iam:DeleteRolePermissionsBoundary\"],\"Effect\":\"Deny\",\"Resource\":\"arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import\"},{\"Action\":[\"iam:DeleteOpenIDConnectProvider\",\"iam:UpdateOpenIDConnectProviderThumbprint\",\"iam:AddClientIDToOpenIDConnectProvider\",\"iam:RemoveClientIDFromOpenIDConnectProvider\"],\"Effect\":\"Deny\",\"Resource\":\"arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com\"},{\"Action\":[\"cloudtrail:StopLogging\",\"cloudtrail:DeleteTrail\",\"cloudtrail:UpdateTrail\",\"cloudtrail:PutEventSelectors\"],\"Effect\":\"Deny\",\"Resource\":\"*\"}]}"
-  }
-  tags = {
-    Name           = "Struct8-Gitops-Struct8-import"
-    State          = "Struct8-Gitops-Struct8-import"
-    Struct8User    = "Contato Struct"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-
-
-
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "oregon-net-vpc" {
