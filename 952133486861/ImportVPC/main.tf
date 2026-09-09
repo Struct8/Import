@@ -398,29 +398,11 @@ resource "aws_security_group_rule" "rule_oregon_asg_nodes_ingress_tcp_443" {
 ### CATEGORY: COMPUTE ###
 
 resource "aws_launch_template" "lt-0c672bbb12a42eab9" {
-  image_id        = "ami-08a26983500a08011"
-  key_name        = "oregon-asg-key"
-  name            = "oregon-asg-lt"
-  default_version = 1
-  instance_type   = "t3.micro"
-  user_data = base64encode(<<-EOFUData
-#!/bin/bash
-
-# --- BEGIN STRUCT8 VARIABLES ---
-cat << 'EOFENV' > /etc/struct8_env
-NAME    = "oregon-asg-group"
-REGION  = "${data.aws_region.current.region}"
-ACCOUNT = "${data.aws_caller_identity.current.account_id}"
-EOFENV
-cat /etc/struct8_env >> /etc/environment
-sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
-chmod +x /etc/profile.d/struct8_vars.sh
-chmod 644 /etc/struct8_env
-# --- END STRUCT8 VARIABLES ---
-
-
-EOFUData
-)
+  image_id               = "ami-08a26983500a08011"
+  key_name               = "oregon-asg-key"
+  name                   = "oregon-asg-lt"
+  default_version        = 1
+  instance_type          = "t3.micro"
   vpc_security_group_ids = [aws_security_group.oregon-asg-nodes.id]
   block_device_mappings {
     device_name = "/dev/xvda"
