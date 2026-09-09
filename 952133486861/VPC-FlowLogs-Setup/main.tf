@@ -38,6 +38,18 @@ resource "aws_iam_policy" "kinesis_firehose_delivery_stream_flowlogs-firehose_st
   policy      = data.aws_iam_policy_document.kinesis_firehose_delivery_stream_flowlogs-firehose_st_VPC-FlowLogs-Setup_doc.json
 }
 
+resource "aws_iam_role" "flowlogs-cw-role" {
+  name                  = "flowlogs-cw-role"
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "flowlogs-cw-role"
+    State          = "VPC-FlowLogs-Setup"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role" "flowlogs-firehose_role" {
   name = "flowlogs-firehose_role"
   assume_role_policy = jsonencode({
@@ -108,6 +120,7 @@ resource "aws_subnet" "public-subnet" {
 
 resource "aws_flow_log" "flowlog-to-cw" {
   vpc_id               = aws_vpc.vpc-flowlog.id
+  iam_role_arn         = aws_iam_role.flowlogs-cw-role.arn
   log_destination      = aws_cloudwatch_log_group.flowlogs-cw.arn
   log_destination_type = "cloud-watch-logs"
   traffic_type         = "ALL"
