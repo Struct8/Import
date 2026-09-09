@@ -87,7 +87,7 @@ resource "aws_iam_role_policy_attachment" "kinesis_firehose_delivery_stream_flow
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "vpc-flowlog" {
-  cidr_block       = "10.0.0.0/24"
+  cidr_block       = "10.3.0.0/16"
   instance_tenancy = "default"
   tags = {
     Name           = "vpc-flowlog"
@@ -99,7 +99,7 @@ resource "aws_vpc" "vpc-flowlog" {
 resource "aws_subnet" "private-subnet" {
   vpc_id                  = aws_vpc.vpc-flowlog.id
   availability_zone       = "ca-central-1a"
-  cidr_block              = "10.0.0.16/28"
+  cidr_block              = "10.3.0.16/28"
   map_public_ip_on_launch = false
   tags = {
     Name           = "private-subnet"
@@ -111,7 +111,7 @@ resource "aws_subnet" "private-subnet" {
 resource "aws_subnet" "public-subnet" {
   vpc_id                  = aws_vpc.vpc-flowlog.id
   availability_zone       = "ca-central-1a"
-  cidr_block              = "10.0.0.0/28"
+  cidr_block              = "10.3.0.0/28"
   map_public_ip_on_launch = true
   tags = {
     Name           = "public-subnet"
@@ -165,7 +165,7 @@ resource "aws_flow_log" "flowlog-to-s3" {
 resource "aws_s3_bucket" "flowlogs-bucket" {
   bucket              = "flowlogs-bucket-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
   bucket_namespace    = "account-regional"
-  force_destroy       = false
+  force_destroy       = true
   object_lock_enabled = false
   tags = {
     Name           = "flowlogs-bucket"
