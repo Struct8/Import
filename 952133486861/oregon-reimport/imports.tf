@@ -20,3 +20,8 @@ import {
   to = aws_cloudwatch_log_group.aws_vpc_flowlogs_oregon-asg
   id = "/aws/vpc/flowlogs/oregon-asg"
 }
+
+import {
+  to = aws_route.route_oregon-net-rt-public_to_pcx-0659fe288fc855311_10_30_0_0_16
+  id = "rtb-06de1785070037b00_10.30.0.0/16"
+}
