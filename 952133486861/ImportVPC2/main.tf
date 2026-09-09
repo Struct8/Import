@@ -30,18 +30,18 @@ resource "aws_vpc" "oregon-asg-vpc2" {
   instance_tenancy                     = "default"
   ipv6_cidr_block_network_border_group = "us-west-2"
   tags = {
-    Name           = "oregon-asg-vpc2"
-    State          = "Import-loop3"
-    Struct8Creator = "Contato Struct"
     Project        = "oregon-asg"
+    Name           = "oregon-asg-vpc2"
+    State          = "ImportVPC2"
+    Struct8Creator = "Contato Struct"
   }
 }
 
 resource "aws_egress_only_internet_gateway" "eigw-083dc9b065af87635" {
   vpc_id = aws_vpc.oregon-asg-vpc2.id
   tags = {
-    Name           = "oregon-asg-eoigw"
     Project        = "oregon-asg"
+    Name           = "oregon-asg-eoigw"
     State          = "ImportVPC2"
     Struct8Creator = "Contato Struct"
   }
