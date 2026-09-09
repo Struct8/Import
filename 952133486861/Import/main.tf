@@ -21,16 +21,27 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
+### EXTERNAL REFERENCES ###
 
-moved {
-  from = aws_route_table_association.aws_route_table_association_oregon_net_public_ay_oregon_net_rt_public
-  to   = aws_route_table_association.aws_route_table_association_oregon_net_public_a_oregon_net_rt_public
+data "aws_vpc" "oregon-asg-vpc2" {
+  filter {
+    name   = "tag:Name"
+    values = ["oregon-asg-vpc2"]
+  }
 }
 
-moved {
-  from = aws_subnet.oregon-net-public-ay
-  to   = aws_subnet.oregon-net-public-a
+data "aws_vpc" "oregon-net-vpc" {
+  filter {
+    name   = "tag:Name"
+    values = ["oregon-net-vpc"]
+  }
+}
+
+data "aws_route_table" "oregon-net-rt-public" {
+  filter {
+    name   = "tag:Name"
+    values = ["oregon-net-rt-public"]
+  }
 }
 
 
@@ -38,215 +49,27 @@ moved {
 
 ### CATEGORY: NETWORK ###
 
-resource "aws_vpc" "oregon-net-vpc" {
-  cidr_block           = "10.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  instance_tenancy     = "default"
+resource "aws_vpc_peering_connection" "pcx-0659fe288fc855311" {
+  peer_vpc_id = data.aws_vpc.oregon-asg-vpc2.id
+  vpc_id      = data.aws_vpc.oregon-net-vpc.id
+  accepter {
+    allow_remote_vpc_dns_resolution = false
+  }
+  requester {
+    allow_remote_vpc_dns_resolution = false
+  }
   tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-vpc"
-    State          = "Import"
+    Name           = "oregon-asg-pcx"
+    State          = "oregon-reimport"
     Struct8Creator = "Contato Struct"
+    Project        = "oregon-asg"
   }
 }
 
-resource "aws_vpc_endpoint" "oregon-net-vpce-s3_DynamoDB" {
-  service_name      = "com.amazonaws.us-west-2.dynamodb"
-  vpc_id            = aws_vpc.oregon-net-vpc.id
-  policy            = "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}"
-  route_table_ids   = [aws_route_table.oregon-net-rt-private-a.id, aws_route_table.oregon-net-rt-private-c.id, aws_route_table.oregon-net-rt-private-b.id]
-  vpc_endpoint_type = "Gateway"
-  tags = {
-    DifName        = "oregon-net-vpce-s3_DynamoDB"
-    Name           = "oregon-net-vpce-s3"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_vpc_endpoint" "oregon-net-vpce-s3_S3" {
-  service_name      = "com.amazonaws.us-west-2.s3"
-  vpc_id            = aws_vpc.oregon-net-vpc.id
-  policy            = "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"*\"}],\"Version\":\"2008-10-17\"}"
-  route_table_ids   = [aws_route_table.oregon-net-rt-private-a.id, aws_route_table.oregon-net-rt-private-c.id, aws_route_table.oregon-net-rt-private-b.id]
-  vpc_endpoint_type = "Gateway"
-  tags = {
-    DifName        = "oregon-net-vpce-s3"
-    Name           = "oregon-net-vpce-s3"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_subnet" "oregon-net-private-a" {
-  vpc_id                              = aws_vpc.oregon-net-vpc.id
-  availability_zone                   = "us-west-2a"
-  cidr_block                          = "10.20.10.0/24"
-  map_public_ip_on_launch             = false
-  private_dns_hostname_type_on_launch = "ip-name"
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-private-a"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_subnet" "oregon-net-private-b" {
-  vpc_id                              = aws_vpc.oregon-net-vpc.id
-  availability_zone                   = "us-west-2b"
-  cidr_block                          = "10.20.11.0/24"
-  map_public_ip_on_launch             = false
-  private_dns_hostname_type_on_launch = "ip-name"
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-private-b"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_subnet" "oregon-net-private-c" {
-  vpc_id                              = aws_vpc.oregon-net-vpc.id
-  availability_zone                   = "us-west-2c"
-  cidr_block                          = "10.20.12.0/24"
-  map_public_ip_on_launch             = false
-  private_dns_hostname_type_on_launch = "ip-name"
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-private-c"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_subnet" "oregon-net-public-a" {
-  vpc_id                              = aws_vpc.oregon-net-vpc.id
-  availability_zone                   = "us-west-2a"
-  cidr_block                          = "10.20.0.0/24"
-  map_public_ip_on_launch             = true
-  private_dns_hostname_type_on_launch = "ip-name"
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-public-a"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_subnet" "oregon-net-public-b" {
-  vpc_id                              = aws_vpc.oregon-net-vpc.id
-  availability_zone                   = "us-west-2b"
-  cidr_block                          = "10.20.1.0/24"
-  map_public_ip_on_launch             = true
-  private_dns_hostname_type_on_launch = "ip-name"
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-public-b"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_subnet" "oregon-net-public-c" {
-  vpc_id                              = aws_vpc.oregon-net-vpc.id
-  availability_zone                   = "us-west-2c"
-  cidr_block                          = "10.20.2.0/24"
-  map_public_ip_on_launch             = true
-  private_dns_hostname_type_on_launch = "ip-name"
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-public-c"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_internet_gateway" "oregon-net-igw" {
-  vpc_id = aws_vpc.oregon-net-vpc.id
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-igw"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_route" "route_oregon-net-rt-public_to_oregon-net-igw_ipv4" {
-  gateway_id             = aws_internet_gateway.oregon-net-igw.id
-  route_table_id         = aws_route_table.oregon-net-rt-public.id
-  destination_cidr_block = "0.0.0.0/0"
-}
-
-resource "aws_route_table" "oregon-net-rt-private-a" {
-  vpc_id = aws_vpc.oregon-net-vpc.id
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-rt-private-a"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_route_table" "oregon-net-rt-private-b" {
-  vpc_id = aws_vpc.oregon-net-vpc.id
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-rt-private-b"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_route_table" "oregon-net-rt-private-c" {
-  vpc_id = aws_vpc.oregon-net-vpc.id
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-rt-private-c"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_route_table" "oregon-net-rt-public" {
-  vpc_id = aws_vpc.oregon-net-vpc.id
-  tags = {
-    Project        = "oregon-net"
-    Name           = "oregon-net-rt-public"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_route_table_association" "aws_route_table_association_oregon_net_private_a_oregon_net_rt_private_a" {
-  route_table_id = aws_route_table.oregon-net-rt-private-a.id
-  subnet_id      = aws_subnet.oregon-net-private-a.id
-}
-
-resource "aws_route_table_association" "aws_route_table_association_oregon_net_private_b_oregon_net_rt_private_b" {
-  route_table_id = aws_route_table.oregon-net-rt-private-b.id
-  subnet_id      = aws_subnet.oregon-net-private-b.id
-}
-
-resource "aws_route_table_association" "aws_route_table_association_oregon_net_private_c_oregon_net_rt_private_c" {
-  route_table_id = aws_route_table.oregon-net-rt-private-c.id
-  subnet_id      = aws_subnet.oregon-net-private-c.id
-}
-
-resource "aws_route_table_association" "aws_route_table_association_oregon_net_public_a_oregon_net_rt_public" {
-  route_table_id = aws_route_table.oregon-net-rt-public.id
-  subnet_id      = aws_subnet.oregon-net-public-a.id
-}
-
-resource "aws_route_table_association" "aws_route_table_association_oregon_net_public_b_oregon_net_rt_public" {
-  route_table_id = aws_route_table.oregon-net-rt-public.id
-  subnet_id      = aws_subnet.oregon-net-public-b.id
-}
-
-resource "aws_route_table_association" "aws_route_table_association_oregon_net_public_c_oregon_net_rt_public" {
-  route_table_id = aws_route_table.oregon-net-rt-public.id
-  subnet_id      = aws_subnet.oregon-net-public-c.id
+resource "aws_route" "route_oregon-net-rt-public_to_pcx-0659fe288fc855311_10_3_0_0_16" {
+  route_table_id            = data.aws_route_table.oregon-net-rt-public.id
+  vpc_peering_connection_id = aws_vpc_peering_connection.pcx-0659fe288fc855311.id
+  destination_cidr_block    = "10.3.0.0/16"
 }
 
 
