@@ -1,8 +1,5 @@
 terraform {
   required_providers {
-    archive = {
-      source = "hashicorp/archive"
-    }
     aws = {
       source = "hashicorp/aws"
     }
@@ -25,6 +22,16 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
+
+resource "aws_iam_instance_profile" "Instance_profile" {
+  name = "Instance_profile"
+  role = aws_iam_role.Instance_role.name
+  tags = {
+    Name           = "Instance_profile"
+    State          = "VPC-FlowLogs-Setup"
+    Struct8Creator = "Contato Struct"
+  }
+}
 
 data "aws_iam_policy_document" "flow_log_flowlog-to-cw_st_VPC-FlowLogs-Setup_doc" {
   statement {
@@ -62,23 +69,8 @@ resource "aws_iam_policy" "kinesis_firehose_delivery_stream_flowlogs-firehose_st
   policy      = data.aws_iam_policy_document.kinesis_firehose_delivery_stream_flowlogs-firehose_st_VPC-FlowLogs-Setup_doc.json
 }
 
-data "aws_iam_policy_document" "lambda_function_Function2_st_VPC-FlowLogs-Setup_doc" {
-  statement {
-    sid       = "AllowAllResources"
-    effect    = "Allow"
-    actions   = ["ec2:AssignPrivateIpAddresses", "ec2:CreateNetworkInterface", "ec2:DeleteNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:UnassignPrivateIpAddresses"]
-    resources = ["*"]
-  }
-}
-
-resource "aws_iam_policy" "lambda_function_Function2_st_VPC-FlowLogs-Setup" {
-  name        = "lambda_function_Function2_st_VPC-FlowLogs-Setup"
-  description = "Access Policy for Function2"
-  policy      = data.aws_iam_policy_document.lambda_function_Function2_st_VPC-FlowLogs-Setup_doc.json
-}
-
-resource "aws_iam_role" "Function2_role" {
-  name = "Function2_role"
+resource "aws_iam_role" "Instance_role" {
+  name = "Instance_role"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -86,7 +78,7 @@ resource "aws_iam_role" "Function2_role" {
       "Action": "sts:AssumeRole",
       "Effect": "Allow",
       "Principal": {
-        "Service": "lambda.amazonaws.com"
+        "Service": "ec2.amazonaws.com"
       }
     }
   ]
@@ -95,7 +87,7 @@ resource "aws_iam_role" "Function2_role" {
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "Function2_role"
+    Name           = "Instance_role"
     State          = "VPC-FlowLogs-Setup"
     Struct8Creator = "Contato Struct"
   }
@@ -154,11 +146,6 @@ resource "aws_iam_role_policy_attachment" "flow_log_flowlog-to-cw_st_VPC-FlowLog
 resource "aws_iam_role_policy_attachment" "kinesis_firehose_delivery_stream_flowlogs-firehose_st_VPC-FlowLogs-Setup_attach" {
   policy_arn = aws_iam_policy.kinesis_firehose_delivery_stream_flowlogs-firehose_st_VPC-FlowLogs-Setup.arn
   role       = aws_iam_role.flowlogs-firehose_role.name
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_function_Function2_st_VPC-FlowLogs-Setup_attach" {
-  policy_arn = aws_iam_policy.lambda_function_Function2_st_VPC-FlowLogs-Setup.arn
-  role       = aws_iam_role.Function2_role.name
 }
 
 
@@ -229,19 +216,19 @@ resource "aws_route_table_association" "aws_route_table_association_public_subne
   subnet_id      = aws_subnet.public-subnet.id
 }
 
-resource "aws_security_group" "SG" {
-  name                   = "SG"
+resource "aws_security_group" "instance_Instance_group" {
+  name                   = "instance_Instance_group"
   vpc_id                 = aws_vpc.vpc-flowlog.id
   revoke_rules_on_delete = false
   tags = {
-    Name           = "SG"
+    Name           = "instance_Instance_group"
     State          = "VPC-FlowLogs-Setup"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_security_group_rule" "rule_SG_egress_all_protocols" {
-  security_group_id = aws_security_group.SG.id
+resource "aws_security_group_rule" "rule_instance_Instance_group_egress_all_protocols" {
+  security_group_id = aws_security_group.instance_Instance_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -392,42 +379,42 @@ resource "aws_s3_bucket_versioning" "flowlogs-bucket_versioning" {
 
 ### CATEGORY: COMPUTE ###
 
-data "archive_file" "archive_struct8-hub_Function2" {
-  output_path = "${path.module}/struct8-hub_Function2.zip"
-  source_dir  = "${path.module}/.external_modules/struct8-hub/prebuilt"
-  type        = "zip"
+data "aws_ami" "AMI_Data_Source_Instance" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-kernel-6.1-x86_64"]
+  }
 }
 
-resource "aws_lambda_function" "Function2" {
-  function_name                  = "Function2"
-  architectures                  = ["arm64"]
-  description                    = "Struct8 Hub prebuilt bundle, in the VPC so its ENI produces flow log records"
-  filename                       = data.archive_file.archive_struct8-hub_Function2.output_path
-  handler                        = "index.handler"
-  memory_size                    = 128
-  publish                        = false
-  reserved_concurrent_executions = -1
-  role                           = aws_iam_role.Function2_role.arn
-  runtime                        = "nodejs22.x"
-  source_code_hash               = data.archive_file.archive_struct8-hub_Function2.output_base64sha256
-  timeout                        = 10
-  environment {
-    variables = {
-    NAME    = "Function2"
-    REGION  = data.aws_region.current.region
-    ACCOUNT = data.aws_caller_identity.current.account_id
+resource "aws_instance" "Instance" {
+  subnet_id                   = aws_subnet.public-subnet.id
+  ami                         = data.aws_ami.AMI_Data_Source_Instance.id
+  associate_public_ip_address = false
+  iam_instance_profile        = aws_iam_instance_profile.Instance_profile.name
+  instance_type               = "t3.nano"
+  user_data_replace_on_change = false
+  vpc_security_group_ids      = [aws_security_group.instance_Instance_group.id]
+  lifecycle {
+    ignore_changes = [user_data]
   }
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+  root_block_device {
+    encrypted   = true
+    iops        = 3000
+    throughput  = 125
+    volume_size = 8
+    volume_type = "gp3"
   }
   tags = {
-    Name           = "Function2"
+    Name           = "Instance"
     State          = "VPC-FlowLogs-Setup"
     Struct8Creator = "Contato Struct"
   }
-  vpc_config {
-    security_group_ids = [aws_security_group.SG.id]
-    subnet_ids         = [aws_subnet.public-subnet.id]
-  }
-  depends_on = [aws_iam_role_policy_attachment.lambda_function_Function2_st_VPC-FlowLogs-Setup_attach]
 }
 
 
@@ -444,9 +431,10 @@ resource "aws_kinesis_firehose_delivery_stream" "flowlogs-firehose" {
     role_arn           = aws_iam_role.flowlogs-firehose_role.arn
   }
   tags = {
-    Name           = "flowlogs-firehose"
-    State          = "VPC-FlowLogs-Setup"
-    Struct8Creator = "Contato Struct"
+    LogDeliveryEnabled = true
+    Name               = "flowlogs-firehose"
+    State              = "VPC-FlowLogs-Setup"
+    Struct8Creator     = "Contato Struct"
   }
   depends_on = [aws_iam_role_policy_attachment.kinesis_firehose_delivery_stream_flowlogs-firehose_st_VPC-FlowLogs-Setup_attach]
 }
