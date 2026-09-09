@@ -21,13 +21,23 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### RENAMES ###
+
+moved {
+  from = aws_instance.Instance
+  to   = aws_instance.Instance_flow_logs
+}
+
+
+
+
 ### CATEGORY: IAM ###
 
-resource "aws_iam_instance_profile" "Instance_profile" {
-  name = "Instance_profile"
-  role = aws_iam_role.Instance_role.name
+resource "aws_iam_instance_profile" "Instance_flow_logs_profile" {
+  name = "Instance_flow_logs_profile"
+  role = aws_iam_role.Instance_flow_logs_role.name
   tags = {
-    Name           = "Instance_profile"
+    Name           = "Instance_flow_logs_profile"
     State          = "VPC-FlowLogs-Setup"
     Struct8Creator = "Contato Struct"
   }
@@ -69,8 +79,8 @@ resource "aws_iam_policy" "kinesis_firehose_delivery_stream_flowlogs-firehose_st
   policy      = data.aws_iam_policy_document.kinesis_firehose_delivery_stream_flowlogs-firehose_st_VPC-FlowLogs-Setup_doc.json
 }
 
-resource "aws_iam_role" "Instance_role" {
-  name = "Instance_role"
+resource "aws_iam_role" "Instance_flow_logs_role" {
+  name = "Instance_flow_logs_role"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -87,7 +97,7 @@ resource "aws_iam_role" "Instance_role" {
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "Instance_role"
+    Name           = "Instance_flow_logs_role"
     State          = "VPC-FlowLogs-Setup"
     Struct8Creator = "Contato Struct"
   }
@@ -216,19 +226,19 @@ resource "aws_route_table_association" "aws_route_table_association_public_subne
   subnet_id      = aws_subnet.public-subnet.id
 }
 
-resource "aws_security_group" "instance_Instance_group" {
-  name                   = "instance_Instance_group"
+resource "aws_security_group" "instance_Instance_flow_logs_group" {
+  name                   = "instance_Instance_flow_logs_group"
   vpc_id                 = aws_vpc.vpc-flowlog.id
   revoke_rules_on_delete = false
   tags = {
-    Name           = "instance_Instance_group"
+    Name           = "instance_Instance_flow_logs_group"
     State          = "VPC-FlowLogs-Setup"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_security_group_rule" "rule_instance_Instance_group_egress_all_protocols" {
-  security_group_id = aws_security_group.instance_Instance_group.id
+resource "aws_security_group_rule" "rule_instance_Instance_flow_logs_group_egress_all_protocols" {
+  security_group_id = aws_security_group.instance_Instance_flow_logs_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -379,7 +389,7 @@ resource "aws_s3_bucket_versioning" "flowlogs-bucket_versioning" {
 
 ### CATEGORY: COMPUTE ###
 
-data "aws_ami" "AMI_Data_Source_Instance" {
+data "aws_ami" "AMI_Data_Source_Instance_flow_logs" {
   most_recent = true
   owners      = ["amazon"]
   filter {
@@ -388,14 +398,14 @@ data "aws_ami" "AMI_Data_Source_Instance" {
   }
 }
 
-resource "aws_instance" "Instance" {
+resource "aws_instance" "Instance_flow_logs" {
   subnet_id                   = aws_subnet.public-subnet.id
-  ami                         = data.aws_ami.AMI_Data_Source_Instance.id
+  ami                         = data.aws_ami.AMI_Data_Source_Instance_flow_logs.id
   associate_public_ip_address = false
-  iam_instance_profile        = aws_iam_instance_profile.Instance_profile.name
+  iam_instance_profile        = aws_iam_instance_profile.Instance_flow_logs_profile.name
   instance_type               = "t3.nano"
   user_data_replace_on_change = false
-  vpc_security_group_ids      = [aws_security_group.instance_Instance_group.id]
+  vpc_security_group_ids      = [aws_security_group.instance_Instance_flow_logs_group.id]
   lifecycle {
     ignore_changes = [user_data]
   }
@@ -411,7 +421,7 @@ resource "aws_instance" "Instance" {
     volume_type = "gp3"
   }
   tags = {
-    Name           = "Instance"
+    Name           = "Instance_flow_logs"
     State          = "VPC-FlowLogs-Setup"
     Struct8Creator = "Contato Struct"
   }
