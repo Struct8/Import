@@ -1,7 +1,17 @@
 {
-  "external_repositories": [],
+  "external_repositories": [
+    {
+      "repo_name": "struct8-hub",
+      "org": "Struct8",
+      "branch": "main",
+      "target_dir": ".external_modules/struct8-hub",
+      "folders": [
+        "prebuilt"
+      ]
+    }
+  ],
   "action": "apply",
-  "trigger_id": "1788920696323",
+  "trigger_id": "1788952055323",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
