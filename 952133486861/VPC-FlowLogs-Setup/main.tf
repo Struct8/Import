@@ -21,16 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
-
-moved {
-  from = aws_instance.Instance
-  to   = aws_instance.Instance_flow_logs
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "Instance_flow_logs_profile" {
