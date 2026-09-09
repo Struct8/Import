@@ -24,7 +24,7 @@ data "aws_region" "current" {}
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "oregon-net-vpc" {
-  cidr_block           = "10.3.0.0/16"
+  cidr_block           = "10.20.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
   instance_tenancy     = "default"
@@ -69,7 +69,7 @@ resource "aws_vpc_endpoint" "oregon-net-vpce-s3_S3" {
 resource "aws_subnet" "oregon-net-private-a" {
   vpc_id                              = aws_vpc.oregon-net-vpc.id
   availability_zone                   = "us-west-2a"
-  cidr_block                          = "10.3.5.0/24"
+  cidr_block                          = "10.20.10.0/24"
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -83,7 +83,7 @@ resource "aws_subnet" "oregon-net-private-a" {
 resource "aws_subnet" "oregon-net-private-b" {
   vpc_id                              = aws_vpc.oregon-net-vpc.id
   availability_zone                   = "us-west-2b"
-  cidr_block                          = "10.3.3.0/24"
+  cidr_block                          = "10.20.11.0/24"
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -97,7 +97,7 @@ resource "aws_subnet" "oregon-net-private-b" {
 resource "aws_subnet" "oregon-net-private-c" {
   vpc_id                              = aws_vpc.oregon-net-vpc.id
   availability_zone                   = "us-west-2c"
-  cidr_block                          = "10.3.1.0/24"
+  cidr_block                          = "10.20.12.0/24"
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -111,7 +111,7 @@ resource "aws_subnet" "oregon-net-private-c" {
 resource "aws_subnet" "oregon-net-public-a" {
   vpc_id                              = aws_vpc.oregon-net-vpc.id
   availability_zone                   = "us-west-2a"
-  cidr_block                          = "10.3.4.0/24"
+  cidr_block                          = "10.20.0.0/24"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -125,7 +125,7 @@ resource "aws_subnet" "oregon-net-public-a" {
 resource "aws_subnet" "oregon-net-public-b" {
   vpc_id                              = aws_vpc.oregon-net-vpc.id
   availability_zone                   = "us-west-2b"
-  cidr_block                          = "10.3.2.0/24"
+  cidr_block                          = "10.20.1.0/24"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -139,7 +139,7 @@ resource "aws_subnet" "oregon-net-public-b" {
 resource "aws_subnet" "oregon-net-public-c" {
   vpc_id                              = aws_vpc.oregon-net-vpc.id
   availability_zone                   = "us-west-2c"
-  cidr_block                          = "10.3.0.0/24"
+  cidr_block                          = "10.20.2.0/24"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
