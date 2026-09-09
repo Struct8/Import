@@ -25,7 +25,7 @@ data "aws_region" "current" {}
 
 resource "aws_vpc" "oregon-asg-vpc2" {
   assign_generated_ipv6_cidr_block     = true
-  cidr_block                           = "10.4.0.0/16"
+  cidr_block                           = "10.30.0.0/16"
   enable_dns_support                   = true
   instance_tenancy                     = "default"
   ipv6_cidr_block_network_border_group = "us-west-2"
