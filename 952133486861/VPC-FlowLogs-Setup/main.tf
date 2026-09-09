@@ -154,8 +154,11 @@ resource "aws_iam_role_policy_attachment" "kinesis_firehose_delivery_stream_flow
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "vpc-flowlog" {
-  cidr_block       = "10.3.0.0/16"
-  instance_tenancy = "default"
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "10.3.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
+  instance_tenancy                 = "default"
   tags = {
     Name           = "vpc-flowlog"
     State          = "VPC-FlowLogs-Setup"
@@ -164,10 +167,13 @@ resource "aws_vpc" "vpc-flowlog" {
 }
 
 resource "aws_subnet" "private-subnet" {
-  vpc_id                  = aws_vpc.vpc-flowlog.id
-  availability_zone       = "ca-central-1a"
-  cidr_block              = "10.3.0.16/28"
-  map_public_ip_on_launch = false
+  vpc_id                                         = aws_vpc.vpc-flowlog.id
+  assign_ipv6_address_on_creation                = true
+  availability_zone                              = "ca-central-1a"
+  enable_resource_name_dns_aaaa_record_on_launch = true
+  ipv6_cidr_block                                = cidrsubnet(aws_vpc.vpc-flowlog.ipv6_cidr_block, 8, 1)
+  ipv6_native                                    = true
+  private_dns_hostname_type_on_launch            = "resource-name"
   tags = {
     Name           = "private-subnet"
     State          = "VPC-FlowLogs-Setup"
@@ -176,10 +182,13 @@ resource "aws_subnet" "private-subnet" {
 }
 
 resource "aws_subnet" "public-subnet" {
-  vpc_id                  = aws_vpc.vpc-flowlog.id
-  availability_zone       = "ca-central-1a"
-  cidr_block              = "10.3.0.0/28"
-  map_public_ip_on_launch = true
+  vpc_id                                         = aws_vpc.vpc-flowlog.id
+  assign_ipv6_address_on_creation                = true
+  availability_zone                              = "ca-central-1a"
+  enable_resource_name_dns_aaaa_record_on_launch = true
+  ipv6_cidr_block                                = cidrsubnet(aws_vpc.vpc-flowlog.ipv6_cidr_block, 8, 0)
+  ipv6_native                                    = true
+  private_dns_hostname_type_on_launch            = "resource-name"
   tags = {
     Name           = "public-subnet"
     State          = "VPC-FlowLogs-Setup"
@@ -196,10 +205,10 @@ resource "aws_internet_gateway" "flowlog-igw" {
   }
 }
 
-resource "aws_route" "route_public-rt_to_flowlog-igw_ipv4" {
-  gateway_id             = aws_internet_gateway.flowlog-igw.id
-  route_table_id         = aws_route_table.public-rt.id
-  destination_cidr_block = "0.0.0.0/0"
+resource "aws_route" "route_public-rt_to_flowlog-igw_ipv6" {
+  gateway_id                  = aws_internet_gateway.flowlog-igw.id
+  route_table_id              = aws_route_table.public-rt.id
+  destination_ipv6_cidr_block = "::/0"
 }
 
 resource "aws_route_table" "public-rt" {
@@ -231,6 +240,7 @@ resource "aws_security_group_rule" "rule_instance_Instance_flow_logs_group_egres
   security_group_id = aws_security_group.instance_Instance_flow_logs_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
@@ -263,7 +273,7 @@ resource "aws_flow_log" "flowlog-to-firehose" {
 }
 
 resource "aws_flow_log" "flowlog-to-s3" {
-  vpc_id               = aws_vpc.vpc-flowlog.id
+  subnet_id            = aws_subnet.public-subnet.id
   log_destination      = aws_s3_bucket.flowlogs-bucket.arn
   log_destination_type = "s3"
   traffic_type         = "ALL"
@@ -394,14 +404,16 @@ resource "aws_instance" "Instance_flow_logs" {
   associate_public_ip_address = false
   iam_instance_profile        = aws_iam_instance_profile.Instance_flow_logs_profile.name
   instance_type               = "t3.nano"
+  ipv6_address_count          = 1
   user_data_replace_on_change = false
   vpc_security_group_ids      = [aws_security_group.instance_Instance_flow_logs_group.id]
   lifecycle {
     ignore_changes = [user_data]
   }
   metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
+    http_endpoint      = "enabled"
+    http_protocol_ipv6 = "enabled"
+    http_tokens        = "required"
   }
   root_block_device {
     encrypted   = true
