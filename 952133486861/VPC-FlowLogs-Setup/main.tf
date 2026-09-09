@@ -39,10 +39,23 @@ resource "aws_iam_policy" "kinesis_firehose_delivery_stream_flowlogs-firehose_st
 }
 
 resource "aws_iam_role" "flowlogs-cw-role" {
+  # ajuste manual · assume_role_policy — The role->flow_log integration (permission_block_) generates the delivery permission but not the trust policy. VPC Flow Logs to CloudWatch requires the role to trust vpc-flow-logs.amazonaws.com.
   name                  = "flowlogs-cw-role"
   force_detach_policies = false
   max_session_duration  = 3600
   path                  = "/"
+  assume_role_policy {
+    __jsonencode__ {
+      Version = "2012-10-17"
+      Statement {
+        Effect = "Allow"
+        Principal {
+          Service = "vpc-flow-logs.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    }
+  }
   tags = {
     Name           = "flowlogs-cw-role"
     State          = "VPC-FlowLogs-Setup"
