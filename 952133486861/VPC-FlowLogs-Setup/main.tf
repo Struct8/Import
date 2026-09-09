@@ -1,5 +1,8 @@
 terraform {
   required_providers {
+    archive = {
+      source = "hashicorp/archive"
+    }
     aws = {
       source = "hashicorp/aws"
     }
@@ -59,6 +62,45 @@ resource "aws_iam_policy" "kinesis_firehose_delivery_stream_flowlogs-firehose_st
   policy      = data.aws_iam_policy_document.kinesis_firehose_delivery_stream_flowlogs-firehose_st_VPC-FlowLogs-Setup_doc.json
 }
 
+data "aws_iam_policy_document" "lambda_function_Function2_st_VPC-FlowLogs-Setup_doc" {
+  statement {
+    sid       = "AllowAllResources"
+    effect    = "Allow"
+    actions   = ["ec2:AssignPrivateIpAddresses", "ec2:CreateNetworkInterface", "ec2:DeleteNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:UnassignPrivateIpAddresses"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_Function2_st_VPC-FlowLogs-Setup" {
+  name        = "lambda_function_Function2_st_VPC-FlowLogs-Setup"
+  description = "Access Policy for Function2"
+  policy      = data.aws_iam_policy_document.lambda_function_Function2_st_VPC-FlowLogs-Setup_doc.json
+}
+
+resource "aws_iam_role" "Function2_role" {
+  name = "Function2_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "Function2_role"
+    State          = "VPC-FlowLogs-Setup"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role" "flowlogs-firehose_role" {
   name = "flowlogs-firehose_role"
   assume_role_policy = jsonencode({
@@ -114,6 +156,11 @@ resource "aws_iam_role_policy_attachment" "kinesis_firehose_delivery_stream_flow
   role       = aws_iam_role.flowlogs-firehose_role.name
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_function_Function2_st_VPC-FlowLogs-Setup_attach" {
+  policy_arn = aws_iam_policy.lambda_function_Function2_st_VPC-FlowLogs-Setup.arn
+  role       = aws_iam_role.Function2_role.name
+}
+
 
 
 
@@ -151,6 +198,55 @@ resource "aws_subnet" "public-subnet" {
     State          = "VPC-FlowLogs-Setup"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_internet_gateway" "flowlog-igw" {
+  vpc_id = aws_vpc.vpc-flowlog.id
+  tags = {
+    Name           = "flowlog-igw"
+    State          = "VPC-FlowLogs-Setup"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_route" "route_public-rt_to_flowlog-igw_ipv4" {
+  gateway_id             = aws_internet_gateway.flowlog-igw.id
+  route_table_id         = aws_route_table.public-rt.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+resource "aws_route_table" "public-rt" {
+  vpc_id = aws_vpc.vpc-flowlog.id
+  tags = {
+    Name           = "public-rt"
+    State          = "VPC-FlowLogs-Setup"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_route_table_association" "aws_route_table_association_public_subnet_public_rt" {
+  route_table_id = aws_route_table.public-rt.id
+  subnet_id      = aws_subnet.public-subnet.id
+}
+
+resource "aws_security_group" "SG" {
+  name                   = "SG"
+  vpc_id                 = aws_vpc.vpc-flowlog.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "SG"
+    State          = "VPC-FlowLogs-Setup"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group_rule" "rule_SG_egress_all_protocols" {
+  security_group_id = aws_security_group.SG.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
 }
 
 resource "aws_flow_log" "flowlog-to-cw" {
@@ -289,6 +385,49 @@ resource "aws_s3_bucket_versioning" "flowlogs-bucket_versioning" {
     mfa_delete = "Disabled"
     status     = "Suspended"
   }
+}
+
+
+
+
+### CATEGORY: COMPUTE ###
+
+data "archive_file" "archive_struct8-hub_Function2" {
+  output_path = "${path.module}/struct8-hub_Function2.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-hub/prebuilt"
+  type        = "zip"
+}
+
+resource "aws_lambda_function" "Function2" {
+  function_name                  = "Function2"
+  architectures                  = ["arm64"]
+  description                    = "Struct8 Hub prebuilt bundle, in the VPC so its ENI produces flow log records"
+  filename                       = data.archive_file.archive_struct8-hub_Function2.output_path
+  handler                        = "index.handler"
+  memory_size                    = 128
+  publish                        = false
+  reserved_concurrent_executions = -1
+  role                           = aws_iam_role.Function2_role.arn
+  runtime                        = "nodejs22.x"
+  source_code_hash               = data.archive_file.archive_struct8-hub_Function2.output_base64sha256
+  timeout                        = 10
+  environment {
+    variables = {
+    NAME    = "Function2"
+    REGION  = data.aws_region.current.region
+    ACCOUNT = data.aws_caller_identity.current.account_id
+  }
+  }
+  tags = {
+    Name           = "Function2"
+    State          = "VPC-FlowLogs-Setup"
+    Struct8Creator = "Contato Struct"
+  }
+  vpc_config {
+    security_group_ids = [aws_security_group.SG.id]
+    subnet_ids         = [aws_subnet.public-subnet.id]
+  }
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_Function2_st_VPC-FlowLogs-Setup_attach]
 }
 
 
