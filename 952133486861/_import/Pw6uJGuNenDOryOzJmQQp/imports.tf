@@ -25,18 +25,18 @@ import {
 }
 
 import {
-  to = aws_egress_only_internet_gateway.eigw-083dc9b065af87635
-  id = "eigw-083dc9b065af87635"
+  to = aws_internet_gateway.oregon-net2-igw
+  id = "igw-077c438d94d10e59b"
 }
 
 import {
-  to = aws_network_acl.oregon-asg-nacl
-  id = "acl-09b3a9f00f5142610"
+  to = aws_internet_gateway.oregon-net-igw
+  id = "igw-0fc6487d32e5b1fea"
 }
 
 import {
-  to = aws_network_acl.oregon-net2-nacl
-  id = "acl-04ffdad4553bd4409"
+  to = aws_launch_template.lt-0c672bbb12a42eab9
+  id = "lt-0c672bbb12a42eab9"
 }
 
 import {
@@ -77,6 +77,66 @@ import {
 import {
   to = aws_security_group.oregon-net2-web
   id = "sg-0f1a0f13ed322cb04"
+}
+
+import {
+  to = aws_network_acl.oregon-asg-nacl
+  id = "acl-09b3a9f00f5142610"
+}
+
+import {
+  to = aws_network_acl.oregon-net2-nacl
+  id = "acl-04ffdad4553bd4409"
+}
+
+import {
+  to = aws_vpc.oregon-net-vpc
+  id = "vpc-0a43534eefc21fcb1"
+}
+
+import {
+  to = aws_vpc.oregon-asg-vpc2
+  id = "vpc-0b2cb48f01ccce0c2"
+}
+
+import {
+  to = aws_vpc_endpoint.vpce-07b8c24111b4f21ca
+  id = "vpce-07b8c24111b4f21ca"
+}
+
+import {
+  to = aws_vpc_endpoint.vpce-01809868ad046f260
+  id = "vpce-01809868ad046f260"
+}
+
+import {
+  to = aws_vpc_endpoint.vpce-0cde8acf19edb615d
+  id = "vpce-0cde8acf19edb615d"
+}
+
+import {
+  to = aws_vpc_peering_connection.pcx-0659fe288fc855311
+  id = "pcx-0659fe288fc855311"
+}
+
+import {
+  to = aws_iam_openid_connect_provider.token_actions_githubusercontent_com
+  id = "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com"
+}
+
+import {
+  to = aws_cloudwatch_log_group.aws_vpc_flowlogs_oregon-asg
+  id = "/aws/vpc/flowlogs/oregon-asg"
+}
+
+import {
+  to = aws_autoscaling_group.oregon-asg-group
+  id = "oregon-asg-group"
+}
+
+import {
+  to = aws_egress_only_internet_gateway.eigw-083dc9b065af87635
+  id = "eigw-083dc9b065af87635"
 }
 
 import {
@@ -125,78 +185,13 @@ import {
 }
 
 import {
-  to = aws_vpc.oregon-net-vpc
-  id = "vpc-0a43534eefc21fcb1"
-}
-
-import {
-  to = aws_vpc.oregon-asg-vpc2
-  id = "vpc-0b2cb48f01ccce0c2"
-}
-
-import {
-  to = aws_vpc_endpoint.vpce-07b8c24111b4f21ca
-  id = "vpce-07b8c24111b4f21ca"
-}
-
-import {
-  to = aws_vpc_endpoint.vpce-01809868ad046f260
-  id = "vpce-01809868ad046f260"
-}
-
-import {
-  to = aws_vpc_endpoint.vpce-0cde8acf19edb615d
-  id = "vpce-0cde8acf19edb615d"
-}
-
-import {
-  to = aws_vpc_peering_connection.pcx-0659fe288fc855311
-  id = "pcx-0659fe288fc855311"
-}
-
-import {
-  to = aws_iam_openid_connect_provider.token_actions_githubusercontent_com
-  id = "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com"
-}
-
-import {
   to = aws_iam_role.Struct8-Gitops-Struct8-import
   id = "Struct8-Gitops-Struct8-import"
 }
 
 import {
-  to = aws_cloudwatch_log_group.aws_vpc_flowlogs_oregon-asg
-  id = "/aws/vpc/flowlogs/oregon-asg"
-}
-
-import {
-  to = aws_autoscaling_group.oregon-asg-group
-  id = "oregon-asg-group"
-}
-
-import {
-  to = aws_internet_gateway.oregon-net2-igw
-  id = "igw-077c438d94d10e59b"
-}
-
-import {
-  to = aws_internet_gateway.oregon-net-igw
-  id = "igw-0fc6487d32e5b1fea"
-}
-
-import {
-  to = aws_launch_template.lt-0c672bbb12a42eab9
-  id = "lt-0c672bbb12a42eab9"
-}
-
-import {
   to = aws_route_table_association.subnet-0592d1e9583f7bbcb_rtb-060eaf458d6754e72
   id = "subnet-0592d1e9583f7bbcb/rtb-060eaf458d6754e72"
-}
-
-import {
-  to = aws_route_table_association.subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00
-  id = "subnet-03a4a9adc0cb3b101/rtb-06de1785070037b00"
 }
 
 import {
@@ -210,13 +205,18 @@ import {
 }
 
 import {
-  to = aws_route_table_association.subnet-02517976ff0ad9701_rtb-0c705143390c67c84
-  id = "subnet-02517976ff0ad9701/rtb-0c705143390c67c84"
+  to = aws_route_table_association.subnet-03a4a9adc0cb3b101_rtb-06de1785070037b00
+  id = "subnet-03a4a9adc0cb3b101/rtb-06de1785070037b00"
 }
 
 import {
   to = aws_route_table_association.subnet-0f8ad4914ec119bb0_rtb-0c705143390c67c84
   id = "subnet-0f8ad4914ec119bb0/rtb-0c705143390c67c84"
+}
+
+import {
+  to = aws_route_table_association.subnet-02517976ff0ad9701_rtb-0c705143390c67c84
+  id = "subnet-02517976ff0ad9701/rtb-0c705143390c67c84"
 }
 
 import {
