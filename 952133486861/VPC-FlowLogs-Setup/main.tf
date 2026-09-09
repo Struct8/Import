@@ -212,6 +212,11 @@ resource "aws_kinesis_firehose_delivery_stream" "flowlogs-firehose" {
   # ajuste manual · kinesis_source_configuration — Flow Logs delivers to Firehose via Direct PUT, not a Kinesis stream source. The generator emits an empty kinesis_source_configuration block that fails with 'kinesis_stream_arn is required'. Removing it so the stream uses Direct PUT.
   name        = "flowlogs-firehose"
   destination = "extended_s3"
+  extended_s3_configuration {
+    bucket_arn         = aws_s3_bucket.flowlogs-bucket.arn
+    compression_format = "GZIP"
+    role_arn           = aws_iam_role.flowlogs-firehose_role.arn
+  }
   tags = {
     Name           = "flowlogs-firehose"
     State          = "VPC-FlowLogs-Setup"
