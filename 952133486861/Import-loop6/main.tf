@@ -193,7 +193,6 @@ resource "aws_internet_gateway" "oregon-net-igw" {
 }
 
 resource "aws_egress_only_internet_gateway" "eigw-083dc9b065af87635" {
-  id     = "eigw-083dc9b065af87635"
   vpc_id = aws_vpc.oregon-asg-vpc2.id
   tags = {
     Name           = "oregon-asg-eoigw"
@@ -213,12 +212,6 @@ resource "aws_route" "route_oregon-net-rt-public_to_pcx-0659fe288fc855311_10_30_
   route_table_id            = aws_route_table.oregon-net-rt-public.id
   vpc_peering_connection_id = aws_vpc_peering_connection.pcx-0659fe288fc855311.id
   destination_cidr_block    = "10.30.0.0/16"
-}
-
-resource "aws_route" "route_oregon-net-rt-public_to_pcx-0659fe288fc855311_ipv6" {
-  route_table_id              = aws_route_table.oregon-net-rt-public.id
-  vpc_peering_connection_id   = aws_vpc_peering_connection.pcx-0659fe288fc855311.id
-  destination_ipv6_cidr_block = aws_vpc.oregon-asg-vpc2.ipv6_cidr_block
 }
 
 resource "aws_route_table" "oregon-net-rt-private-a" {
@@ -493,8 +486,6 @@ resource "aws_cloudwatch_metric_alarm" "TargetTracking-oregon-asg-group-AlarmHig
   alarm_actions       = ["arn:aws:autoscaling:us-west-2:952133486861:scalingPolicy:e75439c3-3434-4882-82ee-10d9b2f53968:autoScalingGroupName/oregon-asg-group:policyName/oregon-asg-cpu60"]
   alarm_description   = "DO NOT EDIT OR DELETE. For TargetTrackingScaling policy arn:aws:autoscaling:us-west-2:952133486861:scalingPolicy:e75439c3-3434-4882-82ee-10d9b2f53968:autoScalingGroupName/oregon-asg-group:policyName/oregon-asg-cpu60."
   comparison_operator = "GreaterThanThreshold"
-  datapoints_to_alarm = 0
-  evaluation_interval = 0
   evaluation_periods  = 3
   namespace           = "AWS/EC2"
   period              = 60
@@ -516,8 +507,6 @@ resource "aws_cloudwatch_metric_alarm" "TargetTracking-oregon-asg-group-AlarmLow
   alarm_actions       = ["arn:aws:autoscaling:us-west-2:952133486861:scalingPolicy:e75439c3-3434-4882-82ee-10d9b2f53968:autoScalingGroupName/oregon-asg-group:policyName/oregon-asg-cpu60"]
   alarm_description   = "DO NOT EDIT OR DELETE. For TargetTrackingScaling policy arn:aws:autoscaling:us-west-2:952133486861:scalingPolicy:e75439c3-3434-4882-82ee-10d9b2f53968:autoScalingGroupName/oregon-asg-group:policyName/oregon-asg-cpu60."
   comparison_operator = "LessThanThreshold"
-  datapoints_to_alarm = 0
-  evaluation_interval = 0
   evaluation_periods  = 15
   namespace           = "AWS/EC2"
   period              = 60
