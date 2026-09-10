@@ -712,9 +712,8 @@ EOFUData
     }
   }
   metadata_options {
-    http_endpoint               = "enabled"
-    http_put_response_hop_limit = 0
-    http_tokens                 = "required"
+    http_endpoint = "enabled"
+    http_tokens   = "required"
   }
   tag_specifications {
     resource_type = "volume"
