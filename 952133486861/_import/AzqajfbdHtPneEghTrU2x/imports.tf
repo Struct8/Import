@@ -15,6 +15,36 @@ provider "aws" {
 }
 
 import {
+  to = aws_cloudfront_cache_policy.r_658327ea-f89d-4fab-a63d-7e88639e58f6
+  id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+}
+
+import {
+  to = aws_cloudfront_cache_policy.d94ba52f-d2dd-457b-be05-c39fdffa4887
+  id = "d94ba52f-d2dd-457b-be05-c39fdffa4887"
+}
+
+import {
+  to = aws_cloudfront_function.viewer-request-kvs1
+  id = "arn:aws:cloudfront::952133486861:function/viewer-request-kvs1"
+}
+
+import {
+  to = aws_cloudfront_public_key.K333AWWOV9UGSL
+  id = "K333AWWOV9UGSL"
+}
+
+import {
+  to = aws_cloudfront_origin_request_policy.ac6c4267-205d-4536-a7fa-2031976f9a9c
+  id = "ac6c4267-205d-4536-a7fa-2031976f9a9c"
+}
+
+import {
+  to = aws_cloudfront_response_headers_policy.r_2725d2ab-6e3b-4264-b49a-ae24ee6d2800
+  id = "2725d2ab-6e3b-4264-b49a-ae24ee6d2800"
+}
+
+import {
   to = aws_cloudfront_distribution.cdn-protegida
   id = "E2ZGVTSXA8U5X0"
 }
@@ -25,33 +55,8 @@ import {
 }
 
 import {
-  to = aws_cloudfront_function.viewer-request-kvs1
-  id = "arn:aws:cloudfront::952133486861:function/viewer-request-kvs1"
-}
-
-import {
-  to = aws_cloudfront_key_group.db24cd5b-8958-4a8d-b9df-9b12ae1e2710
-  id = "db24cd5b-8958-4a8d-b9df-9b12ae1e2710"
-}
-
-import {
-  to = aws_cloudfront_origin_request_policy.ac6c4267-205d-4536-a7fa-2031976f9a9c
-  id = "ac6c4267-205d-4536-a7fa-2031976f9a9c"
-}
-
-import {
-  to = aws_cloudfront_public_key.K333AWWOV9UGSL
-  id = "K333AWWOV9UGSL"
-}
-
-import {
-  to = aws_cloudfront_response_headers_policy.r_2725d2ab-6e3b-4264-b49a-ae24ee6d2800
-  id = "2725d2ab-6e3b-4264-b49a-ae24ee6d2800"
-}
-
-import {
-  to = aws_iam_openid_connect_provider.token_actions_githubusercontent_com
-  id = "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com"
+  to = aws_iam_role.Struct8-Gitops-Struct8-import
+  id = "Struct8-Gitops-Struct8-import"
 }
 
 import {
@@ -60,23 +65,18 @@ import {
 }
 
 import {
-  to = aws_iam_role.Struct8-Gitops-Struct8-import
-  id = "Struct8-Gitops-Struct8-import"
-}
-
-import {
   to = aws_s3_bucket.origem-cf-validacao
   id = "origem-cf-validacao"
 }
 
 import {
-  to = aws_cloudfront_cache_policy.r_658327ea-f89d-4fab-a63d-7e88639e58f6
-  id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+  to = aws_cloudfront_key_group.db24cd5b-8958-4a8d-b9df-9b12ae1e2710
+  id = "db24cd5b-8958-4a8d-b9df-9b12ae1e2710"
 }
 
 import {
-  to = aws_cloudfront_cache_policy.d94ba52f-d2dd-457b-be05-c39fdffa4887
-  id = "d94ba52f-d2dd-457b-be05-c39fdffa4887"
+  to = aws_iam_openid_connect_provider.token_actions_githubusercontent_com
+  id = "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com"
 }
 
 import {
