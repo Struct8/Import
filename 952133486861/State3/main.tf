@@ -21,21 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
-
-moved {
-  from = aws_route_table_association.aws_route_table_association_public_subnet_b_public_route_table
-  to   = aws_route_table_association.aws_route_table_association_public_subnet_bx_public_route_table
-}
-
-moved {
-  from = aws_subnet.public-subnet-b
-  to   = aws_subnet.public-subnet-bx
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "nat-instance_profile" {
@@ -445,6 +430,13 @@ resource "aws_instance" "nat-instance" {
   }
   enclave_options {
     enabled = false
+  }
+  instance_market_options {
+    market_type = "spot"
+    spot_options {
+      instance_interruption_behavior = "terminate"
+      spot_instance_type             = "one-time"
+    }
   }
   lifecycle {
     ignore_changes = [user_data]
