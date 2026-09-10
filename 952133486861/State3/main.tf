@@ -732,12 +732,12 @@ EOFUData
 resource "aws_autoscaling_group" "web-server-asg" {
   name                      = "web-server-asg"
   default_instance_warmup   = 0
-  desired_capacity          = 1
+  desired_capacity          = 3
   health_check_grace_period = 180
   health_check_type         = "ELB"
   max_instance_lifetime     = 0
-  max_size                  = 1
-  min_size                  = 1
+  max_size                  = 3
+  min_size                  = 3
   target_group_arns         = [aws_lb_target_group.web-target-group.arn]
   vpc_zone_identifier       = [aws_subnet.private-subnet-a.id, aws_subnet.private-subnet-b.id, aws_subnet.private-subnet-c.id]
   availability_zone_distribution {
