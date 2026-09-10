@@ -340,12 +340,6 @@ resource "aws_lb" "application-load-balancer" {
   load_balancer_type               = "application"
   security_groups                  = [aws_security_group.lb_application-load-balancer_group.id]
   subnets                          = [aws_subnet.public-subnet-a.id, aws_subnet.public-subnet-b.id, aws_subnet.public-subnet-c.id]
-  subnet_mapping {
-    subnet_id = aws_subnet.public-subnet-b.id
-  }
-  subnet_mapping {
-    subnet_id = aws_subnet.public-subnet-c.id
-  }
   tags = {
     Name           = "application-load-balancer"
     State          = "alb-web-servers"
