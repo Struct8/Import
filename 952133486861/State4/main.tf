@@ -21,6 +21,45 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### CATEGORY: IAM ###
+
+resource "aws_iam_instance_profile" "ASG_profile" {
+  name = "ASG_profile"
+  role = aws_iam_role.ASG_role.name
+  tags = {
+    Name           = "ASG_profile"
+    State          = "State4"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role" "ASG_role" {
+  name = "ASG_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "ASG_role"
+    State          = "State4"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "oregon-net-vpc" {
@@ -29,10 +68,10 @@ resource "aws_vpc" "oregon-net-vpc" {
   enable_dns_support   = true
   instance_tenancy     = "default"
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-vpc"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
@@ -43,11 +82,11 @@ resource "aws_vpc_endpoint" "oregon-net-vpce-dynamodb_DynamoDB" {
   route_table_ids   = [aws_route_table.oregon-net-rt-private-b.id, aws_route_table.oregon-net-rt-private-a.id, aws_route_table.oregon-net-rt-private-c.id]
   vpc_endpoint_type = "Gateway"
   tags = {
+    DifName        = "oregon-net-vpce-dynamodb"
+    Project        = "oregon-net"
     Name           = "oregon-net-vpce-dynamodb"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    DifName        = "oregon-net-vpce-dynamodb"
-    Project        = "oregon-net"
   }
 }
 
@@ -58,11 +97,11 @@ resource "aws_vpc_endpoint" "oregon-net-vpce-s3_S3" {
   route_table_ids   = [aws_route_table.oregon-net-rt-private-b.id, aws_route_table.oregon-net-rt-private-a.id, aws_route_table.oregon-net-rt-private-c.id]
   vpc_endpoint_type = "Gateway"
   tags = {
+    DifName        = "oregon-net-vpce-s3"
+    Project        = "oregon-net"
     Name           = "oregon-net-vpce-s3"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    DifName        = "oregon-net-vpce-s3"
-    Project        = "oregon-net"
   }
 }
 
@@ -73,10 +112,10 @@ resource "aws_subnet" "oregon-net-private-a" {
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-private-a"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
@@ -87,10 +126,10 @@ resource "aws_subnet" "oregon-net-private-b" {
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-private-b"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
@@ -101,10 +140,10 @@ resource "aws_subnet" "oregon-net-private-c" {
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-private-c"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
@@ -115,10 +154,10 @@ resource "aws_subnet" "oregon-net-public-a" {
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-public-a"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
@@ -129,10 +168,10 @@ resource "aws_subnet" "oregon-net-public-b" {
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-public-b"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
@@ -143,20 +182,20 @@ resource "aws_subnet" "oregon-net-public-c" {
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-public-c"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
 resource "aws_internet_gateway" "oregon-net-igw" {
   vpc_id = aws_vpc.oregon-net-vpc.id
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-igw"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
@@ -169,40 +208,40 @@ resource "aws_route" "route_oregon-net-rt-public_to_oregon-net-igw_ipv4" {
 resource "aws_route_table" "oregon-net-rt-private-a" {
   vpc_id = aws_vpc.oregon-net-vpc.id
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-rt-private-a"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
 resource "aws_route_table" "oregon-net-rt-private-b" {
   vpc_id = aws_vpc.oregon-net-vpc.id
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-rt-private-b"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
 resource "aws_route_table" "oregon-net-rt-private-c" {
   vpc_id = aws_vpc.oregon-net-vpc.id
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-rt-private-c"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
 resource "aws_route_table" "oregon-net-rt-public" {
   vpc_id = aws_vpc.oregon-net-vpc.id
   tags = {
+    Project        = "oregon-net"
     Name           = "oregon-net-rt-public"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-net"
   }
 }
 
@@ -240,10 +279,10 @@ resource "aws_network_acl" "oregon-asg-nacl" {
   vpc_id     = aws_vpc.oregon-net-vpc.id
   subnet_ids = [aws_subnet.oregon-net-public-a.id, aws_subnet.oregon-net-public-b.id, aws_subnet.oregon-net-public-c.id]
   tags = {
+    Project        = "oregon-asg"
     Name           = "oregon-asg-nacl"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-asg"
   }
 }
 
@@ -278,19 +317,36 @@ resource "aws_network_acl_rule" "out_acl-09b3a9f00f5142610_100_egress_0_0_0_0_0_
   rule_number    = 100
 }
 
+resource "aws_security_group" "autoscaling_group_ASG_group" {
+  name                   = "autoscaling_group_ASG_group"
+  vpc_id                 = aws_vpc.oregon-net-vpc.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "autoscaling_group_ASG_group"
+    State          = "State4"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_security_group" "oregon-asg-nodes" {
   name        = "oregon-asg-nodes"
   vpc_id      = aws_vpc.oregon-net-vpc.id
   description = "import lab -- nodes launched by the auto scaling group"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "oregon-asg-nodes"
+    Project        = "oregon-asg"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-asg"
   }
+}
+
+resource "aws_security_group_rule" "rule_autoscaling_group_ASG_group_egress_all_protocols" {
+  security_group_id = aws_security_group.autoscaling_group_ASG_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
 }
 
 resource "aws_security_group_rule" "rule_oregon_asg_nodes_egress_all_protocols" {
@@ -315,6 +371,72 @@ resource "aws_security_group_rule" "rule_oregon_asg_nodes_ingress_tcp_443" {
 
 
 ### CATEGORY: COMPUTE ###
+
+data "aws_ami" "AMI_Data_Source_Template" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-kernel-6.1-x86_64"]
+  }
+}
+
+resource "aws_launch_template" "Template" {
+  image_id               = data.aws_ami.AMI_Data_Source_Template.id
+  name                   = "Template"
+  instance_type          = "t3.micro"
+  update_default_version = true
+  user_data = base64encode(<<-EOFUData
+#!/bin/bash
+
+# --- BEGIN STRUCT8 VARIABLES ---
+cat << 'EOFENV' > /etc/struct8_env
+NAME    = "ASG"
+REGION  = "${data.aws_region.current.region}"
+ACCOUNT = "${data.aws_caller_identity.current.account_id}"
+EOFENV
+cat /etc/struct8_env >> /etc/environment
+sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
+chmod +x /etc/profile.d/struct8_vars.sh
+chmod 644 /etc/struct8_env
+# --- END STRUCT8 VARIABLES ---
+
+
+EOFUData
+)
+  vpc_security_group_ids = [aws_security_group.autoscaling_group_ASG_group.id]
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      encrypted             = true
+      iops                  = 3000
+      throughput            = 125
+      volume_size           = 8
+      volume_type           = "gp3"
+    }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ASG_profile.name
+  }
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+    Name           = "ASG"
+    State          = "State4"
+    Struct8Creator = "Contato Struct"
+  }
+  }
+  tags = {
+    Name           = "Template"
+    State          = "State4"
+    Struct8Creator = "Contato Struct"
+  }
+}
 
 resource "aws_launch_template" "lt-0c672bbb12a42eab9" {
   image_id               = "ami-08a26983500a08011"
@@ -357,10 +479,44 @@ resource "aws_launch_template" "lt-0c672bbb12a42eab9" {
   }
   }
   tags = {
+    Project        = "oregon-asg"
     Name           = "oregon-asg-lt"
     State          = "State4"
     Struct8Creator = "Contato Struct"
-    Project        = "oregon-asg"
+  }
+}
+
+resource "aws_autoscaling_group" "ASG" {
+  name                    = "ASG"
+  default_instance_warmup = 0
+  desired_capacity        = 0
+  health_check_type       = "EC2"
+  max_instance_lifetime   = 0
+  max_size                = 0
+  metrics_granularity     = "1Minute"
+  min_elb_capacity        = 0
+  min_size                = 0
+  termination_policies    = ["Default"]
+  vpc_zone_identifier     = [aws_subnet.oregon-net-public-b.id]
+  wait_for_elb_capacity   = 0
+  launch_template {
+    version = aws_launch_template.Template.latest_version
+    id      = aws_launch_template.Template.id
+  }
+  tag {
+    key                 = "Name"
+    propagate_at_launch = true
+    value               = "ASG"
+  }
+  tag {
+    key                 = "State"
+    propagate_at_launch = true
+    value               = "State4"
+  }
+  tag {
+    key                 = "Struct8Creator"
+    propagate_at_launch = true
+    value               = "Contato Struct"
   }
 }
 
