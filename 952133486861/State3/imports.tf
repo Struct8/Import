@@ -37,6 +37,11 @@ import {
 }
 
 import {
+  to = aws_autoscaling_group.web-server-asg
+  id = "web-server-asg"
+}
+
+import {
   to = aws_subnet.public-subnet-a
   id = "subnet-0fc79f8b9a5540bcf"
 }
