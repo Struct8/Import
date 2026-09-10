@@ -1,0 +1,5871 @@
+{
+ "version": 1,
+ "requestId": "35d0cbd7-0522-4110-9686-449c9f0bf0ad",
+ "region": "us-west-2",
+ "accountId": "952133486861",
+ "scope": {
+  "vpcIds": [],
+  "tagFilters": [],
+  "cfnTypeCount": 479,
+  "cfnDetailTypeCount": 97,
+  "cfnChildTypeCount": 2
+ },
+ "items": [
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_GenLambdaLayerArm_St_GenLambdaLayer",
+   "tags": {
+    "Name": "Lambda_GenLambdaLayerArm_St_GenLambdaLayer"
+   },
+   "referencedBy": [
+    "Lambda_GenLambdaLayerArm"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_codepipeline_Pipeline_State_Pipeline",
+   "tags": {
+    "Name": "IAM_Policy_aws_codepipeline_Pipeline_State_Pipeline"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_codepipeline_Pipeline"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_DBAccess_St_Dicionarios",
+   "tags": {
+    "Name": "Lambda_DBAccess_St_Dicionarios"
+   },
+   "referencedBy": [
+    "Lambda_DBAccess"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/CodeBuild_BackendStandAlonePipeline-clb_St_TerraformBackendPipeline-clb",
+   "tags": {
+    "CloudManUser": "Clube",
+    "Name": "CodeBuild_BackendStandAlonePipeline-clb_St_TerraformBackendPipeline-clb"
+   },
+   "referencedBy": [
+    "CodeBuild_BackendStandAlonePipeline-clb"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_codepipeline_PipelineTest_State_PipelineTest",
+   "tags": {
+    "Name": "IAM_Policy_aws_codepipeline_PipelineTest_State_PipelineTest"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_codepipeline_PipelineTest"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_AWSReader-dev_St_AWSBackend-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_AWSReader-dev_St_AWSBackend-dev"
+   },
+   "referencedBy": [
+    "Lambda_AWSReader-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_InterfaceAI-dev_State_InterfaceAI-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "IAM_Policy_aws_lambda_function_InterfaceAI-dev_State_InterfaceAI-dev"
+   },
+   "referencedBy": [
+    "aws_lambda_function_InterfaceAI-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/service-role/AWSLambdaBasicExecutionRole-28fd3c45-f0df-4ffe-a540-8443a57969b4",
+   "referencedBy": [
+    "TestImport-role-23fxbua9"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/service-role/start-pipeline-execution-us-east-1-Pipeline",
+   "referencedBy": [
+    "cwe-role-us-east-1-Pipeline"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_ConscilIA_State_State",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_ConscilIA_State_State"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_ConscilIA"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_GarbageCollector-cons_State_TerraformBackend-cons",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_GarbageCollector-cons_State_TerraformBackend-cons"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_GarbageCollector-cons"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_AWSTerraformCode-dev_St_AWSBackend-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_AWSTerraformCode-dev_St_AWSBackend-dev"
+   },
+   "referencedBy": [
+    "Lambda_AWSTerraformCode-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/CodeBuild_BackendPipeline-Pipeline-clb_St_TerraformBackendPipeline-clb",
+   "tags": {
+    "CloudManUser": "Clube",
+    "Name": "CodeBuild_BackendPipeline-Pipeline-clb_St_TerraformBackendPipeline-clb"
+   },
+   "referencedBy": [
+    "CodeBuild_BackendPipeline-Pipeline-clb"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_InfoDB-alpha-0_1_2_State_MainBackend-alpha-0_1_2",
+   "tags": {
+    "Stage": "alpha",
+    "Name": "IAM_Policy_aws_lambda_function_InfoDB-alpha-0_1_2_State_MainBackend-alpha-0_1_2"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_InfoDB-alpha-0_1_2"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_Bradesco_State_State",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_Bradesco_State_State"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_Bradesco"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/CodeBuild_Terraform_St_BuildTerraform",
+   "tags": {
+    "Name": "CodeBuild_Terraform_St_BuildTerraform"
+   },
+   "referencedBy": [
+    "CodeBuild_Terraform"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_FunctionPipe-dev_State_TestePipeSNS-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "IAM_Policy_aws_lambda_function_FunctionPipe-dev_State_TestePipeSNS-dev"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_FunctionPipe-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_ProcessaPDF_St_Dicionarios",
+   "tags": {
+    "Name": "Lambda_ProcessaPDF_St_Dicionarios"
+   },
+   "referencedBy": [
+    "Lambda_ProcessaPDF"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_GoogleDrive_State_State",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_GoogleDrive_State_State"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_GoogleDrive"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_KeyWordSearch_St_Dicionarios",
+   "tags": {
+    "Name": "Lambda_KeyWordSearch_St_Dicionarios"
+   },
+   "referencedBy": [
+    "Lambda_KeyWordSearch"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/service-role/ResourceGroupsTagSyncRole-83df7c96-9e7e-4175-8403-206575359b62",
+   "referencedBy": [
+    "tag-sync-role-us-east-1-hxc7e7tb"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_SemanticSearch2K_St_Dicionarios",
+   "tags": {
+    "Name": "Lambda_SemanticSearch2K_St_Dicionarios"
+   },
+   "referencedBy": [
+    "Lambda_SemanticSearch2K"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_ConsciliaRedirector_State_LandingPageConscilia",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_ConsciliaRedirector_State_LandingPageConscilia"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_ConsciliaRedirector"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_ConverteTabelaLivros_State_State",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_ConverteTabelaLivros_State_State"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_ConverteTabelaLivros"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/lambda_function_DBAccessV2-dev_st_AppCloudManV2-dev",
+   "referencedBy": [
+    "DBAccessV2-dev_role"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_verifica-canal-farmacopeia_State_ProcessingDev",
+   "tags": {
+    "Name": "IAM_Policy_verifica-canal-farmacopeia_State_ProcessingDev"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_verifica-canal-farmacopeia"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_GenLambdaLayerx86_St_GenLambdaLayer",
+   "tags": {
+    "Name": "Lambda_GenLambdaLayerx86_St_GenLambdaLayer"
+   },
+   "referencedBy": [
+    "Lambda_GenLambdaLayerx86"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/lambda_function_GetStageV2_GetStageV2_role_st_CDNMain",
+   "referencedBy": [
+    "GetStageV2_role"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_Resource1_St_APIGatewayRestOptimized",
+   "tags": {
+    "Name": "Lambda_Resource1_St_APIGatewayRestOptimized"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/lambda_function_AgentV2-dev_st_AppCloudManV2-dev",
+   "referencedBy": [
+    "AgentV2-dev_role"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_ConcilIA_State_OC",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_ConcilIA_State_OC"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_ConcilIA"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_InfoDB-dev_State_MainBackend-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "IAM_Policy_aws_lambda_function_InfoDB-dev_State_MainBackend-dev"
+   },
+   "referencedBy": [
+    "aws_lambda_function_InfoDB-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/lambda_function_AgentV2-test_st_AppCloudManV2-test",
+   "referencedBy": [
+    "AgentV2-test_role"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_WooCommerce-dev_St_ConsciliaMain-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_WooCommerce-dev_St_ConsciliaMain-dev"
+   },
+   "referencedBy": [
+    "Lambda_WooCommerce-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_CognitoAuthorizer_State_ProcessingDev",
+   "tags": {
+    "Name": "IAM_Policy_CognitoAuthorizer_State_ProcessingDev"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_CognitoAuthorizer"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_codepipeline_PipelineCloudMan_State_PipelineCloudMan",
+   "tags": {
+    "Name": "IAM_Policy_aws_codepipeline_PipelineCloudMan_State_PipelineCloudMan"
+   },
+   "referencedBy": [
+    "aws_codepipeline_PipelineCloudMan"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/lambda_function_BudgetAlarm_BudgetAlarm_role_st_CUR",
+   "referencedBy": [
+    "BudgetAlarm_role"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_CloudManLandingPage_St_LandingPageCloudMan",
+   "tags": {
+    "Name": "Lambda_CloudManLandingPage_St_LandingPageCloudMan"
+   },
+   "referencedBy": [
+    "Lambda_CloudManLandingPage"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/service-role/AWSLambdaBasicExecutionRole-3b3f577d-fdc0-4383-ac1a-81d35f05ef71"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/service-role/AWSLambdaBasicExecutionRole-bf0a9b12-e97a-44da-816d-2ec5c814be3d",
+   "referencedBy": [
+    "Exemplo-role-lfwr729f"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/CodeBuild_BackendStandAlone-cm3_St_TerraformBackend-cm3",
+   "tags": {
+    "Name": "CodeBuild_BackendStandAlone-cm3_St_TerraformBackend-cm3"
+   },
+   "referencedBy": [
+    "CodeBuild_BackendStandAlone-cm3"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/ReadOnlyLogs",
+   "referencedBy": [
+    "Access_Cloudman_CWLogs"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/service-role/AWSLambdaBasicExecutionRole-93aeb7ac-d55f-40c7-b83d-a941c7fc43a0",
+   "referencedBy": [
+    "abc-role-yxkniav9"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_conversor-pdf-to-text_State_ProcessingDev",
+   "tags": {
+    "Name": "IAM_Policy_conversor-pdf-to-text_State_ProcessingDev"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_conversor-pdf-to-text"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_Function_St_State1",
+   "tags": {
+    "Name": "Lambda_Function_St_State1"
+   },
+   "referencedBy": [
+    "Lambda_Function"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/S3StorageLensDashboardAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_Redirector_St_LandingPageCloudMan",
+   "tags": {
+    "Name": "Lambda_Redirector_St_LandingPageCloudMan"
+   },
+   "referencedBy": [
+    "Lambda_Redirector"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAMPolicy_aws_cognito_user_pool_Dicionario_To_aws_sns_sms_preferences_Dicionario",
+   "tags": {
+    "Cloudman_State_Tag": "DicionarioMain",
+    "Name": "IAMPolicy_aws_cognito_user_pool_Dicionario_To_aws_sns_sms_preferences_Dicionario",
+    "awsApplication": "arn:aws:resource-groups:us-east-1:952133486861:group/CloudMan/09op1o2tklq5wwko7nlzyag7ue"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_cognito_user_pool_Dicionario"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_Lambda-CFB1-alpha-3_State_LabCFB1-alpha-3",
+   "tags": {
+    "Stage": "alpha",
+    "Name": "IAM_Policy_aws_lambda_function_Lambda-CFB1-alpha-3_State_LabCFB1-alpha-3"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_Lambda-CFB1-alpha-3"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_BuscaVerbetes_State_ProcessingDev",
+   "tags": {
+    "Name": "IAM_Policy_BuscaVerbetes_State_ProcessingDev"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_BuscaVerbetes"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_AulaLambda_St_State1",
+   "tags": {
+    "CloudManUser": "TestesAPIGRest",
+    "Name": "Lambda_AulaLambda_St_State1"
+   },
+   "referencedBy": [
+    "Lambda_AulaLambda"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/User_Ricardo_Policy",
+   "tags": {
+    "Name": "User_Ricardo_Policy"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_HCLToAWS-dev_St_AWSBackend-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_HCLToAWS-dev_St_AWSBackend-dev"
+   },
+   "referencedBy": [
+    "Lambda_HCLToAWS-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_ExecTerraformNew-dev_St_TerraformDeployNew-dev",
+   "tags": {
+    "CloudManUser": "CloudMan",
+    "Name": "Lambda_ExecTerraformNew-dev_St_TerraformDeployNew-dev"
+   },
+   "referencedBy": [
+    "Lambda_ExecTerraformNew-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_BradescoDev-dev_St_ConsciliaMain-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_BradescoDev-dev_St_ConsciliaMain-dev"
+   },
+   "referencedBy": [
+    "Lambda_BradescoDev-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_backup_selection_CloudManDBProd_State_Backup",
+   "tags": {
+    "Name": "IAM_Policy_aws_backup_selection_CloudManDBProd_State_Backup"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_backup_selection_CloudManDBProd"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_Asaas-dev_St_ConsciliaMain-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_Asaas-dev_St_ConsciliaMain-dev"
+   },
+   "referencedBy": [
+    "Lambda_Asaas-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/CodeBuild_DeployTerraformNew-dev_St_TerraformDeployNew-dev",
+   "tags": {
+    "CloudManUser": "CloudMan",
+    "Name": "CodeBuild_DeployTerraformNew-dev_St_TerraformDeployNew-dev"
+   },
+   "referencedBy": [
+    "CodeBuild_DeployTerraformNew-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_Asaas_State_State",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_Asaas_State_State"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_Asaas"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/service-role/AWSLambdaSQSQueueDestinationExecutionRole-79cad4a0-c855-4628-bbfb-a42597092bf9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/lambda_function_DBAccessV2-test_st_AppCloudManV2-test",
+   "referencedBy": [
+    "DBAccessV2-test_role"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_codebuild_project_Deploy_State_Backend",
+   "tags": {
+    "Name": "IAM_Policy_aws_codebuild_project_Deploy_State_Backend"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_codebuild_project_Deploy"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/service-role/AWSLambdaBasicExecutionRole-699dad7d-5445-4919-b008-7917e3bf8706",
+   "referencedBy": [
+    "EdgeTest-role-1b0lykv1"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_codebuild_project_BackendPipeline-cons_State_TerraformBackend-cons",
+   "tags": {
+    "Name": "IAM_Policy_aws_codebuild_project_BackendPipeline-cons_State_TerraformBackend-cons"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_codebuild_project_BackendPipeline-cons"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_ConsciliaLandingPage_State_LandingPageConscilia",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_ConsciliaLandingPage_State_LandingPageConscilia"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_ConsciliaLandingPage"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_ConscilIA-dev_St_ConsciliaMain-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_ConscilIA-dev_St_ConsciliaMain-dev"
+   },
+   "referencedBy": [
+    "Lambda_ConscilIA-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_CallBack-dev_St_State1-dev",
+   "tags": {
+    "CloudManUser": "CloudMan",
+    "Name": "Lambda_CallBack-dev_St_State1-dev"
+   },
+   "referencedBy": [
+    "Lambda_CallBack-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_InterfaceAI-alpha-0_1_2_State_InterfaceAI-alpha-0_1_2",
+   "tags": {
+    "Stage": "alpha",
+    "Name": "IAM_Policy_aws_lambda_function_InterfaceAI-alpha-0_1_2_State_InterfaceAI-alpha-0_1_2"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_InterfaceAI-alpha-0_1_2"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_CogUPoolOIC_State_CognitoIOC",
+   "tags": {
+    "Name": "IAM_Policy_CogUPoolOIC_State_CognitoIOC"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_cognito_user_pool_CogUPoolOIC"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_ConversorBoletoPDFToTxt_State_OC",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_ConversorBoletoPDFToTxt_State_OC"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_ConversorBoletoPDFToTxt"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_codebuild_project_BackendStandAlone-cons_State_TerraformBackend-cons",
+   "tags": {
+    "Name": "IAM_Policy_aws_codebuild_project_BackendStandAlone-cons_State_TerraformBackend-cons"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_codebuild_project_BackendStandAlone-cons"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_AzureTerraformCode-dev_St_AzureBackend-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_AzureTerraformCode-dev_St_AzureBackend-dev"
+   },
+   "referencedBy": [
+    "Lambda_AzureTerraformCode-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_InterfaceAdm_State_ProcessingDev",
+   "tags": {
+    "Name": "IAM_Policy_InterfaceAdm_State_ProcessingDev"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_InterfaceAdm"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/service-role/AWSLambdaBasicExecutionRole-db4e53ef-8483-497c-80b8-2742e7fac877"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_backup_selection_CloudManDB_State_Backup",
+   "tags": {
+    "Name": "IAM_Policy_aws_backup_selection_CloudManDB_State_Backup"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_backup_selection_CloudManDB"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/lambda_function_CallBackRedirector_CallBackRedirector_role_st_CDNMain",
+   "referencedBy": [
+    "CallBackRedirector_role"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_SemanticSearch_St_Dicionarios",
+   "tags": {
+    "Name": "Lambda_SemanticSearch_St_Dicionarios"
+   },
+   "referencedBy": [
+    "Lambda_SemanticSearch"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_GitHubAuthServiceLambda-dev_St_TerraformDeployNew-dev",
+   "tags": {
+    "CloudManUser": "CloudMan",
+    "Name": "Lambda_GitHubAuthServiceLambda-dev_St_TerraformDeployNew-dev"
+   },
+   "referencedBy": [
+    "Lambda_GitHubAuthServiceLambda-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_AWSPricingStatusMetrics-dev_St_AWSBackend-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_AWSPricingStatusMetrics-dev_St_AWSBackend-dev"
+   },
+   "referencedBy": [
+    "Lambda_AWSPricingStatusMetrics-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Stage1-dev_To_CallBackAPIG-dev",
+   "tags": {
+    "CloudManUser": "CloudMan",
+    "Name": "Stage1-dev_To_CallBackAPIG-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/lambda_function_RedirectorV2_RedirectorV2_role_st_CDNMain",
+   "referencedBy": [
+    "RedirectorV2_role"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/lambda_function_PricingCalculatorSandBox_PricingCalculatorSandBox_role_st_MCPServerPrincingCalculator",
+   "referencedBy": [
+    "PricingCalculatorSandBox_role"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_InfoDB-dev_St_AWSBackend-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_InfoDB-dev_St_AWSBackend-dev"
+   },
+   "referencedBy": [
+    "aws_lambda_function_InfoDB-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_GenKeys-pop_State_Main-pop",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_GenKeys-pop_State_Main-pop"
+   },
+   "referencedBy": [
+    "IAM_Role_aws_lambda_function_GenKeys-pop"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_InterfaceAI-dev_St_AWSBackend-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_InterfaceAI-dev_St_AWSBackend-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/lambda_function_ProcessCURStruct_ProcessCURStruct_role_st_CUR",
+   "referencedBy": [
+    "ProcessCURStruct_role"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_CloudManLandingPage_State_LandingPageCloudMan3",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_CloudManLandingPage_State_LandingPageCloudMan3"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_GitHubAuthServiceLambda-dev_St_State1-dev",
+   "tags": {
+    "CloudManUser": "CloudMan",
+    "Name": "Lambda_GitHubAuthServiceLambda-dev_St_State1-dev"
+   },
+   "referencedBy": [
+    "Lambda_GitHubAuthServiceLambda-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/service-role/AWSLambdaSQSQueueDestinationExecutionRole-9bee9f89-d14e-414f-a1b1-83899d8a53cf"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/Lambda_AdmConscilia-dev_St_ConsciliaMain-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_AdmConscilia-dev_St_ConsciliaMain-dev"
+   },
+   "referencedBy": [
+    "Lambda_AdmConscilia-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::ManagedPolicy",
+   "importId": "arn:aws:iam::952133486861:policy/IAM_Policy_aws_lambda_function_Redirector_State_LandingPageCloudMan3",
+   "tags": {
+    "Name": "IAM_Policy_aws_lambda_function_Redirector_State_LandingPageCloudMan3"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::DeploymentStrategy",
+   "importId": "AppConfig.AllAtOnce"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::DeploymentStrategy",
+   "importId": "AppConfig.Linear50PercentEvery30Seconds"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::DeploymentStrategy",
+   "importId": "AppConfig.Canary10Percent20Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::DeploymentStrategy",
+   "importId": "AppConfig.Linear20PercentEvery6Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::Extension",
+   "importId": "AWS.AppConfig.FeatureFlags"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::Extension",
+   "importId": "AWS.AppConfig.JiraIntegration"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::Extension",
+   "importId": "AWS.Evidently.ProjectImporter"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::Extension",
+   "importId": "AWS.AppConfig.DeploymentNotificationsToEventBridge"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::Extension",
+   "importId": "AWS.AppConfig.DeploymentNotificationsToSqs"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::AppConfig::Extension",
+   "importId": "AWS.AppConfig.DeploymentNotificationsToSns"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Athena::DataCatalog",
+   "importId": "AwsDataCatalog"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Athena::WorkGroup",
+   "importId": "primary"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::BCM::Dashboard",
+   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-4dc5619130f2463687fc45e003e4b930"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::BCM::Dashboard",
+   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-b0e4f3ab71454cf48a7d148287222f9d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::BCM::Dashboard",
+   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-d2effbcc2dfd44eeb8ebec3f6e83382a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::BCM::Dashboard",
+   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-a8f4e2b1c3d6490ea1b7f5c8d2e94a03"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::BCM::Dashboard",
+   "importId": "arn:aws:bcm-dashboards::952133486861:dashboard/managed-7b3c91d4e5f2a0186c4d8e9f1a2b3c4d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E2EKU7RY4MXHLV",
+   "tags": {
+    "Name": "CFDistribution1"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E2ZOMSDQIK9FZB",
+   "tags": {
+    "Name": "CFDistribution"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "EXCM6N94PRJR8",
+   "tags": {
+    "Name": "ConscilIA"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E1OY53OXPHOXQJ",
+   "tags": {
+    "Stage": "dev",
+    "Name": "MainCloudMan-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "EDUKWJW6301HG",
+   "tags": {
+    "Stage": "dev",
+    "Name": "ConscilIA-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E2LCGX4FI0I654",
+   "tags": {
+    "Name": "Dicionarios"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E13ODDD15I0EON",
+   "tags": {
+    "Name": "CloudMan"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "ETCQY1FCKM0H2",
+   "tags": {
+    "Name": "CloudManDraft"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E3TH32XPES0PCN",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "State": "AppCloudManV2-dev",
+    "Stage": "dev",
+    "Name": "AppCloudManV2-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E3TN849CRW5ZKF",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "State": "CDNMain",
+    "Name": "AuthCloudManV2"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E1RETM7Y38GM7O",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "State": "Struct8",
+    "Name": "STRUCT8"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E1USHMPV38WL57",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "State": "Struct8",
+    "Name": "Struct8hml"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E17ANKEH3CDZFX",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "State": "AppCloudManV2-test",
+    "Stage": "test",
+    "Name": "AppCloudManV2-test"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E2ZGVTSXA8U5X0",
+   "tags": {
+    "Struct8Creator": "Contato Struct",
+    "State": "Public-and-signed-URL-delivery-on-CloudFront2",
+    "Name": "cdn-protegida"
+   },
+   "referencedBy": [
+    "origem-cf-validacao"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Distribution",
+   "importId": "E3RF0AX60CH06U",
+   "tags": {
+    "Struct8Creator": "Contato Struct",
+    "State": "Public-and-signed-URL-delivery-on-CloudFront2",
+    "Name": "cdn-aberta"
+   },
+   "referencedBy": [
+    "origem-cf-validacao"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Function",
+   "importId": "arn:aws:cloudfront::952133486861:function/viewer-request-kvs1",
+   "referencedBy": [
+    "E3RF0AX60CH06U"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::Function",
+   "importId": "arn:aws:cloudfront::952133486861:function/viewer-request-kvs1",
+   "referencedBy": [
+    "E3RF0AX60CH06U"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::KeyGroup",
+   "importId": "db24cd5b-8958-4a8d-b9df-9b12ae1e2710",
+   "referencedBy": [
+    "E2ZGVTSXA8U5X0"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "acba4595-bd28-49b8-b9fe-13317c0390fa"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "216adef6-5c7f-47e4-b989-5492eafa07d3"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf",
+   "referencedBy": [
+    "E1RETM7Y38GM7O"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "59781a5b-3903-41f3-afcb-af62929ccde1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "775133bc-15f2-49f9-abea-afb2e0bf67d2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "33f36d7e-f396-46d9-90e0-52428a34d9dc"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "bf0718e1-ba1e-49d1-88b1-f726733018ae"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginRequestPolicy",
+   "importId": "ac6c4267-205d-4536-a7fa-2031976f9a9c",
+   "referencedBy": [
+    "E3RF0AX60CH06U"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::PublicKey",
+   "importId": "K333AWWOV9UGSL",
+   "referencedBy": [
+    "db24cd5b-8958-4a8d-b9df-9b12ae1e2710"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
+   "importId": "60669652-455b-4ae9-85a4-c4c02393f86c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
+   "importId": "5cc3b908-e619-4b99-88e5-2cf7f45965bd"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
+   "importId": "eaab4381-ed33-4a86-88ca-d9558dc6cd63",
+   "referencedBy": [
+    "E1OY53OXPHOXQJ",
+    "E2LCGX4FI0I654",
+    "E2ZOMSDQIK9FZB",
+    "EDUKWJW6301HG",
+    "ETCQY1FCKM0H2",
+    "EXCM6N94PRJR8"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
+   "importId": "e61eb60c-9c35-4d20-a928-2b84e02af89c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
+   "importId": "67f7725c-6f97-4210-82d7-5512b31e9d03"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
+   "importId": "18642d47-7cfc-4921-878b-a2a141332a51",
+   "referencedBy": [
+    "E13ODDD15I0EON"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
+   "importId": "2725d2ab-6e3b-4264-b49a-ae24ee6d2800",
+   "referencedBy": [
+    "E3RF0AX60CH06U"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
+   "importId": "356d3831-0080-4c3b-b133-12ab6122ab71"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
+   "importId": "41801814-7020-4b65-a111-e1b8a198925d",
+   "referencedBy": [
+    "E13ODDD15I0EON"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::ResponseHeadersPolicy",
+   "importId": "8551aa85-55ad-4ce5-957c-89059f20eb0b",
+   "referencedBy": [
+    "E1OY53OXPHOXQJ"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "EXT4342PWGLWL",
+   "referencedBy": [
+    "E3TH32XPES0PCN"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "E9JKA5MDRSH65"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "E3DM44PZL6A9MK",
+   "referencedBy": [
+    "E3TN849CRW5ZKF"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "EF7Y33FHZ71KH",
+   "referencedBy": [
+    "E1RETM7Y38GM7O"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "E36KM6UIH2RSO9",
+   "referencedBy": [
+    "E1USHMPV38WL57"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "E3CI81H2P4Z8",
+   "referencedBy": [
+    "E17ANKEH3CDZFX"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::OriginAccessControl",
+   "importId": "E2GVSDJINEEAL7",
+   "referencedBy": [
+    "E2ZGVTSXA8U5X0",
+    "E3RF0AX60CH06U"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFormation::Stack",
+   "importId": "arn:aws:cloudformation:us-west-2:952133486861:stack/Struct8-Gitops-Struct8-import/e22ea810-ab83-11f1-ab5e-0a76c5e37f13",
+   "referencedBy": [
+    "struct8-import"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.LambdaCanary10Percent30Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.OneAtATime"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.LambdaCanary10Percent10Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.AllAtOnce"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.LambdaLinear10PercentEvery10Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.LambdaCanary10Percent15Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.ECSCanary10Percent15Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.ECSLinear10PercentEvery1Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.ECSLinear10PercentEvery3Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.ECSCanary10Percent5Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.LambdaAllAtOnce"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.LambdaLinear10PercentEvery2Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.LambdaLinear10PercentEvery3Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.LambdaLinear10PercentEvery1Minute"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.ECSAllAtOnce"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.HalfAtATime"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodeDeploy::DeploymentConfig",
+   "importId": "CodeDeployDefault.LambdaCanary10Percent5Minutes"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Source|S3|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Test|GhostInspector|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Invoke|Lambda|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|Lambda|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Test|CodeBuild|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Source|GitHub|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Approval|Manual|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Source|CodeStarSourceConnection|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Invoke|InspectorScan|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Source|CodeCommit|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|AlexaSkillsKit|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Invoke|StepFunctions|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|CloudFormation|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|CloudFormationStackSet|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|EKS|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Test|DeviceFarm|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Build|ECRBuildAndPublish|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|CloudFormationStackInstances|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|EC2|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|ECS|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Source|ECR|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|CodeDeploy|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|ServiceCatalog|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|CodeDeployToECS|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|ElasticBeanstalk|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Invoke|CodePipeline|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|OpsWorks|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|AppConfig|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Test|Runscope|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Deploy|S3|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Build|CodeBuild|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Compute|Commands|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CodePipeline::CustomActionType",
+   "importId": "Test|MFStormRunner|1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3HM85MICY6C8M",
+   "referencedBy": [
+    "E2EKU7RY4MXHLV"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E35F5K6V1B1KZC"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3H12HR9EYDVZR",
+   "referencedBy": [
+    "E2ZOMSDQIK9FZB"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E2ST2CGOV90PZ4"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E1DDKREDXDGFMZ"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E2UGH8YAHNZDPS"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E24AHNE0PZBSMO"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3BKQSGI82B5X3"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E269DOXTPG7JWT"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E214LGW6M5SB84"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E1SUJ4IWSOQ26E",
+   "referencedBy": [
+    "EXCM6N94PRJR8"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E1S5GHJ7NLK9UU",
+   "referencedBy": [
+    "E1OY53OXPHOXQJ"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E2OG03JMVMTKAK",
+   "referencedBy": [
+    "EDUKWJW6301HG"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E2ITAF6K68B28U",
+   "referencedBy": [
+    "E2LCGX4FI0I654"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3MVILA761NLBE",
+   "referencedBy": [
+    "E13ODDD15I0EON"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3PCLM1PJ8LKE6",
+   "referencedBy": [
+    "ETCQY1FCKM0H2"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "importId": "E3F3JXBV0U24RF"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::FlowLog",
+   "importId": "fl-08937cd6e98fae4dc"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::InternetGateway",
+   "importId": "igw-04f6deddf62c8a242"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::DHCPOptions",
+   "importId": "dopt-03b17c556ffb1011e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::KeyPair",
+   "importId": "Oregon"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::KeyPair",
+   "importId": "oregon-asg-key"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::NetworkAcl",
+   "importId": "acl-0579210fd1ba25c27",
+   "referencedBy": [
+    "vpc-06dc29d92c035b319"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-0068613c321dee54b"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-00a54069"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-00bf361b333242028"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-047d464325e7bf465"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-0590ab2c7ab6fd1a2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-0721453c7ac4ec009"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-07f8c64944f5dc195"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-09303cf8136420840"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-0cbf975b710a608ea"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-0cc36273da754ebdc"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-14bc597d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-2f866346"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-35ba5f5c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-38846151"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-68a54001"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::PrefixList",
+   "importId": "pl-82a045eb"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::RouteTable",
+   "importId": "rtb-0e7b517ab4de923b7"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroup",
+   "importId": "sg-002a0933ca184c2c5",
+   "referencedBy": [
+    "vpc-06dc29d92c035b319"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetNetworkAclAssociation",
+   "importId": "aclassoc-04d80e6a9062d5d01",
+   "referencedBy": [
+    "subnet-05d9fc7d5f1a88294"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetNetworkAclAssociation",
+   "importId": "aclassoc-09e61c2e41d21c3e1",
+   "referencedBy": [
+    "subnet-01187e52cc4abdec9"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetNetworkAclAssociation",
+   "importId": "aclassoc-09fd91a17cc8bdce3",
+   "referencedBy": [
+    "subnet-0b4dc3b85082c72ad"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetNetworkAclAssociation",
+   "importId": "aclassoc-0803461a162d68976",
+   "referencedBy": [
+    "subnet-07d00e98f9dca5a69"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SubnetRouteTableAssociation",
+   "importId": "rtbassoc-05e6f6fd2d1efa41e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroupIngress",
+   "importId": "sgr-0df5ec17fa5f0e48d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-01187e52cc4abdec9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-07d00e98f9dca5a69"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-0b4dc3b85082c72ad"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::Subnet",
+   "importId": "subnet-05d9fc7d5f1a88294"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPCGatewayAttachment",
+   "importId": "IGW|vpc-06dc29d92c035b319"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPCDHCPOptionsAssociation",
+   "importId": "dopt-03b17c556ffb1011e|vpc-06dc29d92c035b319"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ECS::CapacityProvider",
+   "importId": "FARGATE"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ECS::CapacityProvider",
+   "importId": "FARGATE_SPOT"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.memcached1.4"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.memcached1.5"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.memcached1.6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis2.6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis2.8"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis3.2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis3.2.cluster.on"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis4.0"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis4.0.cluster.on"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis5.0"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis5.0.cluster.on"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis6.x"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis6.x.cluster.on"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis7"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.redis7.cluster.on"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.valkey7"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.valkey7.cluster.on"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.valkey8"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.valkey8.cluster.on"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.valkey9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::ParameterGroup",
+   "importId": "default.valkey9.cluster.on"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ElastiCache::User",
+   "importId": "default"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Events::Rule",
+   "importId": "arn:aws:events:us-west-2:952133486861:rule/ecs-managed-capacity-provider-rule",
+   "nameHint": "ecs-managed-capacity-provider-rule",
+   "ownedBy": "ecs.amazonaws.com"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::OIDCProvider",
+   "importId": "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com",
+   "referencedBy": [
+    "CloudManActions",
+    "Struct8-Gitops-Struct8-CloudManV2CICD",
+    "Struct8-Gitops-Struct8-import",
+    "Struct8-Gitops-Struct8-structCICDTest"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "abc-role-yxkniav9",
+   "nameHint": "abc-role-yxkniav9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Access_Cloudman_CWLogs",
+   "nameHint": "Access_Cloudman_CWLogs"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AgentV2-dev_role",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "Name": "AgentV2-dev_role",
+    "Stage": "dev",
+    "State": "AppCloudManV2-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AgentV2-test_role",
+   "tags": {
+    "Struct8Creator": "Struc8",
+    "app": "struct8",
+    "Name": "AgentV2-test_role",
+    "Stage": "test",
+    "State": "AppCloudManV2-test"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSBackupDefaultServiceRole",
+   "nameHint": "AWSBackupDefaultServiceRole"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForAmazonEKS",
+   "nameHint": "AWSServiceRoleForAmazonEKS"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForAmazonEKSNodegroup",
+   "nameHint": "AWSServiceRoleForAmazonEKSNodegroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForAmazonElasticFileSystem",
+   "nameHint": "AWSServiceRoleForAmazonElasticFileSystem"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForAmazonEventBridgeApiDestinations",
+   "nameHint": "AWSServiceRoleForAmazonEventBridgeApiDestinations"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForAmazonQDeveloper",
+   "nameHint": "AWSServiceRoleForAmazonQDeveloper"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForAmazonSSM",
+   "nameHint": "AWSServiceRoleForAmazonSSM"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForAPIGateway",
+   "nameHint": "AWSServiceRoleForAPIGateway"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForApplicationAutoScaling_DynamoDBTable",
+   "nameHint": "AWSServiceRoleForApplicationAutoScaling_DynamoDBTable"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForApplicationAutoScaling_ECSService",
+   "nameHint": "AWSServiceRoleForApplicationAutoScaling_ECSService"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForAutoScaling",
+   "nameHint": "AWSServiceRoleForAutoScaling"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForAWSServiceCatalogAppRegistry",
+   "nameHint": "AWSServiceRoleForAWSServiceCatalogAppRegistry"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForBackup",
+   "nameHint": "AWSServiceRoleForBackup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForCloudFrontLogger",
+   "nameHint": "AWSServiceRoleForCloudFrontLogger"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForDynamoDBCloudWatchContributorInsights",
+   "nameHint": "AWSServiceRoleForDynamoDBCloudWatchContributorInsights"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForEC2Spot",
+   "nameHint": "AWSServiceRoleForEC2Spot"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForECS",
+   "nameHint": "AWSServiceRoleForECS"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForElasticLoadBalancing",
+   "nameHint": "AWSServiceRoleForElasticLoadBalancing"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForGlobalAccelerator",
+   "nameHint": "AWSServiceRoleForGlobalAccelerator"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForLambdaReplicator",
+   "nameHint": "AWSServiceRoleForLambdaReplicator"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForLogDelivery",
+   "nameHint": "AWSServiceRoleForLogDelivery"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForNATGateway",
+   "nameHint": "AWSServiceRoleForNATGateway"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForOrganizations",
+   "nameHint": "AWSServiceRoleForOrganizations"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForRDS",
+   "nameHint": "AWSServiceRoleForRDS"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForResourceExplorer",
+   "nameHint": "AWSServiceRoleForResourceExplorer"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForResourceGroups",
+   "nameHint": "AWSServiceRoleForResourceGroups"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForServiceQuotas",
+   "nameHint": "AWSServiceRoleForServiceQuotas"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForSSO",
+   "nameHint": "AWSServiceRoleForSSO"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForSupport",
+   "nameHint": "AWSServiceRoleForSupport"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForTrustedAdvisor",
+   "nameHint": "AWSServiceRoleForTrustedAdvisor"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "AWSServiceRoleForUserSubscriptions",
+   "nameHint": "AWSServiceRoleForUserSubscriptions"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "aws_codepipeline_PipelineCloudMan",
+   "tags": {
+    "Name": "aws_codepipeline_PipelineCloudMan"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "aws_lambda_function_InfoDB-dev",
+   "tags": {
+    "Name": "aws_lambda_function_InfoDB-dev",
+    "Stage": "dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "aws_lambda_function_InterfaceAI-dev",
+   "tags": {
+    "Name": "aws_lambda_function_InterfaceAI-dev",
+    "Stage": "dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Brainboard",
+   "nameHint": "Brainboard"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "BudgetAlarm_role",
+   "tags": {
+    "State": "CUR",
+    "Struct8Creator": "Struc8",
+    "app": "struct8",
+    "Name": "BudgetAlarm_role"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "BuildRole-BackendStandAlonecm3-026fd2b9",
+   "tags": {
+    "CreatedBy": "LambdaOrchestrator",
+    "ExecutionID": "026fd2b9-ed92-430c-bf35-7e6415938897",
+    "ProjectName": "BackendStandAlone-cm3",
+    "TTLTimestamp": "1747163449"
+   },
+   "nameHint": "BuildRole-BackendStandAlonecm3-026fd2b9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "BuildRole-BackendStandAlonecm3-2c6138d6",
+   "tags": {
+    "CreatedBy": "LambdaOrchestrator",
+    "ExecutionID": "2c6138d6-9c2e-4acb-a8c0-bd5b434760ff",
+    "ProjectName": "BackendStandAlone-cm3",
+    "TTLTimestamp": "1747163974"
+   },
+   "nameHint": "BuildRole-BackendStandAlonecm3-2c6138d6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "BuildRole-BackendStandAlonecm3-43c453aa",
+   "tags": {
+    "CreatedBy": "LambdaOrchestrator",
+    "ExecutionID": "43c453aa-f32d-409f-b637-b723bf58b896",
+    "ProjectName": "BackendStandAlone-cm3",
+    "TTLTimestamp": "1747165315"
+   },
+   "nameHint": "BuildRole-BackendStandAlonecm3-43c453aa"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "BuildRole-BackendStandAlonecm3-55a93a8b",
+   "tags": {
+    "CreatedBy": "LambdaOrchestrator",
+    "ExecutionID": "55a93a8b-8e50-4071-8682-bee25b612c2e",
+    "ProjectName": "BackendStandAlone-cm3",
+    "TTLTimestamp": "1747163505"
+   },
+   "nameHint": "BuildRole-BackendStandAlonecm3-55a93a8b"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "BuildRole-BackendStandAlonecm3-6e4b097e",
+   "tags": {
+    "CreatedBy": "LambdaOrchestrator",
+    "ExecutionID": "6e4b097e-fd4b-4705-9970-6e70805983b4",
+    "ProjectName": "BackendStandAlone-cm3",
+    "TTLTimestamp": "1747163766"
+   },
+   "nameHint": "BuildRole-BackendStandAlonecm3-6e4b097e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "BuildRole-BackendStandAlonecm3-895be31f",
+   "tags": {
+    "CreatedBy": "LambdaOrchestrator",
+    "ExecutionID": "895be31f-fb5b-4559-aea7-2dbe6625052a",
+    "ProjectName": "BackendStandAlone-cm3",
+    "TTLTimestamp": "1747163430"
+   },
+   "nameHint": "BuildRole-BackendStandAlonecm3-895be31f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "BuildRole-BackendStandAlonecm3-bb496e7e",
+   "tags": {
+    "CreatedBy": "LambdaOrchestrator",
+    "ExecutionID": "bb496e7e-8405-4026-a74b-27d2cdaa7b9e",
+    "ProjectName": "BackendStandAlone-cm3",
+    "TTLTimestamp": "1747163813"
+   },
+   "nameHint": "BuildRole-BackendStandAlonecm3-bb496e7e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CallBackRedirector_role",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "State": "CDNMain",
+    "Name": "CallBackRedirector_role"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CloudMan",
+   "nameHint": "CloudMan",
+   "referencedBy": [
+    "CodeBuild_DeployTerraformNew-dev",
+    "E13ODDD15I0EON",
+    "Lambda_CallBack-dev",
+    "Lambda_ExecTerraformNew-dev",
+    "Lambda_GitHubAuthServiceLambda-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CloudManActions",
+   "nameHint": "CloudManActions"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CloudManCrossAccount",
+   "nameHint": "CloudManCrossAccount",
+   "referencedBy": [
+    "FederatedRole-84788498-90e1-708f-bf0a-23810eefccdf"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CodeBuild_BackendPipeline-Pipeline-clb",
+   "tags": {
+    "CloudManUser": "Clube",
+    "Name": "CodeBuild_BackendPipeline-Pipeline-clb"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CodeBuild_BackendStandAlone-cm3",
+   "tags": {
+    "Name": "CodeBuild_BackendStandAlone-cm3"
+   },
+   "referencedBy": [
+    "DynamicRole-BackendStandAlone-cm-04339549-094d-4b",
+    "DynamicRole-BackendStandAlone-cm-162dde90-cad7-4a",
+    "DynamicRole-BackendStandAlone-cm-1947e609-b918-42",
+    "DynamicRole-BackendStandAlone-cm-1d9004d1-34b2-45",
+    "DynamicRole-BackendStandAlone-cm-1e4cbe23-fe13-43",
+    "DynamicRole-BackendStandAlone-cm-240f59ff-aa5c-45",
+    "DynamicRole-BackendStandAlone-cm-2b403d09-19c2-44",
+    "DynamicRole-BackendStandAlone-cm-2dce767f-be87-49",
+    "DynamicRole-BackendStandAlone-cm-2e6d7b57-ab57-42",
+    "DynamicRole-BackendStandAlone-cm-46afb498-8a00-4e",
+    "DynamicRole-BackendStandAlone-cm-49ac05d5-dc93-4a",
+    "DynamicRole-BackendStandAlone-cm-4c7aeb80-aea2-4a",
+    "DynamicRole-BackendStandAlone-cm-5b0c5e33-687f-4d",
+    "DynamicRole-BackendStandAlone-cm-5eeaa278-05d3-4f",
+    "DynamicRole-BackendStandAlone-cm-645d02aa-8469-4f",
+    "DynamicRole-BackendStandAlone-cm-6a6a34a7-d286-44",
+    "DynamicRole-BackendStandAlone-cm-6b166ff9-9cb9-4d",
+    "DynamicRole-BackendStandAlone-cm-6b9344e2-b4a6-4c",
+    "DynamicRole-BackendStandAlone-cm-6cdcd407-8b8f-4e",
+    "DynamicRole-BackendStandAlone-cm-708a6d78-1b1f-47",
+    "DynamicRole-BackendStandAlone-cm-74937809-f42b-45",
+    "DynamicRole-BackendStandAlone-cm-7b7998d1-cab6-47",
+    "DynamicRole-BackendStandAlone-cm-cbf2fe24-82ea-48",
+    "DynamicRole-BackendStandAlone-cm-dbd0eae6-2052-45",
+    "DynamicRole-BackendStandAlone-cm-f3f9e106-6d8a-4d",
+    "DynamicRole-BackendStandAlone-cm-f7706b5c-b6c1-44"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CodeBuild_BackendStandAlonePipeline-clb",
+   "tags": {
+    "Name": "CodeBuild_BackendStandAlonePipeline-clb",
+    "CloudManUser": "Clube"
+   },
+   "referencedBy": [
+    "DynamicRole-BackendStandAlonePip-2be5b6ce-f63f-4e",
+    "DynamicRole-BackendStandAlonePip-2fa4a013-f773-49",
+    "DynamicRole-BackendStandAlonePip-3c607cb1-faf5-43",
+    "DynamicRole-BackendStandAlonePip-d5304505-c31b-47"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CodeBuild_DeployTerraformNew-dev",
+   "tags": {
+    "CloudManUser": "CloudMan",
+    "Name": "CodeBuild_DeployTerraformNew-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CodeBuild_Terraform",
+   "tags": {
+    "Name": "CodeBuild_Terraform"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CrossAccountStruct8",
+   "nameHint": "CrossAccountStruct8"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "CWAPIG",
+   "nameHint": "CWAPIG"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "cwe-role-us-east-1-Pipeline",
+   "nameHint": "cwe-role-us-east-1-Pipeline"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DBAccessV2-dev_role",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "Name": "DBAccessV2-dev_role",
+    "Stage": "dev",
+    "State": "AppCloudManV2-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DBAccessV2-test_role",
+   "tags": {
+    "State": "AppCloudManV2-test",
+    "Struct8Creator": "Struc8",
+    "Name": "DBAccessV2-test_role",
+    "app": "struct8",
+    "Stage": "test"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-04339549-094d-4b",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-04339549-094d-4b"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-162dde90-cad7-4a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-162dde90-cad7-4a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-1947e609-b918-42",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-1947e609-b918-42"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-1d9004d1-34b2-45",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-1d9004d1-34b2-45"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-1e4cbe23-fe13-43",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-1e4cbe23-fe13-43"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-240f59ff-aa5c-45",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-240f59ff-aa5c-45"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-2b403d09-19c2-44",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-2b403d09-19c2-44"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-2dce767f-be87-49",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-2dce767f-be87-49"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-2e6d7b57-ab57-42",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-2e6d7b57-ab57-42"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-46afb498-8a00-4e",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-46afb498-8a00-4e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-49ac05d5-dc93-4a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-49ac05d5-dc93-4a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-4c7aeb80-aea2-4a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-4c7aeb80-aea2-4a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-5b0c5e33-687f-4d",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-5b0c5e33-687f-4d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-5eeaa278-05d3-4f",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-5eeaa278-05d3-4f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-645d02aa-8469-4f",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-645d02aa-8469-4f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-6a6a34a7-d286-44",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-6a6a34a7-d286-44"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-6b166ff9-9cb9-4d",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-6b166ff9-9cb9-4d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-6b9344e2-b4a6-4c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-6b9344e2-b4a6-4c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-6cdcd407-8b8f-4e",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-6cdcd407-8b8f-4e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-708a6d78-1b1f-47",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-708a6d78-1b1f-47"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-74937809-f42b-45",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-74937809-f42b-45"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-7b7998d1-cab6-47",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-7b7998d1-cab6-47"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-cbf2fe24-82ea-48",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-cbf2fe24-82ea-48"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-dbd0eae6-2052-45",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-dbd0eae6-2052-45"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-f3f9e106-6d8a-4d",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-f3f9e106-6d8a-4d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlone-cm-f7706b5c-b6c1-44",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlone-cm-f7706b5c-b6c1-44"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlonePip-2be5b6ce-f63f-4e",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlonePip-2be5b6ce-f63f-4e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlonePip-2fa4a013-f773-49",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlonePip-2fa4a013-f773-49"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlonePip-3c607cb1-faf5-43",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlonePip-3c607cb1-faf5-43"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "DynamicRole-BackendStandAlonePip-d5304505-c31b-47",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "DynamicRole-BackendStandAlonePip-d5304505-c31b-47"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "ecsEventsRole",
+   "nameHint": "ecsEventsRole"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "EdgeTest-role-1b0lykv1",
+   "nameHint": "EdgeTest-role-1b0lykv1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Exemplo-role-lfwr729f",
+   "nameHint": "Exemplo-role-lfwr729f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "FederatedRole-84788498-90e1-708f-bf0a-23810eefccdf",
+   "nameHint": "FederatedRole-84788498-90e1-708f-bf0a-23810eefccdf"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "FinOpsAgentOperatorRole-46b657e2",
+   "nameHint": "FinOpsAgentOperatorRole-46b657e2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "FinOpsAgentRole-97fb4465",
+   "nameHint": "FinOpsAgentRole-97fb4465"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "GetStageV2_role",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "Name": "GetStageV2_role",
+    "State": "CDNMain"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "HoloriRole",
+   "nameHint": "HoloriRole"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_backup_selection_CloudManDB",
+   "tags": {
+    "Name": "IAM_Role_aws_backup_selection_CloudManDB"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_backup_selection_CloudManDBProd",
+   "tags": {
+    "Name": "IAM_Role_aws_backup_selection_CloudManDBProd"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_codebuild_project_BackendPipeline-cons",
+   "tags": {
+    "Name": "IAM_Role_aws_codebuild_project_BackendPipeline-cons"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_codebuild_project_BackendStandAlone-cons",
+   "tags": {
+    "Name": "IAM_Role_aws_codebuild_project_BackendStandAlone-cons"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_codebuild_project_Deploy",
+   "tags": {
+    "Name": "IAM_Role_aws_codebuild_project_Deploy"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_codepipeline_Pipeline",
+   "tags": {
+    "Name": "IAM_Role_aws_codepipeline_Pipeline"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_codepipeline_PipelineTest",
+   "tags": {
+    "Name": "IAM_Role_aws_codepipeline_PipelineTest"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_cognito_user_pool_CogUPoolOIC",
+   "tags": {
+    "Name": "IAM_Role_aws_cognito_user_pool_CogUPoolOIC"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_cognito_user_pool_Dicionario",
+   "tags": {
+    "Cloudman_State_Tag": "DicionarioMain",
+    "Name": "IAM_Role_aws_cognito_user_pool_Dicionario"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_Asaas",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_Asaas"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_Bradesco",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_Bradesco"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_BuscaVerbetes",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_BuscaVerbetes"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_CognitoAuthorizer",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_CognitoAuthorizer"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_ConcilIA",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_ConcilIA"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_ConscilIA",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_ConscilIA"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_ConsciliaLandingPage",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_ConsciliaLandingPage"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_ConsciliaRedirector",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_ConsciliaRedirector"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_conversor-pdf-to-text",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_conversor-pdf-to-text"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_ConversorBoletoPDFToTxt",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_ConversorBoletoPDFToTxt"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_ConverteTabelaLivros",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_ConverteTabelaLivros"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_Function1-alpha-70",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_Function1-alpha-70",
+    "Stage": "alpha"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_Function1-prod-11",
+   "tags": {
+    "Stage": "prod",
+    "Name": "IAM_Role_aws_lambda_function_Function1-prod-11"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_Function2-prod-11",
+   "tags": {
+    "Stage": "prod",
+    "Name": "IAM_Role_aws_lambda_function_Function2-prod-11"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_FunctionPipe-dev",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_FunctionPipe-dev",
+    "Stage": "dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_GarbageCollector-cons",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_GarbageCollector-cons"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_GenKeys-pop",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_GenKeys-pop"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_GoogleDrive",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_GoogleDrive"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_InfoDB-alpha-0_1_2",
+   "tags": {
+    "Stage": "alpha",
+    "Name": "IAM_Role_aws_lambda_function_InfoDB-alpha-0_1_2"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_InterfaceAdm",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_InterfaceAdm"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_InterfaceAI-alpha-0_1_2",
+   "tags": {
+    "Stage": "alpha",
+    "Name": "IAM_Role_aws_lambda_function_InterfaceAI-alpha-0_1_2"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_Lambda-CFB1-alpha-3",
+   "tags": {
+    "Stage": "alpha",
+    "Name": "IAM_Role_aws_lambda_function_Lambda-CFB1-alpha-3"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_aws_lambda_function_verifica-canal-farmacopeia",
+   "tags": {
+    "Name": "IAM_Role_aws_lambda_function_verifica-canal-farmacopeia"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "IAM_Role_Instance_Profile_LaunchTemplate",
+   "tags": {
+    "Name": "IAM_Role_Instance_Profile_LaunchTemplate"
+   },
+   "referencedBy": [
+    "Instance_Profile_LaunchTemplate"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Instance_role",
+   "tags": {
+    "Struct8Creator": "Contato Struct",
+    "Name": "Instance_role",
+    "State": "State3"
+   },
+   "referencedBy": [
+    "Instance_profile"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_AdmConscilia-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_AdmConscilia-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_Asaas-dev",
+   "tags": {
+    "Name": "Lambda_Asaas-dev",
+    "Stage": "dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_AulaLambda",
+   "tags": {
+    "CloudManUser": "TestesAPIGRest",
+    "Name": "Lambda_AulaLambda"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_AWSPricingStatusMetrics-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_AWSPricingStatusMetrics-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_AWSReader-dev",
+   "tags": {
+    "Name": "Lambda_AWSReader-dev",
+    "Stage": "dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_AWSTerraformCode-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_AWSTerraformCode-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_AzureTerraformCode-dev",
+   "tags": {
+    "Name": "Lambda_AzureTerraformCode-dev",
+    "Stage": "dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_BradescoDev-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_BradescoDev-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_CallBack-dev",
+   "tags": {
+    "CloudManUser": "CloudMan",
+    "Name": "Lambda_CallBack-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_CloudManLandingPage",
+   "tags": {
+    "Name": "Lambda_CloudManLandingPage"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_ConscilIA-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_ConscilIA-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_DBAccess",
+   "tags": {
+    "Name": "Lambda_DBAccess"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_ExecTerraformNew-dev",
+   "tags": {
+    "CloudManUser": "CloudMan",
+    "Name": "Lambda_ExecTerraformNew-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_Function",
+   "tags": {
+    "Name": "Lambda_Function"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_Function-alpha-7",
+   "tags": {
+    "Stage": "alpha",
+    "CloudManUser": "TestesPipeline",
+    "Name": "Lambda_Function-alpha-7"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_GenLambdaLayerArm",
+   "tags": {
+    "Name": "Lambda_GenLambdaLayerArm"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_GenLambdaLayerx86",
+   "tags": {
+    "Name": "Lambda_GenLambdaLayerx86"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_GitHubAuthServiceLambda-dev",
+   "tags": {
+    "CloudManUser": "CloudMan",
+    "Name": "Lambda_GitHubAuthServiceLambda-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_HCLToAWS-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_HCLToAWS-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_KeyWordSearch",
+   "tags": {
+    "Name": "Lambda_KeyWordSearch"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_ProcessaPDF",
+   "tags": {
+    "Name": "Lambda_ProcessaPDF"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_Redirector",
+   "tags": {
+    "Name": "Lambda_Redirector"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_Resource1",
+   "tags": {
+    "Name": "Lambda_Resource1"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_Resource2",
+   "tags": {
+    "Name": "Lambda_Resource2"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_SemanticSearch",
+   "tags": {
+    "Name": "Lambda_SemanticSearch"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_SemanticSearch2K",
+   "tags": {
+    "Name": "Lambda_SemanticSearch2K"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Lambda_WooCommerce-dev",
+   "tags": {
+    "Stage": "dev",
+    "Name": "Lambda_WooCommerce-dev"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "oregon-asg-flowlogs-role",
+   "tags": {
+    "Project": "oregon-asg"
+   },
+   "nameHint": "oregon-asg-flowlogs-role"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-0078ebdbaa86",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-0078ebdbaa86"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-0202e1b7c27c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-0202e1b7c27c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-029179489332",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-029179489332"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-02d856615a93",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-02d856615a93"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-062e52fff8f0",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-062e52fff8f0"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-08d83c5db475",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-08d83c5db475"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-09dbcc96a324",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-09dbcc96a324"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-100068e2416c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-100068e2416c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-10f37b1bc4b6",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-10f37b1bc4b6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-13c57cb5dea1",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-13c57cb5dea1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-16d201adec74",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-16d201adec74"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-171b8a1da5c5",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-171b8a1da5c5"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-176d5f2e236a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-176d5f2e236a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-186a0056ab99",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-186a0056ab99"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-1b02862e4fa0",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-1b02862e4fa0"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-1ea1c4daa84f",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-1ea1c4daa84f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-21bd47c9da7b",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-21bd47c9da7b"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-24310a2ec556",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-24310a2ec556"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-254dbbd06d8a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-254dbbd06d8a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-2652b9b632f0",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-2652b9b632f0"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-272e2d8d2b45",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-272e2d8d2b45"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-2846d64a70f6",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-2846d64a70f6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-2ded5705da12",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-2ded5705da12"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-2f67ea0b13ff",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-2f67ea0b13ff"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-30965f044bd1",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-30965f044bd1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-30f78ee74b4a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-30f78ee74b4a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-330a3bed6e2c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-330a3bed6e2c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-333d67176212",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-333d67176212"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-351df328266c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-351df328266c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-38328739da00",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-38328739da00"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-38fbfd144237",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-38fbfd144237"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-3bcf7a5c2460",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-3bcf7a5c2460"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-3cbb36e0b075",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-3cbb36e0b075"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-413f9969ea8e",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-413f9969ea8e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-4194ef2cee8c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-4194ef2cee8c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-461b2283f890",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-461b2283f890"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-46520af672b6",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-46520af672b6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-46c8653090ca",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-46c8653090ca"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-4e85d2472cae",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-4e85d2472cae"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::User",
+   "importId": "CloudMan",
+   "referencedBy": [
+    "CodeBuild_DeployTerraformNew-dev",
+    "E13ODDD15I0EON",
+    "Lambda_CallBack-dev",
+    "Lambda_ExecTerraformNew-dev",
+    "Lambda_GitHubAuthServiceLambda-dev"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::User",
+   "importId": "suporteupd8"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::User",
+   "importId": "SveltAcessBucketTemplate"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Key",
+   "importId": "0710922d-c890-4bfb-bcae-bc0ef5543f54",
+   "referencedBy": [
+    "alias/aws/acm"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Key",
+   "importId": "081d3c6c-ad92-4c90-93bf-5939d005aeb1",
+   "referencedBy": [
+    "alias/aws/elasticfilesystem"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Key",
+   "importId": "3bcdc57b-c0dc-45f9-9d28-5f012012835b",
+   "referencedBy": [
+    "alias/aws/ssm"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Key",
+   "importId": "8952ba44-f039-42e2-8bb8-fc13a4a0f9f5",
+   "referencedBy": [
+    "alias/aws/s3"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Key",
+   "importId": "9834eb9b-44a4-4fbe-ae38-0f68010f426e",
+   "referencedBy": [
+    "alias/aws/secretsmanager"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Key",
+   "importId": "c3fbe491-f20e-4438-856a-7f9cef27b6c4",
+   "referencedBy": [
+    "alias/aws/lambda"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Key",
+   "importId": "e3e4fc18-bb22-4652-9ff1-1e622b82ce74",
+   "referencedBy": [
+    "alias/aws/codecommit"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Key",
+   "importId": "f019f965-2340-4c77-b976-182a1c3460ab",
+   "referencedBy": [
+    "alias/aws/ebs"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Logs::LogGroup",
+   "importId": "/aws/vpc/flowlogs/oregon-asg",
+   "tags": {
+    "Struct8Creator": "Contato Struct",
+    "State": "oregon-reimport",
+    "Name": "aws_vpc_flowlogs_oregon-asg"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Organizations::Account",
+   "importId": "952133486861",
+   "referencedBy": [
+    "0710922d-c890-4bfb-bcae-bc0ef5543f54",
+    "081d3c6c-ad92-4c90-93bf-5939d005aeb1",
+    "3bcdc57b-c0dc-45f9-9d28-5f012012835b",
+    "8952ba44-f039-42e2-8bb8-fc13a4a0f9f5",
+    "9834eb9b-44a4-4fbe-ae38-0f68010f426e",
+    "FinOpsAgentOperatorRole-46b657e2",
+    "FinOpsAgentRole-97fb4465",
+    "c3fbe491-f20e-4438-856a-7f9cef27b6c4",
+    "e3e4fc18-bb22-4652-9ff1-1e622b82ce74",
+    "f019f965-2340-4c77-b976-182a1c3460ab",
+    "sg-002a0933ca184c2c5",
+    "tag-sync-role-us-east-1-hxc7e7tb"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Organizations::Organization",
+   "importId": "o-w3w6mkkk4j"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-5379570d3979",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-5379570d3979"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-543b2c5f3829",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-543b2c5f3829"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-57426cd385aa",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-57426cd385aa"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-57b8c4d5852c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-57b8c4d5852c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-5849021adfc2",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-5849021adfc2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-5bb59251b142",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-5bb59251b142"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-5ca4a1e70529",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-5ca4a1e70529"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-5de2ce2d36d6",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-5de2ce2d36d6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-5f9eed4a47c0",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-5f9eed4a47c0"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-612733c73667",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-612733c73667"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-64363812fbcb",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-64363812fbcb"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-64a07d66f1ef",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-64a07d66f1ef"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-65644d2356f2",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-65644d2356f2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-671ca962c1b3",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-671ca962c1b3"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-685a7e4ba0f0",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-685a7e4ba0f0"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-6c83d9b22d5f",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-6c83d9b22d5f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-6f327377dbac",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-6f327377dbac"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-707622190f74",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-707622190f74"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-72f06c00855b",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-72f06c00855b"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-7708aceb894c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-7708aceb894c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-7b20e44dbc0c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-7b20e44dbc0c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-7e37eb1a7e40",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-7e37eb1a7e40"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-808871cd6f0c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-808871cd6f0c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-8415e1777235",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-8415e1777235"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-8633c559253c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-8633c559253c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-890042eec878",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-890042eec878"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-897371ef8271",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-897371ef8271"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-8a0feed2c48a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-8a0feed2c48a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-8b7118a8571f",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-8b7118a8571f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-8d74fd774968",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-8d74fd774968"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-914c799be1f9",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-914c799be1f9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-a059eead16f9",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-a059eead16f9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-a2ccb697c202",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-a2ccb697c202"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-aaa1fb45e627",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-aaa1fb45e627"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-ade1c4ad973d",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-ade1c4ad973d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-b0c89bfb854a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-b0c89bfb854a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-b3bfe3036e78",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-b3bfe3036e78"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-b57ec66d97fc",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-b57ec66d97fc"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-b76a6f06463a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-b76a6f06463a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-b832f9ba7310",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-b832f9ba7310"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-b8cfd0ac2132",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-b8cfd0ac2132"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-b9af406da805",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-b9af406da805"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-bf43c7cecacc",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-bf43c7cecacc"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-c1cc81c596eb",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-c1cc81c596eb"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-c1d009931ce5",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-c1d009931ce5"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-c3f966f4852e",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-c3f966f4852e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-c449cd72475f",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-c449cd72475f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-ca14a541ef8a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-ca14a541ef8a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-cb354e90a7b0",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-cb354e90a7b0"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-cc45da4a9fd8",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-cc45da4a9fd8"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-d0e7c2f59c0a",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-d0e7c2f59c0a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-d17543cf0a04",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-d17543cf0a04"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-d182bc461881",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-d182bc461881"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-d24120f830fa",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-d24120f830fa"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-d506a05af035",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-d506a05af035"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-db2121177f77",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-db2121177f77"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-e7d1059528b6",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-e7d1059528b6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-f416ca12e2ef",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-f416ca12e2ef"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-f497680a78b9",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-f497680a78b9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-f4c1b256a0ca",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-f4c1b256a0ca"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-f56e178e0c2f",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-f56e178e0c2f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-fc1cfa544b26",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-fc1cfa544b26"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-fca7df053dfa",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-fca7df053dfa"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-Pipeline-fcbc7e0694ea",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-Pipeline-fcbc7e0694ea"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-PipelineCF-2287ae2aaa55",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-PipelineCF-2287ae2aaa55"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-PipelineCF-698d330382e1",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-PipelineCF-698d330382e1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-PipelineCF-8ebfefc7428c",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-PipelineCF-8ebfefc7428c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-PipelineCF-c91224a9d0b6",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-PipelineCF-c91224a9d0b6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PipelineExecRole-PipelineCF-f92d7e026747",
+   "tags": {
+    "CreatedBy": "ExecTerraformLambda"
+   },
+   "nameHint": "PipelineExecRole-PipelineCF-f92d7e026747"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "PricingCalculatorSandBox_role",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "Name": "PricingCalculatorSandBox_role",
+    "State": "MCPServerPrincingCalculator"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "ProcessCURStruct_role",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "Name": "ProcessCURStruct_role",
+    "State": "CUR"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "RedirectorV2_role",
+   "tags": {
+    "app": "struct8",
+    "Struct8Creator": "Struc8",
+    "State": "CDNMain",
+    "Name": "RedirectorV2_role"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "role_Account",
+   "tags": {
+    "State": "State5",
+    "Struct8Creator": "Struc8",
+    "Name": "role_Account",
+    "app": "struct8"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "role_ec2_Instance",
+   "tags": {
+    "CloudmanUser": "Ricardo",
+    "State": "StateImport",
+    "Name": "role_ec2_Instance"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "role_ec2_Instance4",
+   "tags": {
+    "State": "State14",
+    "CloudmanUser": "Ricardo",
+    "Name": "role_ec2_Instance4"
+   },
+   "referencedBy": [
+    "profile_Instance4"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Struct8-Gitops-Struct8-CloudManV2CICD",
+   "tags": {
+    "Struct8User": "Struc8",
+    "State": "Struct8-Gitops-Struct8-CloudManV2CICD",
+    "Name": "Struct8-Gitops-Struct8-CloudManV2CICD"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Struct8-Gitops-Struct8-import",
+   "tags": {
+    "Struct8User": "Contato Struct",
+    "State": "Struct8-Gitops-Struct8-import",
+    "Name": "Struct8-Gitops-Struct8-import"
+   },
+   "referencedBy": [
+    "struct8-import"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "Struct8-Gitops-Struct8-structCICDTest",
+   "nameHint": "Struct8-Gitops-Struct8-structCICDTest"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "SwelteAccessS3Lambda",
+   "nameHint": "SwelteAccessS3Lambda"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "tag-sync-role-us-east-1-hxc7e7tb",
+   "nameHint": "tag-sync-role-us-east-1-hxc7e7tb"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::Role",
+   "importId": "TestImport-role-23fxbua9",
+   "nameHint": "TestImport-role-23fxbua9"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RDS::OptionGroup",
+   "importId": "default:mysql-8-0",
+   "nameHint": "default:mysql-8-0"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ResourceExplorer2::View",
+   "importId": "arn:aws:resource-explorer-2:us-west-2:952133486861:view/us-west-2/255a3c6a-ab7d-4c1a-b72e-9ce56ce754b5"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Route53Resolver::FirewallDomainList",
+   "importId": "rslvr-fdl-23584f0fb4c24ebb"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Route53Resolver::FirewallDomainList",
+   "importId": "rslvr-fdl-c80983a1f0284c99"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Route53Resolver::FirewallDomainList",
+   "importId": "rslvr-fdl-d252ee1944404e15"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Route53Resolver::FirewallDomainList",
+   "importId": "rslvr-fdl-fe17696f22a445f6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Route53::HostedZone",
+   "importId": "Z04251074NSF989QRSG9",
+   "tags": {
+    "Name": "Cloudman"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RDS::DBParameterGroup",
+   "importId": "default.mysql8.0",
+   "nameHint": "default.mysql8.0"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Route53Resolver::ResolverRuleAssociation",
+   "importId": "rslvr-autodefined-assoc-vpc-06dc29d92c035b319-internet-resolver"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::S3::Bucket",
+   "importId": "origem-cf-validacao",
+   "tags": {
+    "State": "Public-and-signed-URL-delivery-on-CloudFront2",
+    "Struct8Creator": "Contato Struct",
+    "Name": "origem-cf-validacao"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::S3::Bucket",
+   "importId": "struct8-import",
+   "tags": {
+    "aws:cloudformation:stack-name": "Struct8-Gitops-Struct8-import",
+    "aws:cloudformation:logical-id": "TerraformStateBucket",
+    "aws:cloudformation:stack-id": "arn:aws:cloudformation:us-west-2:952133486861:stack/Struct8-Gitops-Struct8-import/e22ea810-ab83-11f1-ab5e-0a76c5e37f13",
+    "State": "Struct8-Gitops-Struct8-import",
+    "Struct8User": "Contato Struct",
+    "Name": "struct8-import"
+   }
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Route53Resolver::ResolverRule",
+   "importId": "rslvr-autodefined-rr-internet-resolver"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SMSVOICE::OptOutList",
+   "importId": "Default"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::S3::BucketPolicy",
+   "importId": "origem-cf-validacao"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-0123def04827e4e93"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-037a9df9b290208cf"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-03dbdd88b851b829c"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-04d1ad3cad30d44ff"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-04fb4ae6142167966"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-054123d940f3d2056"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-06ac4861e0c6d047f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-07dbd9f0b517b769e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-0a624803d647da0ab"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-0aee740f9a480ec2e"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-0b12e36f68dafa2ba"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-0b641de5f3a9f3b2f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-0bcede5146d0adbd4"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-0d5ff2de2fa3fa0ff"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-0dcda0730ce35c5e6"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-0e930e75b392d70da"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SSM::PatchBaseline",
+   "importId": "arn:aws:ssm:us-west-2:280605243866:patchbaseline/pb-0fd2ff48c103031ff"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::SMSVOICE::ResourcePolicy",
+   "importId": "arn:aws:sms-voice:us-west-2:952133486861:opt-out-list/Default"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Scheduler::ScheduleGroup",
+   "importId": "default"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::XRay::Group",
+   "importId": "arn:aws:xray:us-west-2:952133486861:group/Default",
+   "nameHint": "Default"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::XRay::SamplingRule",
+   "importId": "arn:aws:xray:us-west-2:952133486861:sampling-rule/Default"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+   "referencedBy": [
+    "E1RETM7Y38GM7O",
+    "E2EKU7RY4MXHLV",
+    "E2ZGVTSXA8U5X0",
+    "E3RF0AX60CH06U",
+    "ETCQY1FCKM0H2"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+   "referencedBy": [
+    "E2EKU7RY4MXHLV"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "b2884449-e4de-46a7-ac36-70bc7f1ddd6d"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "08627262-05a9-4f76-9ded-b50ca2e3a84f"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "2e54312d-136d-493c-8eb9-b001f22f67d2"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "a6bad946-36c3-4c33-aa98-362c74a7fb13"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "17322e93-4707-445a-93bc-6c8c16621822"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "4d1d2f1d-3a71-49ad-9e08-7ea5d843a556"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "1b1c9610-973a-4fb9-9932-a6c274840887"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "7e5fad67-ee98-4ad0-b05a-394999eefc1a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "4c02794c-7c81-4ba1-8b5d-e05fb0f95ed8"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "1c6db51a-a33f-469a-8245-dae26771f530"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "766eb028-1aff-4eb2-a5a4-2674e1538f26"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "83da9c7e-98b4-4e11-a168-04f0df8e2c65"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "4cc15a8a-d715-48a4-82b8-cc0b614638fe"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::CachePolicy",
+   "importId": "d94ba52f-d2dd-457b-be05-c39fdffa4887",
+   "referencedBy": [
+    "E3RF0AX60CH06U"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::KeyValueStore",
+   "importId": "kvs-validacao"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::CloudFront::KeyValueStore",
+   "importId": "Count"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::VPC",
+   "importId": "vpc-06dc29d92c035b319",
+   "referencedBy": [
+    "acl-0579210fd1ba25c27",
+    "rtb-0e7b517ab4de923b7",
+    "sg-002a0933ca184c2c5",
+    "subnet-01187e52cc4abdec9",
+    "subnet-05d9fc7d5f1a88294",
+    "subnet-07d00e98f9dca5a69",
+    "subnet-0b4dc3b85082c72ad"
+   ]
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::EC2::SecurityGroupEgress",
+   "importId": "sgr-0019dfe5b5e1d2711"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::Events::EventBus",
+   "importId": "default"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/acm",
+   "nameHint": "alias/aws/acm"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/codecommit",
+   "nameHint": "alias/aws/codecommit"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/dynamodb",
+   "nameHint": "alias/aws/dynamodb"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/ebs",
+   "nameHint": "alias/aws/ebs"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/elasticfilesystem",
+   "nameHint": "alias/aws/elasticfilesystem"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/es",
+   "nameHint": "alias/aws/es"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/glue",
+   "nameHint": "alias/aws/glue"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/kinesisvideo",
+   "nameHint": "alias/aws/kinesisvideo"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/lambda",
+   "nameHint": "alias/aws/lambda"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/rds",
+   "nameHint": "alias/aws/rds"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/redshift",
+   "nameHint": "alias/aws/redshift"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/s3",
+   "nameHint": "alias/aws/s3"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/secretsmanager",
+   "nameHint": "alias/aws/secretsmanager"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/ssm",
+   "nameHint": "alias/aws/ssm"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::KMS::Alias",
+   "importId": "alias/aws/xray",
+   "nameHint": "alias/aws/xray"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::InstanceProfile",
+   "importId": "Instance_profile",
+   "tags": {
+    "Struct8Creator": "Contato Struct",
+    "State": "State3",
+    "Name": "Instance_profile"
+   },
+   "nameHint": "Instance_profile"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::InstanceProfile",
+   "importId": "Instance_Profile_LaunchTemplate",
+   "tags": {
+    "Name": "Instance_Profile_LaunchTemplate"
+   },
+   "nameHint": "Instance_Profile_LaunchTemplate"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::IAM::InstanceProfile",
+   "importId": "profile_Instance4",
+   "tags": {
+    "CloudmanUser": "Ricardo",
+    "State": "State14",
+    "Name": "profile_Instance4"
+   },
+   "nameHint": "profile_Instance4"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ResourceExplorer2::Index",
+   "importId": "arn:aws:resource-explorer-2:ca-central-1:952133486861:index/c1dcb276-fb25-4f1c-9b8e-923377df735a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ResourceExplorer2::Index",
+   "importId": "arn:aws:resource-explorer-2:mx-central-1:952133486861:index/f5d03d83-f6ce-4c42-b80a-253ce3797b3a"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ResourceExplorer2::Index",
+   "importId": "arn:aws:resource-explorer-2:us-east-1:952133486861:index/ba03c334-7bfe-44e0-b970-5d300afb4b23"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::ResourceExplorer2::Index",
+   "importId": "arn:aws:resource-explorer-2:us-west-2:952133486861:index/05a37c6c-0d58-4f05-8064-1f01cb5158a1"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/APIGatewayPrivateDomainNameManagementPolicyDefaultPermission"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMBlankEndEntityCertificateAPICSRPassthroughIssuanceCertificateAuthority"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMBlankEndEntityCertificateAPIPassthroughIssuanceCertificateAuthority"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionAPIGatewayDeveloperPortalProduct"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionAgentRegistryReadOnly"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionAmazonDataZoneDomain"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionAppMesh"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionAppMeshPreview"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionCapacityReservation"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionCertificateAuthority"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionCodeBuildProject"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionCodeBuildReportGroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionCoipPool"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionDedicatedHost"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionEBSVolume"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionFsx"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionGlueCatalog"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionGlueDatabase"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionGlueTable"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionImageBuilderComponent"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionImageBuilderContainerRecipe"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionImageBuilderImage"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionImageBuilderImageRecipe"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionLicenseConfiguration"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionLocalGateway"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionNetworkFirewallContainerAssociation"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionNetworkFirewallPolicy"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionNetworkFirewallStatefulRuleGroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionNetworkFirewallStatefulRuleGroupWithDescribe"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionNetworkFirewallStatelessRuleGroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionNetworkFirewallStatelessRuleGroupWithDescribe"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionODBCloudExadataInfrastructure"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionODBExascaleDbStorageVault"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionODBNetwork"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionOutpostsOutpost"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionOutpostsSite"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionPrefixList"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionRDSCluster"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionRefactorSpacesEnvironment"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionResolverFirewallRuleGroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionResolverQueryLogConfig"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionResolverRule"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionResourceGroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionS3Outposts"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionSSMContactsContact"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionSSMIncidentsResponsePlan"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionSSMParameterReadOnly"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionSageMakerModelPackageGroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionSageMakerPipeline"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionServerManageability"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionServiceDiscoveryNamespace"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionSubnet"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionTrafficMirror"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionTransitGateway"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionTransitGatewayMulticastDomain"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionsIpamPool"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionsPlacementGroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionsSageMakerLineageGroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMDefaultPermissionsSecurityGroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMEndEntityClientAuthCertificateIssuanceCertificateAuthority"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMEndEntityServerAuthCertificateIssuanceCertificateAuthority"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMFSxRosettaPermissionPrefixList"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMLFEnabledGlueAllTablesReadWriteForDatabase"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMLFEnabledGlueDatabaseReadWrite"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMLFEnabledGlueDatabaseReadWriteForTable"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMLFEnabledGlueTableReadWrite"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAccessGrantsControl"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAccessGrantsData"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAccessGrantsReadAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAgentRegistryForAdmin"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAgentRegistryForConsumer"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAgentRegistryForPublisher"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAmazonDataZoneDomainFullAccessWithPortalAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAppSyncAllowSourceGraphQLAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAppSyncGraphQLApiInvokeAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAppSyncMergedApiOperationAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionAppSyncSourceApiOperationAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionBackupVaultReadOnly"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionBedrockCustomModel"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionCloudHsmBackup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionCloudMapECSFullPermission"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionCodeConnectionsConnection"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionEBSVolumeCopyAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionElasticLoadBalancingTrustStore"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionGlueAllTablesReadWriteForCatalog"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionGlueAllTablesReadWriteForDatabase"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionGlueDatabaseReadWrite"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionGlueDatabaseReadWriteForCatalog"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionGlueDatabaseReadWriteForTable"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionGlueTableReadWrite"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionGlueTableReadWriteForCatalog"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionGlueTableReadWriteForDatabase"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionIpamPoolByoipCidrImport"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionIpamResourceDiscovery"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionLFTagGlueDatabaseReadWrite"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionLFTagGlueDatabaseReadWriteForCatalog"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionLFTagGlueDatabaseReadWriteForTable"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionLFTagGlueTableReadWrite"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionLFTagGlueTableReadWriteForCatalog"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionLFTagGlueTableReadWriteForDatabase"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionMlflowDefaultPolicy"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionNetworkFirewallFirewall"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionPartnerAppDefaultPolicy"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionResourceExplorerViews"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionRoute53ProfileAllowAssociation"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSMSVoiceOptOutList"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSMSVoicePhoneNumber"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSMSVoicePool"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSMSVoiceRCSAgent"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSMSVoiceSenderId"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSSMParameterReadOnlyWithHistory"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSageMakerCatalogResourceSearch"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSageMakerDataZoneProjectMembershipAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSageMakerFeatureGroupAdmin"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSageMakerFeatureGroupReadOnly"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSageMakerFeatureGroupReadWrite"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSageMakerModelCards"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSageMakerModelCardsAllowExport"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSageMakerModelPackageGroupAllowDeploy"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSageMakerModelPackageGroupAllowRegister"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSageMakerPipelineAllowExecution"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSagemakerHubFullAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSagemakerHubReadAndUse"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSagemakerHubReadOnly"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionServiceCatalogAppRegistryApplicationAllowAssociation"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionServiceCatalogAppRegistryApplicationReadOnly"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionServiceCatalogAppRegistryAttributeGroupAllowAssociation"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionServiceCatalogAppRegistryAttributeGroupReadOnly"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionSsmDocument"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionVerifiedAccessGroup"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionVpcLatticeResourceConfiguration"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionVpcLatticeServiceNetworkReadWrite"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionVpcLatticeServiceReadWrite"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionsAmazonDatazoneDomainExtendedServiceAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMPermissionsAmazonDatazoneDomainExtendedServiceWithPortalAccess"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMRevokeCertificateCertificateAuthority"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMSageMakerServicePrincipalPermissionAmazonDataZoneDomain"
+  },
+  {
+   "arn": null,
+   "cfnType": "AWS::RAM::Permission",
+   "importId": "arn:aws:ram::aws:permission/AWSRAMSubordinateCACertificatePathLen0IssuanceCertificateAuthority"
+  },
+  {
+   "arn": "arn:aws:ec2:us-west-2:952133486861:vpc/vpc-06dc29d92c035b319",
+   "tags": {},
+   "isDefault": true
+  },
+  {
+   "arn": "arn:aws:ec2:us-west-2:952133486861:subnet/subnet-01187e52cc4abdec9",
+   "tags": {},
+   "vpcId": "vpc-06dc29d92c035b319"
+  },
+  {
+   "arn": "arn:aws:ec2:us-west-2:952133486861:subnet/subnet-07d00e98f9dca5a69",
+   "tags": {},
+   "vpcId": "vpc-06dc29d92c035b319"
+  },
+  {
+   "arn": "arn:aws:ec2:us-west-2:952133486861:subnet/subnet-0b4dc3b85082c72ad",
+   "tags": {},
+   "vpcId": "vpc-06dc29d92c035b319"
+  },
+  {
+   "arn": "arn:aws:ec2:us-west-2:952133486861:subnet/subnet-05d9fc7d5f1a88294",
+   "tags": {},
+   "vpcId": "vpc-06dc29d92c035b319"
+  },
+  {
+   "arn": "arn:aws:ec2:us-west-2:952133486861:internet-gateway/igw-04f6deddf62c8a242",
+   "tags": {},
+   "vpcId": "vpc-06dc29d92c035b319"
+  },
+  {
+   "arn": "arn:aws:ec2:us-west-2:952133486861:route-table/rtb-0e7b517ab4de923b7",
+   "tags": {},
+   "vpcId": "vpc-06dc29d92c035b319",
+   "isDefault": true
+  },
+  {
+   "arn": "arn:aws:ec2:us-west-2:952133486861:network-acl/acl-0579210fd1ba25c27",
+   "tags": {},
+   "isDefault": true,
+   "vpcId": "vpc-06dc29d92c035b319"
+  },
+  {
+   "arn": "arn:aws:ec2:us-west-2:952133486861:security-group/sg-002a0933ca184c2c5",
+   "tags": {},
+   "isDefault": true,
+   "vpcId": "vpc-06dc29d92c035b319"
+  }
+ ],
+ "detailUnread": {
+  "count": 1,
+  "of": 348,
+  "by": {
+   "no longer there": 1
+  },
+  "who": [
+   {
+    "cfnType": "AWS::Athena::DataCatalog",
+    "importId": "AwsDataCatalog",
+    "reason": "no longer there"
+   }
+  ],
+  "named": 1
+ },
+ "errors": []
+}
