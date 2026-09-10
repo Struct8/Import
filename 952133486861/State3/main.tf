@@ -29,7 +29,7 @@ resource "aws_iam_instance_profile" "nat-instance_profile" {
   role = aws_iam_role.nat-instance_role.name
   tags = {
     Name           = "nat-instance_profile"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -40,7 +40,7 @@ resource "aws_iam_instance_profile" "web-server-asg_profile" {
   role = aws_iam_role.web-server-asg_role.name
   tags = {
     Name           = "web-server-asg_profile"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -53,7 +53,7 @@ resource "aws_iam_role" "nat-instance_role" {
   path                  = "/"
   tags = {
     Name           = "nat-instance_role"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -66,7 +66,7 @@ resource "aws_iam_role" "web-server-asg_role" {
   path                  = "/"
   tags = {
     Name           = "web-server-asg_role"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -83,7 +83,7 @@ resource "aws_vpc" "alb-web-servers" {
   instance_tenancy     = "default"
   tags = {
     Name           = "alb-web-servers"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -96,7 +96,7 @@ resource "aws_subnet" "private-subnet-a" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "private-subnet-a"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -109,7 +109,7 @@ resource "aws_subnet" "private-subnet-b" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "private-subnet-b"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -122,7 +122,7 @@ resource "aws_subnet" "private-subnet-c" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "private-subnet-c"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -135,7 +135,7 @@ resource "aws_subnet" "public-subnet-a" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "public-subnet-a"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -148,7 +148,7 @@ resource "aws_subnet" "public-subnet-b" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "public-subnet-b"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -161,7 +161,7 @@ resource "aws_subnet" "public-subnet-c" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "public-subnet-c"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -170,7 +170,7 @@ resource "aws_internet_gateway" "internet-gateway" {
   vpc_id = aws_vpc.alb-web-servers.id
   tags = {
     Name           = "internet-gateway"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -191,7 +191,7 @@ resource "aws_route_table" "private-route-table" {
   vpc_id = aws_vpc.alb-web-servers.id
   tags = {
     Name           = "private-route-table"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -200,7 +200,7 @@ resource "aws_route_table" "public-route-table" {
   vpc_id = aws_vpc.alb-web-servers.id
   tags = {
     Name           = "public-route-table"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -239,12 +239,9 @@ resource "aws_security_group" "autoscaling_group_web-server-asg_group" {
   name        = "autoscaling_group_web-server-asg_group"
   vpc_id      = aws_vpc.alb-web-servers.id
   description = "Managed by Terraform"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "autoscaling_group_web-server-asg_group"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -253,12 +250,9 @@ resource "aws_security_group" "instance_nat-instance_group" {
   name        = "instance_nat-instance_group"
   vpc_id      = aws_vpc.alb-web-servers.id
   description = "Managed by Terraform"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "instance_nat-instance_group"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -267,12 +261,9 @@ resource "aws_security_group" "lb_application-load-balancer_group" {
   name        = "lb_application-load-balancer_group"
   vpc_id      = aws_vpc.alb-web-servers.id
   description = "Managed by Terraform"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "lb_application-load-balancer_group"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -342,7 +333,7 @@ resource "aws_lb" "application-load-balancer" {
   subnets                          = [aws_subnet.public-subnet-a.id, aws_subnet.public-subnet-b.id, aws_subnet.public-subnet-c.id]
   tags = {
     Name           = "application-load-balancer"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -365,7 +356,7 @@ resource "aws_lb_listener" "http-listener" {
   }
   tags = {
     Name           = "http-listener"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -401,7 +392,7 @@ resource "aws_lb_target_group" "web-target-group" {
   }
   tags = {
     Name           = "web-target-group"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
   target_group_health {
@@ -441,7 +432,7 @@ resource "aws_instance" "nat-instance" {
     enabled = false
   }
   lifecycle {
-    ignore_changes = [user_data, user_data_replace_on_change]
+    ignore_changes = [user_data]
   }
   metadata_options {
     http_endpoint               = "enabled"
@@ -462,19 +453,29 @@ resource "aws_instance" "nat-instance" {
   }
   tags = {
     Name           = "nat-instance"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
 
+data "aws_ami" "AMI_Data_Source_web-server-launch-template" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-kernel-6.1-arm64"]
+  }
+}
+
 resource "aws_launch_template" "web-server-launch-template" {
-  image_id        = "ami-0467666181e60a1ee"
+  image_id        = data.aws_ami.AMI_Data_Source_web-server-launch-template.id
   name            = "web-server-launch-template"
   default_version = 1
   description     = "Web server launch template: Graviton t4g.nano Spot, AL2023 arm64, IMDSv2 required. user_data installs Apache (with swap to avoid OOM) and serves a live IMDSv2 instance-info page at /."
-  instance_type   = "t4g.micro"
+  instance_type   = "t4g.nano"
   user_data = base64encode(<<-EOFUData
 #!/bin/bash
+
 
 # --- BEGIN STRUCT8 VARIABLES ---
 cat << 'EOFENV' > /etc/struct8_env
@@ -677,6 +678,7 @@ systemctl enable --now httpd
 
 echo "Done. Instance info page is live on port 80 (served directly at /)."
 
+
 EOFUData
 )
   vpc_security_group_ids = [aws_security_group.autoscaling_group_web-server-asg_group.id]
@@ -709,13 +711,13 @@ EOFUData
     resource_type = "volume"
     tags = {
     Name           = "web-server-asg"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
   }
   tags = {
     Name           = "web-server-launch-template"
-    State          = "alb-web-servers"
+    State          = "State3"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -749,7 +751,7 @@ resource "aws_autoscaling_group" "web-server-asg" {
   tag {
     key                 = "State"
     propagate_at_launch = true
-    value               = "alb-web-servers"
+    value               = "State3"
   }
   tag {
     key                 = "Struct8Creator"
