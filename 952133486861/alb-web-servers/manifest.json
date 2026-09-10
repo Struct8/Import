@@ -1,0 +1,41 @@
+{
+  "external_repositories": [
+    {
+      "repo_name": "struct8-templates",
+      "org": "Struct8",
+      "branch": "main",
+      "target_dir": ".external_modules/struct8-templates",
+      "folders": [
+        "templates/alb-web-servers/v1/user_data"
+      ]
+    }
+  ],
+  "action": "plan",
+  "trigger_id": "1789043763595",
+  "triggered_by": "Contato Struct",
+  "engine_ref": "devlocal",
+  "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
+  "backend_global_config": {
+    "provider": "aws",
+    "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+    "region": "us-west-2",
+    "bucket": "struct8-import"
+  },
+  "pipeline_stages": [
+    {
+      "stage_name": "Manual Trigger: alb-web-servers",
+      "parallel_execution": false,
+      "states": [
+        {
+          "path": "952133486861/alb-web-servers",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        }
+      ]
+    }
+  ]
+}
