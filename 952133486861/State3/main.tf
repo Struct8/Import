@@ -30,10 +30,10 @@ resource "aws_vpc" "oregon-asg-vpc2" {
   instance_tenancy                     = "default"
   ipv6_cidr_block_network_border_group = "us-west-2"
   tags = {
-    Name           = "oregon-asg-vpc2"
-    State          = "ImportVPC2"
-    Struct8Creator = "Contato Struct"
     Project        = "oregon-asg"
+    Name           = "oregon-asg-vpc2"
+    State          = "State3"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -44,9 +44,9 @@ resource "aws_vpc_endpoint" "oregon-net2-vpce-s3_S3" {
   route_table_ids   = [aws_route_table.oregon-net2-rt-private.id]
   vpc_endpoint_type = "Gateway"
   tags = {
-    Name           = "oregon-net2-vpce-s3"
     Project        = "oregon-net2"
     DifName        = "oregon-net2-vpce-s3"
+    Name           = "oregon-net2-vpce-s3"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -59,9 +59,9 @@ resource "aws_subnet" "oregon-net2-private-c" {
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "oregon-net2-private-c"
     Project        = "oregon-net2"
     Tier           = "private"
+    Name           = "oregon-net2-private-c"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -74,9 +74,9 @@ resource "aws_subnet" "oregon-net2-public-a" {
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "oregon-net2-public-a"
     Project        = "oregon-net2"
     Tier           = "public"
+    Name           = "oregon-net2-public-a"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -89,9 +89,9 @@ resource "aws_subnet" "oregon-net2-public-b" {
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "oregon-net2-public-b"
     Project        = "oregon-net2"
     Tier           = "public"
+    Name           = "oregon-net2-public-b"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -100,8 +100,8 @@ resource "aws_subnet" "oregon-net2-public-b" {
 resource "aws_internet_gateway" "oregon-net2-igw" {
   vpc_id = aws_vpc.oregon-asg-vpc2.id
   tags = {
-    Name           = "oregon-net2-igw"
     Project        = "oregon-net2"
+    Name           = "oregon-net2-igw"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -110,10 +110,10 @@ resource "aws_internet_gateway" "oregon-net2-igw" {
 resource "aws_egress_only_internet_gateway" "eigw-083dc9b065af87635" {
   vpc_id = aws_vpc.oregon-asg-vpc2.id
   tags = {
-    Name           = "oregon-asg-eoigw"
-    State          = "ImportVPC2"
-    Struct8Creator = "Contato Struct"
     Project        = "oregon-asg"
+    Name           = "oregon-asg-eoigw"
+    State          = "State3"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -126,8 +126,8 @@ resource "aws_route" "route_oregon-net2-rt-public_to_oregon-net2-igw_ipv4" {
 resource "aws_route_table" "oregon-net2-rt-private" {
   vpc_id = aws_vpc.oregon-asg-vpc2.id
   tags = {
-    Name           = "oregon-net2-rt-private"
     Project        = "oregon-net2"
+    Name           = "oregon-net2-rt-private"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -136,8 +136,8 @@ resource "aws_route_table" "oregon-net2-rt-private" {
 resource "aws_route_table" "oregon-net2-rt-public" {
   vpc_id = aws_vpc.oregon-asg-vpc2.id
   tags = {
-    Name           = "oregon-net2-rt-public"
     Project        = "oregon-net2"
+    Name           = "oregon-net2-rt-public"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -162,8 +162,8 @@ resource "aws_network_acl" "oregon-net2-nacl" {
   vpc_id     = aws_vpc.oregon-asg-vpc2.id
   subnet_ids = [aws_subnet.oregon-net2-public-a.id]
   tags = {
-    Name           = "oregon-net2-nacl"
     Project        = "oregon-net2"
+    Name           = "oregon-net2-nacl"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -191,6 +191,34 @@ resource "aws_network_acl_rule" "in_acl-04ffdad4553bd4409_110_ingress_0_0_0_0_0_
   to_port        = 65535
 }
 
+resource "aws_network_acl_rule" "in_internet_return_tcp_oregon-net2-nacl_ephemeral" {
+  network_acl_id = aws_network_acl.oregon-net2-nacl.id
+  cidr_block     = "0.0.0.0/0"
+  egress         = false
+  from_port      = 32768
+  protocol       = "tcp"
+  rule_action    = "allow"
+  rule_number    = 1001
+  to_port        = 61000
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_network_acl_rule" "in_internet_return_udp_oregon-net2-nacl_ephemeral" {
+  network_acl_id = aws_network_acl.oregon-net2-nacl.id
+  cidr_block     = "0.0.0.0/0"
+  egress         = false
+  from_port      = 32768
+  protocol       = "udp"
+  rule_action    = "allow"
+  rule_number    = 1002
+  to_port        = 61000
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_network_acl_rule" "out_acl-04ffdad4553bd4409_100_egress_0_0_0_0_0_all_proto" {
   network_acl_id = aws_network_acl.oregon-net2-nacl.id
   cidr_block     = "0.0.0.0/0"
@@ -200,16 +228,69 @@ resource "aws_network_acl_rule" "out_acl-04ffdad4553bd4409_100_egress_0_0_0_0_0_
   rule_number    = 100
 }
 
+resource "aws_network_acl_rule" "out_internet_oregon-net2-nacl_port_123_udp" {
+  network_acl_id = aws_network_acl.oregon-net2-nacl.id
+  cidr_block     = "0.0.0.0/0"
+  egress         = true
+  from_port      = 123
+  protocol       = "udp"
+  rule_action    = "allow"
+  rule_number    = 14695
+  to_port        = 123
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_network_acl_rule" "out_internet_oregon-net2-nacl_port_443_tcp" {
+  network_acl_id = aws_network_acl.oregon-net2-nacl.id
+  cidr_block     = "0.0.0.0/0"
+  egress         = true
+  from_port      = 443
+  protocol       = "tcp"
+  rule_action    = "allow"
+  rule_number    = 4534
+  to_port        = 443
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_network_acl_rule" "out_internet_oregon-net2-nacl_port_53_tcp" {
+  network_acl_id = aws_network_acl.oregon-net2-nacl.id
+  cidr_block     = "0.0.0.0/0"
+  egress         = true
+  from_port      = 53
+  protocol       = "tcp"
+  rule_action    = "allow"
+  rule_number    = 3145
+  to_port        = 53
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_network_acl_rule" "out_internet_oregon-net2-nacl_port_53_udp" {
+  network_acl_id = aws_network_acl.oregon-net2-nacl.id
+  cidr_block     = "0.0.0.0/0"
+  egress         = true
+  from_port      = 53
+  protocol       = "udp"
+  rule_action    = "allow"
+  rule_number    = 7185
+  to_port        = 53
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_security_group" "oregon-net2-web" {
   name        = "oregon-net2-web"
   vpc_id      = aws_vpc.oregon-asg-vpc2.id
   description = "import lab -- web tier of the second vpc"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
-    Name           = "oregon-net2-web"
     Project        = "oregon-net2"
+    Name           = "oregon-net2-web"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
