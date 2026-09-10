@@ -10,8 +10,8 @@
       ]
     }
   ],
-  "action": "plan",
-  "trigger_id": "1789043763595",
+  "action": "apply",
+  "trigger_id": "1789044246790",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
