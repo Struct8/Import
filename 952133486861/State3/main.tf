@@ -21,6 +21,21 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### RENAMES ###
+
+moved {
+  from = aws_route_table_association.aws_route_table_association_public_subnet_b_public_route_table
+  to   = aws_route_table_association.aws_route_table_association_public_subnet_bx_public_route_table
+}
+
+moved {
+  from = aws_subnet.public-subnet-b
+  to   = aws_subnet.public-subnet-bx
+}
+
+
+
+
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "nat-instance_profile" {
@@ -140,14 +155,14 @@ resource "aws_subnet" "public-subnet-a" {
   }
 }
 
-resource "aws_subnet" "public-subnet-b" {
+resource "aws_subnet" "public-subnet-bx" {
   vpc_id                              = aws_vpc.alb-web-servers.id
   availability_zone                   = "us-west-2b"
   cidr_block                          = "10.3.2.0/24"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "public-subnet-b"
+    Name           = "public-subnet-bx"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -225,9 +240,9 @@ resource "aws_route_table_association" "aws_route_table_association_public_subne
   subnet_id      = aws_subnet.public-subnet-a.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_public_subnet_b_public_route_table" {
+resource "aws_route_table_association" "aws_route_table_association_public_subnet_bx_public_route_table" {
   route_table_id = aws_route_table.public-route-table.id
-  subnet_id      = aws_subnet.public-subnet-b.id
+  subnet_id      = aws_subnet.public-subnet-bx.id
 }
 
 resource "aws_route_table_association" "aws_route_table_association_public_subnet_c_public_route_table" {
@@ -330,7 +345,7 @@ resource "aws_lb" "application-load-balancer" {
   idle_timeout                     = 60
   load_balancer_type               = "application"
   security_groups                  = [aws_security_group.lb_application-load-balancer_group.id]
-  subnets                          = [aws_subnet.public-subnet-a.id, aws_subnet.public-subnet-b.id, aws_subnet.public-subnet-c.id]
+  subnets                          = [aws_subnet.public-subnet-a.id, aws_subnet.public-subnet-bx.id, aws_subnet.public-subnet-c.id]
   tags = {
     Name           = "application-load-balancer"
     State          = "State3"
