@@ -52,6 +52,7 @@ data "aws_route_table" "oregon-net-rt-public" {
 resource "aws_vpc_peering_connection" "pcx-0659fe288fc855311" {
   peer_vpc_id = data.aws_vpc.oregon-asg-vpc2.id
   vpc_id      = data.aws_vpc.oregon-net-vpc.id
+  auto_accept = true
   accepter {
     allow_remote_vpc_dns_resolution = false
   }
@@ -59,10 +60,10 @@ resource "aws_vpc_peering_connection" "pcx-0659fe288fc855311" {
     allow_remote_vpc_dns_resolution = false
   }
   tags = {
-    Name           = "oregon-asg-pcx"
-    State          = "oregon-reimport"
-    Struct8Creator = "Contato Struct"
     Project        = "oregon-asg"
+    Name           = "oregon-asg-pcx"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -70,6 +71,12 @@ resource "aws_route" "route_oregon-net-rt-public_to_pcx-0659fe288fc855311_10_30_
   route_table_id            = data.aws_route_table.oregon-net-rt-public.id
   vpc_peering_connection_id = aws_vpc_peering_connection.pcx-0659fe288fc855311.id
   destination_cidr_block    = "10.30.0.0/16"
+}
+
+resource "aws_route" "route_oregon-net-rt-public_to_pcx-0659fe288fc855311_ipv6" {
+  route_table_id              = data.aws_route_table.oregon-net-rt-public.id
+  vpc_peering_connection_id   = aws_vpc_peering_connection.pcx-0659fe288fc855311.id
+  destination_ipv6_cidr_block = data.aws_vpc.oregon-asg-vpc2.ipv6_cidr_block
 }
 
 
