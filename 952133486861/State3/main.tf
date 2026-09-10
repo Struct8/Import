@@ -486,7 +486,6 @@ resource "aws_launch_template" "web-server-launch-template" {
   user_data = base64encode(<<-EOFUData
 #!/bin/bash
 
-
 # --- BEGIN STRUCT8 VARIABLES ---
 cat << 'EOFENV' > /etc/struct8_env
 NAME    = "web-server-asg"
@@ -519,7 +518,7 @@ chmod 644 /etc/struct8_env
 #     web page failing to install Apache was exactly this OOM.
 #
 # Listens on port 80.
-LOGFILE = "/var/log/user-data.log"
+LOGFILE="/var/log/user-data.log"
 exec >"$LOGFILE" 2>&1
 set -x
 
@@ -541,7 +540,7 @@ cat > /var/www/cgi-bin/info << 'CGI_EOF'
 # Reads this instance's metadata via IMDSv2 and prints an HTML page.
 
 # --- IMDSv2: get a session token first (this is what makes it "v2 secure") ---
-TOKEN = $(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
   -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
 
 # Helper: read one metadata path with the token; prints empty string if absent.
@@ -550,30 +549,30 @@ meta() {
     "http://169.254.169.254/latest/meta-data/$1"
 }
 
-INSTANCE_ID     = $(meta instance-id)
-INSTANCE_TYPE   = $(meta instance-type)
-AMI_ID          = $(meta ami-id)
-HOSTNAME_LOCAL  = $(meta local-hostname)
-PRIVATE_IP      = $(meta local-ipv4)
-PUBLIC_IP       = $(meta public-ipv4)
-AZ              = $(meta placement/availability-zone)
-AZ_ID           = $(meta placement/availability-zone-id)
-REGION          = $(meta placement/region)
-MAC             = $(meta network/interfaces/macs/ | head -n1 | tr -d '/')
-VPC_ID          = $(meta "network/interfaces/macs/$MAC/vpc-id")
-SUBNET_ID       = $(meta "network/interfaces/macs/$MAC/subnet-id")
-SECURITY_GROUPS = $(meta security-groups | tr '\n' ' ')
-ARCH            = $(uname -m)
-KERNEL          = $(uname -r)
-UPTIME          = $(uptime -p)
+INSTANCE_ID=$(meta instance-id)
+INSTANCE_TYPE=$(meta instance-type)
+AMI_ID=$(meta ami-id)
+HOSTNAME_LOCAL=$(meta local-hostname)
+PRIVATE_IP=$(meta local-ipv4)
+PUBLIC_IP=$(meta public-ipv4)
+AZ=$(meta placement/availability-zone)
+AZ_ID=$(meta placement/availability-zone-id)
+REGION=$(meta placement/region)
+MAC=$(meta network/interfaces/macs/ | head -n1 | tr -d '/')
+VPC_ID=$(meta "network/interfaces/macs/$MAC/vpc-id")
+SUBNET_ID=$(meta "network/interfaces/macs/$MAC/subnet-id")
+SECURITY_GROUPS=$(meta security-groups | tr '\n' ' ')
+ARCH=$(uname -m)
+KERNEL=$(uname -r)
+UPTIME=$(uptime -p)
 
 # Disks and memory come from the OS, not from IMDS.
-DISKS     = $(lsblk -o NAME,SIZE,TYPE,MOUNTPOINT --noheadings 2>/dev/null | sed 's/^/    /')
-ROOT_DISK = $(df -h / | awk 'NR==2 {print $2" total, "$3" used, "$4" free ("$5")"}')
-MEM_TOTAL = $(free -h | awk '/^Mem:/ {print $2}')
-MEM_USED  = $(free -h | awk '/^Mem:/ {print $3}')
-CPU_COUNT = $(nproc)
-NOW       = $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+DISKS=$(lsblk -o NAME,SIZE,TYPE,MOUNTPOINT --noheadings 2>/dev/null | sed 's/^/    /')
+ROOT_DISK=$(df -h / | awk 'NR==2 {print $2" total, "$3" used, "$4" free ("$5")"}')
+MEM_TOTAL=$(free -h | awk '/^Mem:/ {print $2}')
+MEM_USED=$(free -h | awk '/^Mem:/ {print $3}')
+CPU_COUNT=$(nproc)
+NOW=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
 
 # CGI header, then the HTML body.
 echo "Content-type: text/html"
@@ -637,23 +636,23 @@ cat << HTML
     </div>
 
     <div class="grid">
-      <div class="row"><span class="k">Availability Zone</span><span class="v">${AZ:-n/a}</span></div>
-      <div class="row"><span class="k">AZ ID</span><span class="v">${AZ_ID:-n/a}</span></div>
-      <div class="row"><span class="k">Region</span><span class="v">${REGION:-n/a}</span></div>
-      <div class="row"><span class="k">Instance Type</span><span class="v">${INSTANCE_TYPE:-n/a}</span></div>
-      <div class="row"><span class="k">Private IPv4</span><span class="v">${PRIVATE_IP:-n/a}</span></div>
-      <div class="row"><span class="k">Public IPv4</span><span class="v">${PUBLIC_IP:-none (private subnet)}</span></div>
-      <div class="row"><span class="k">VPC</span><span class="v">${VPC_ID:-n/a}</span></div>
-      <div class="row"><span class="k">Subnet</span><span class="v">${SUBNET_ID:-n/a}</span></div>
-      <div class="row"><span class="k">Local Hostname</span><span class="v">${HOSTNAME_LOCAL:-n/a}</span></div>
-      <div class="row"><span class="k">MAC</span><span class="v">${MAC:-n/a}</span></div>
-      <div class="row"><span class="k">AMI</span><span class="v">${AMI_ID:-n/a}</span></div>
+      <div class="row"><span class="k">Availability Zone</span><span class="v">$${AZ:-n/a}</span></div>
+      <div class="row"><span class="k">AZ ID</span><span class="v">$${AZ_ID:-n/a}</span></div>
+      <div class="row"><span class="k">Region</span><span class="v">$${REGION:-n/a}</span></div>
+      <div class="row"><span class="k">Instance Type</span><span class="v">$${INSTANCE_TYPE:-n/a}</span></div>
+      <div class="row"><span class="k">Private IPv4</span><span class="v">$${PRIVATE_IP:-n/a}</span></div>
+      <div class="row"><span class="k">Public IPv4</span><span class="v">$${PUBLIC_IP:-none (private subnet)}</span></div>
+      <div class="row"><span class="k">VPC</span><span class="v">$${VPC_ID:-n/a}</span></div>
+      <div class="row"><span class="k">Subnet</span><span class="v">$${SUBNET_ID:-n/a}</span></div>
+      <div class="row"><span class="k">Local Hostname</span><span class="v">$${HOSTNAME_LOCAL:-n/a}</span></div>
+      <div class="row"><span class="k">MAC</span><span class="v">$${MAC:-n/a}</span></div>
+      <div class="row"><span class="k">AMI</span><span class="v">$${AMI_ID:-n/a}</span></div>
       <div class="row"><span class="k">Architecture</span><span class="v">$ARCH</span></div>
       <div class="row"><span class="k">vCPUs</span><span class="v">$CPU_COUNT</span></div>
       <div class="row"><span class="k">Memory</span><span class="v">$MEM_USED / $MEM_TOTAL</span></div>
       <div class="row"><span class="k">Root Disk</span><span class="v">$ROOT_DISK</span></div>
       <div class="row"><span class="k">Kernel</span><span class="v">$KERNEL</span></div>
-      <div class="row full"><span class="k">Security Groups</span><span class="v">${SECURITY_GROUPS:-n/a}</span></div>
+      <div class="row full"><span class="k">Security Groups</span><span class="v">$${SECURITY_GROUPS:-n/a}</span></div>
       <div class="row full"><span class="k">Block Devices</span><pre>$DISKS</pre></div>
     </div>
 
@@ -687,7 +686,6 @@ echo "Enabling and starting Apache..."
 systemctl enable --now httpd
 
 echo "Done. Instance info page is live on port 80 (served directly at /)."
-
 
 EOFUData
 )
