@@ -21,21 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
-
-moved {
-  from = aws_route_table_association.aws_route_table_association_oregon_net2_private_c_j_oregon_net2_rt_private
-  to   = aws_route_table_association.aws_route_table_association_oregon_net2_private_c_l_oregon_net2_rt_private
-}
-
-moved {
-  from = aws_subnet.oregon-net2-private-c-j
-  to   = aws_subnet.oregon-net2-private-c-l
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "ASG1_profile" {
