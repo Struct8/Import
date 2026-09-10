@@ -7,6 +7,6 @@ import {
 }
 
 import {
-  to = aws_route.route_oregon-net-rt-public_to_pcx-0659fe288fc855311_10_3_0_0_16
-  id = "rtb-06de1785070037b00_10.3.0.0/16"
+  to = aws_route.route_oregon-net-rt-public_to_pcx-0659fe288fc855311_10_30_0_0_16
+  id = "rtb-06de1785070037b00_10.30.0.0/16"
 }
