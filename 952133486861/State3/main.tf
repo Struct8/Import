@@ -24,13 +24,13 @@ data "aws_region" "current" {}
 ### RENAMES ###
 
 moved {
-  from = aws_route_table_association.aws_route_table_association_oregon_net2_private_c_oregon_net2_rt_private
-  to   = aws_route_table_association.aws_route_table_association_oregon_net2_private_c_j_oregon_net2_rt_private
+  from = aws_route_table_association.aws_route_table_association_oregon_net2_private_c_j_oregon_net2_rt_private
+  to   = aws_route_table_association.aws_route_table_association_oregon_net2_private_c_k_oregon_net2_rt_private
 }
 
 moved {
-  from = aws_subnet.oregon-net2-private-c
-  to   = aws_subnet.oregon-net2-private-c-j
+  from = aws_subnet.oregon-net2-private-c-j
+  to   = aws_subnet.oregon-net2-private-c-k
 }
 
 
@@ -106,7 +106,7 @@ resource "aws_vpc_endpoint" "oregon-net2-vpce-s3_S3" {
   }
 }
 
-resource "aws_subnet" "oregon-net2-private-c-j" {
+resource "aws_subnet" "oregon-net2-private-c-k" {
   vpc_id                              = aws_vpc.oregon-asg-vpc2.id
   availability_zone                   = "us-west-2c"
   cidr_block                          = "10.30.80.0/24"
@@ -115,7 +115,7 @@ resource "aws_subnet" "oregon-net2-private-c-j" {
   tags = {
     Project        = "oregon-net2"
     Tier           = "private"
-    Name           = "oregon-net2-private-c-j"
+    Name           = "oregon-net2-private-c-k"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -197,9 +197,9 @@ resource "aws_route_table" "oregon-net2-rt-public" {
   }
 }
 
-resource "aws_route_table_association" "aws_route_table_association_oregon_net2_private_c_j_oregon_net2_rt_private" {
+resource "aws_route_table_association" "aws_route_table_association_oregon_net2_private_c_k_oregon_net2_rt_private" {
   route_table_id = aws_route_table.oregon-net2-rt-private.id
-  subnet_id      = aws_subnet.oregon-net2-private-c-j.id
+  subnet_id      = aws_subnet.oregon-net2-private-c-k.id
 }
 
 resource "aws_route_table_association" "aws_route_table_association_oregon_net2_public_a_oregon_net2_rt_public" {
