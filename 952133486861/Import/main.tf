@@ -66,10 +66,10 @@ resource "aws_vpc_peering_connection" "pcx-0659fe288fc855311" {
   }
 }
 
-resource "aws_route" "route_oregon-net-rt-public_to_pcx-0659fe288fc855311_10_3_0_0_16" {
+resource "aws_route" "route_oregon-net-rt-public_to_pcx-0659fe288fc855311_10_30_0_0_16" {
   route_table_id            = data.aws_route_table.oregon-net-rt-public.id
   vpc_peering_connection_id = aws_vpc_peering_connection.pcx-0659fe288fc855311.id
-  destination_cidr_block    = "10.3.0.0/16"
+  destination_cidr_block    = "10.30.0.0/16"
 }
 
 
