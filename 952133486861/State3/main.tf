@@ -21,6 +21,31 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### RENAMES ###
+
+moved {
+  from = aws_route_table_association.aws_route_table_association_oregon_net2_private_c_l_oregon_net2_rt_private
+  to   = aws_route_table_association.aws_route_table_association_oregon_net2_private_c_lx_oregon_net2_rt_private
+}
+
+moved {
+  from = aws_route_table_association.aws_route_table_association_oregon_net2_public_b_oregon_net2_rt_public
+  to   = aws_route_table_association.aws_route_table_association_oregon_net2_public_bx_oregon_net2_rt_public
+}
+
+moved {
+  from = aws_subnet.oregon-net2-private-c-l
+  to   = aws_subnet.oregon-net2-private-c-lx
+}
+
+moved {
+  from = aws_subnet.oregon-net2-public-b
+  to   = aws_subnet.oregon-net2-public-bx
+}
+
+
+
+
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "ASG1_profile" {
@@ -91,7 +116,7 @@ resource "aws_vpc_endpoint" "oregon-net2-vpce-s3_S3" {
   }
 }
 
-resource "aws_subnet" "oregon-net2-private-c-l" {
+resource "aws_subnet" "oregon-net2-private-c-lx" {
   vpc_id                              = aws_vpc.oregon-asg-vpc2.id
   availability_zone                   = "us-west-2c"
   cidr_block                          = "10.30.80.0/24"
@@ -100,7 +125,7 @@ resource "aws_subnet" "oregon-net2-private-c-l" {
   tags = {
     Project        = "oregon-net2"
     Tier           = "private"
-    Name           = "oregon-net2-private-c-l"
+    Name           = "oregon-net2-private-c-lx"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -121,7 +146,7 @@ resource "aws_subnet" "oregon-net2-public-a" {
   }
 }
 
-resource "aws_subnet" "oregon-net2-public-b" {
+resource "aws_subnet" "oregon-net2-public-bx" {
   vpc_id                              = aws_vpc.oregon-asg-vpc2.id
   availability_zone                   = "us-west-2b"
   cidr_block                          = "10.30.41.0/24"
@@ -130,7 +155,7 @@ resource "aws_subnet" "oregon-net2-public-b" {
   tags = {
     Project        = "oregon-net2"
     Tier           = "public"
-    Name           = "oregon-net2-public-b"
+    Name           = "oregon-net2-public-bx"
     State          = "State3"
     Struct8Creator = "Contato Struct"
   }
@@ -182,9 +207,9 @@ resource "aws_route_table" "oregon-net2-rt-public" {
   }
 }
 
-resource "aws_route_table_association" "aws_route_table_association_oregon_net2_private_c_l_oregon_net2_rt_private" {
+resource "aws_route_table_association" "aws_route_table_association_oregon_net2_private_c_lx_oregon_net2_rt_private" {
   route_table_id = aws_route_table.oregon-net2-rt-private.id
-  subnet_id      = aws_subnet.oregon-net2-private-c-l.id
+  subnet_id      = aws_subnet.oregon-net2-private-c-lx.id
 }
 
 resource "aws_route_table_association" "aws_route_table_association_oregon_net2_public_a_oregon_net2_rt_public" {
@@ -192,9 +217,9 @@ resource "aws_route_table_association" "aws_route_table_association_oregon_net2_
   subnet_id      = aws_subnet.oregon-net2-public-a.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_oregon_net2_public_b_oregon_net2_rt_public" {
+resource "aws_route_table_association" "aws_route_table_association_oregon_net2_public_bx_oregon_net2_rt_public" {
   route_table_id = aws_route_table.oregon-net2-rt-public.id
-  subnet_id      = aws_subnet.oregon-net2-public-b.id
+  subnet_id      = aws_subnet.oregon-net2-public-bx.id
 }
 
 resource "aws_network_acl" "oregon-net2-nacl" {
@@ -381,7 +406,7 @@ resource "aws_autoscaling_group" "ASG1" {
   min_elb_capacity        = 0
   min_size                = 0
   termination_policies    = ["Default"]
-  vpc_zone_identifier     = [aws_subnet.oregon-net2-public-b.id]
+  vpc_zone_identifier     = [aws_subnet.oregon-net2-public-bx.id]
   wait_for_elb_capacity   = 0
   launch_template {
     version = aws_launch_template.Template1.latest_version
