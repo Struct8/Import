@@ -1,7 +1,7 @@
 {
   "external_repositories": [],
-  "action": "apply",
-  "trigger_id": "1789063012993",
+  "action": "plan",
+  "trigger_id": "1789063358761",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -13,7 +13,7 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "Import: apply us-west-2",
+      "stage_name": "Manual Trigger: State3",
       "parallel_execution": false,
       "states": [
         {
@@ -21,14 +21,11 @@
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2"
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
           }
         }
       ]
     }
-  ],
-  "import_scope": {
-    "region": "us-west-2",
-    "accountId": "952133486861"
-  }
+  ]
 }
