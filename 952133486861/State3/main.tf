@@ -91,7 +91,7 @@ resource "aws_vpc" "alb-web-servers" {
 resource "aws_subnet" "private-subnet-a" {
   vpc_id                              = aws_vpc.alb-web-servers.id
   availability_zone                   = "us-west-2a"
-  cidr_block                          = "10.3.0.0/24"
+  cidr_block                          = "10.3.1.0/24"
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -104,7 +104,7 @@ resource "aws_subnet" "private-subnet-a" {
 resource "aws_subnet" "private-subnet-b" {
   vpc_id                              = aws_vpc.alb-web-servers.id
   availability_zone                   = "us-west-2b"
-  cidr_block                          = "10.3.2.0/24"
+  cidr_block                          = "10.3.3.0/24"
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -117,7 +117,7 @@ resource "aws_subnet" "private-subnet-b" {
 resource "aws_subnet" "private-subnet-c" {
   vpc_id                              = aws_vpc.alb-web-servers.id
   availability_zone                   = "us-west-2c"
-  cidr_block                          = "10.3.4.0/24"
+  cidr_block                          = "10.3.5.0/24"
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -130,7 +130,7 @@ resource "aws_subnet" "private-subnet-c" {
 resource "aws_subnet" "public-subnet-a" {
   vpc_id                              = aws_vpc.alb-web-servers.id
   availability_zone                   = "us-west-2a"
-  cidr_block                          = "10.3.1.0/24"
+  cidr_block                          = "10.3.0.0/24"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -143,7 +143,7 @@ resource "aws_subnet" "public-subnet-a" {
 resource "aws_subnet" "public-subnet-b" {
   vpc_id                              = aws_vpc.alb-web-servers.id
   availability_zone                   = "us-west-2b"
-  cidr_block                          = "10.3.3.0/24"
+  cidr_block                          = "10.3.2.0/24"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -156,7 +156,7 @@ resource "aws_subnet" "public-subnet-b" {
 resource "aws_subnet" "public-subnet-c" {
   vpc_id                              = aws_vpc.alb-web-servers.id
   availability_zone                   = "us-west-2c"
-  cidr_block                          = "10.3.5.0/24"
+  cidr_block                          = "10.3.4.0/24"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
@@ -363,10 +363,6 @@ resource "aws_lb_listener" "http-listener" {
     target_group_arn = aws_lb_target_group.web-target-group.arn
     type             = "forward"
     forward {
-      stickiness {
-        duration = 0
-        enabled  = false
-      }
       target_group {
         arn    = aws_lb_target_group.web-target-group.arn
         weight = 1
