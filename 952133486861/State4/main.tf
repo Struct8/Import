@@ -467,7 +467,7 @@ resource "aws_autoscaling_group" "oregon-asg-group" {
   tag {
     key                 = "State"
     propagate_at_launch = true
-    value               = "State4"
+    value               = "ImportVPC"
   }
   tag {
     key                 = "Struct8Creator"
