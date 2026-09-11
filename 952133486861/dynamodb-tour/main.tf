@@ -334,23 +334,23 @@ resource "aws_lambda_event_source_mapping" "LedgerStreamMapping" {
   }
 }
 
-data "archive_file" "archive_struct8-templates_StreamConsumer" {
-  output_path = "${path.module}/struct8-templates_StreamConsumer.zip"
-  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/dynamodb-configurations-tour/v1/lambda/stream-consumer"
+data "archive_file" "archive_struct8-hub_StreamConsumer" {
+  output_path = "${path.module}/struct8-hub_StreamConsumer.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-hub/prebuilt"
   type        = "zip"
 }
 
 resource "aws_lambda_function" "StreamConsumer" {
   function_name                  = "StreamConsumer"
   architectures                  = ["arm64"]
-  filename                       = data.archive_file.archive_struct8-templates_StreamConsumer.output_path
+  filename                       = data.archive_file.archive_struct8-hub_StreamConsumer.output_path
   handler                        = "index.handler"
   memory_size                    = 128
   publish                        = false
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.StreamConsumer_role.arn
   runtime                        = "nodejs22.x"
-  source_code_hash               = data.archive_file.archive_struct8-templates_StreamConsumer.output_base64sha256
+  source_code_hash               = data.archive_file.archive_struct8-hub_StreamConsumer.output_base64sha256
   timeout                        = 30
   environment {
     variables = {
