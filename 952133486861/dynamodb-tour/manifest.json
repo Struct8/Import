@@ -1,7 +1,17 @@
 {
-  "external_repositories": [],
-  "action": "apply",
-  "trigger_id": "1789151112806",
+  "external_repositories": [
+    {
+      "repo_name": "struct8-templates",
+      "org": "Struct8",
+      "branch": "main",
+      "target_dir": ".external_modules/struct8-templates",
+      "folders": [
+        "templates/dynamodb-configurations-tour/v1/lambda/stream-consumer"
+      ]
+    }
+  ],
+  "action": "plan",
+  "trigger_id": "1789153101626",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
