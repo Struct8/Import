@@ -52,21 +52,6 @@ import {
 }
 
 import {
-  to = aws_cloudwatch_log_group.aws_vpc_flowlogs_oregon-asg
-  id = "/aws/vpc/flowlogs/oregon-asg"
-}
-
-import {
-  to = aws_iam_openid_connect_provider.token_actions_githubusercontent_com
-  id = "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com"
-}
-
-import {
-  to = aws_iam_role.Struct8-Gitops-Struct8-import
-  id = "Struct8-Gitops-Struct8-import"
-}
-
-import {
   to = aws_s3_bucket.origem-cf-validacao
   id = "origem-cf-validacao"
 }
