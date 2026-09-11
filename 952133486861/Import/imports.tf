@@ -2,6 +2,11 @@
 # Every block below points at a resource that ALREADY exists.
 
 import {
+  to = aws_dynamodb_kinesis_streaming_destination.Ledger1_to_LedgerKinesisStream1
+  id = "Ledger1,arn:aws:kinesis:us-west-2:952133486861:stream/LedgerKinesisStream1"
+}
+
+import {
   to = aws_dynamodb_table.Events-OnDemand1
   id = "Events-OnDemand1"
 }
