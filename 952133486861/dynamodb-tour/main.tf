@@ -280,9 +280,6 @@ resource "aws_dynamodb_table" "Users" {
     projection_type = "KEYS_ONLY"
     read_capacity   = 1
     write_capacity  = 1
-    lifecycle {
-      ignore_changes = [read_capacity, write_capacity]
-    }
   }
   global_secondary_index {
     name               = "ByProfileInclude"
@@ -376,11 +373,6 @@ resource "aws_appautoscaling_policy" "sc_policy_Read_ByEmailAutoscale_Users" {
   policy_type        = "TargetTrackingScaling"
   scalable_dimension = aws_appautoscaling_target.sc_target_Read_ByEmailAutoscale_Users.scalable_dimension
   service_namespace  = aws_appautoscaling_target.sc_target_Read_ByEmailAutoscale_Users.service_namespace
-  tags = {
-    Name           = "sc_policy_Read_ByEmailAutoscale_Users"
-    State          = "dynamodb-tour"
-    Struct8Creator = "Contato Struct"
-  }
   target_tracking_scaling_policy_configuration {
     target_value = 70.0
     predefined_metric_specification {
@@ -395,11 +387,6 @@ resource "aws_appautoscaling_policy" "sc_policy_Read_Metrics-Autoscaling" {
   policy_type        = "TargetTrackingScaling"
   scalable_dimension = aws_appautoscaling_target.sc_target_Read_Metrics-Autoscaling.scalable_dimension
   service_namespace  = aws_appautoscaling_target.sc_target_Read_Metrics-Autoscaling.service_namespace
-  tags = {
-    Name           = "sc_policy_Read_Metrics-Autoscaling"
-    State          = "dynamodb-tour"
-    Struct8Creator = "Contato Struct"
-  }
   target_tracking_scaling_policy_configuration {
     target_value = 70.0
     predefined_metric_specification {
@@ -414,11 +401,6 @@ resource "aws_appautoscaling_policy" "sc_policy_Write_ByEmailAutoscale_Users" {
   policy_type        = "TargetTrackingScaling"
   scalable_dimension = aws_appautoscaling_target.sc_target_Write_ByEmailAutoscale_Users.scalable_dimension
   service_namespace  = aws_appautoscaling_target.sc_target_Write_ByEmailAutoscale_Users.service_namespace
-  tags = {
-    Name           = "sc_policy_Write_ByEmailAutoscale_Users"
-    State          = "dynamodb-tour"
-    Struct8Creator = "Contato Struct"
-  }
   target_tracking_scaling_policy_configuration {
     target_value = 70.0
     predefined_metric_specification {
@@ -433,11 +415,6 @@ resource "aws_appautoscaling_policy" "sc_policy_Write_Metrics-Autoscaling" {
   policy_type        = "TargetTrackingScaling"
   scalable_dimension = aws_appautoscaling_target.sc_target_Write_Metrics-Autoscaling.scalable_dimension
   service_namespace  = aws_appautoscaling_target.sc_target_Write_Metrics-Autoscaling.service_namespace
-  tags = {
-    Name           = "sc_policy_Write_Metrics-Autoscaling"
-    State          = "dynamodb-tour"
-    Struct8Creator = "Contato Struct"
-  }
   target_tracking_scaling_policy_configuration {
     target_value = 70.0
     predefined_metric_specification {
