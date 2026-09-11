@@ -166,6 +166,9 @@ EOF
   key_value_store_associations = [aws_cloudfront_key_value_store.kvs-validacao.arn]
   publish                      = true
   runtime                      = "cloudfront-js-2.0"
+  lifecycle {
+    ignore_changes = [publish]
+  }
   tags = {
     Name           = "viewer-request-kvs1"
     State          = "Import"
