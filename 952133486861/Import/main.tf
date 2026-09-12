@@ -65,7 +65,7 @@ resource "aws_iam_role" "StreamConsumer_role" {
   path                  = "/"
   tags = {
     Name           = "StreamConsumer_role"
-    State          = "dynamodb-tour"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -100,7 +100,9 @@ resource "aws_dynamodb_table" "EventsOnDemand" {
     enabled = false
   }
   tags = {
-    Name = "EventsOnDemand"
+    Name           = "EventsOnDemand"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
   ttl {
     enabled = false
@@ -128,7 +130,9 @@ resource "aws_dynamodb_table" "Ledger" {
     enabled = false
   }
   tags = {
-    Name = "Ledger"
+    Name           = "Ledger"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
   ttl {
     enabled = false
@@ -155,7 +159,9 @@ resource "aws_dynamodb_table" "MetricsAutoscaling" {
     enabled = false
   }
   tags = {
-    Name = "MetricsAutoscaling"
+    Name           = "MetricsAutoscaling"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
   ttl {
     enabled = false
@@ -184,7 +190,9 @@ resource "aws_dynamodb_table" "Orders" {
     enabled = false
   }
   tags = {
-    Name = "Orders"
+    Name           = "Orders"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
   ttl {
     enabled = false
@@ -206,7 +214,9 @@ resource "aws_dynamodb_table" "RestoredLatest" {
     enabled = false
   }
   tags = {
-    Name = "RestoredLatest"
+    Name           = "RestoredLatest"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
   ttl {
     enabled = false
@@ -228,7 +238,9 @@ resource "aws_dynamodb_table" "RestoredPointInTime" {
     enabled = false
   }
   tags = {
-    Name = "RestoredPointInTime"
+    Name           = "RestoredPointInTime"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
   ttl {
     enabled = false
@@ -251,7 +263,9 @@ resource "aws_dynamodb_table" "Sessions" {
     recovery_period_in_days = 35
   }
   tags = {
-    Name = "Sessions"
+    Name           = "Sessions"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
   ttl {
     attribute_name = "ExpiresAt"
@@ -335,7 +349,9 @@ resource "aws_dynamodb_table" "Users" {
     enabled = false
   }
   tags = {
-    Name = "Users"
+    Name           = "Users"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
   ttl {
     enabled = false
@@ -359,7 +375,9 @@ resource "aws_lambda_event_source_mapping" "LedgerStreamMapping" {
   parallelization_factor             = 1
   starting_position                  = "LATEST"
   tags = {
-    Name = "LedgerStreamMapping"
+    Name           = "LedgerStreamMapping"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -391,7 +409,9 @@ resource "aws_lambda_function" "StreamConsumer" {
     log_format = "Text"
   }
   tags = {
-    Name = "StreamConsumer"
+    Name           = "StreamConsumer"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_StreamConsumer_st_dynamodb-tour_attach_StreamConsumer_role]
 }
@@ -459,7 +479,9 @@ resource "aws_appautoscaling_target" "sc_target_Read_ByEmailAutoscale_Users" {
   scalable_dimension = "dynamodb:index:ReadCapacityUnits"
   service_namespace  = "dynamodb"
   tags = {
-    Name = "sc_target_Read_ByEmailAutoscale_Users"
+    Name           = "sc_target_Read_ByEmailAutoscale_Users"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -470,7 +492,9 @@ resource "aws_appautoscaling_target" "sc_target_Read_MetricsAutoscaling" {
   scalable_dimension = "dynamodb:table:ReadCapacityUnits"
   service_namespace  = "dynamodb"
   tags = {
-    Name = "sc_target_Read_MetricsAutoscaling"
+    Name           = "sc_target_Read_MetricsAutoscaling"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -481,7 +505,9 @@ resource "aws_appautoscaling_target" "sc_target_Write_ByEmailAutoscale_Users" {
   scalable_dimension = "dynamodb:index:WriteCapacityUnits"
   service_namespace  = "dynamodb"
   tags = {
-    Name = "sc_target_Write_ByEmailAutoscale_Users"
+    Name           = "sc_target_Write_ByEmailAutoscale_Users"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -492,7 +518,9 @@ resource "aws_appautoscaling_target" "sc_target_Write_MetricsAutoscaling" {
   scalable_dimension = "dynamodb:table:WriteCapacityUnits"
   service_namespace  = "dynamodb"
   tags = {
-    Name = "sc_target_Write_MetricsAutoscaling"
+    Name           = "sc_target_Write_MetricsAutoscaling"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -508,7 +536,9 @@ resource "aws_kinesis_stream" "LedgerKinesisStream" {
     stream_mode = "PROVISIONED"
   }
   tags = {
-    Name = "LedgerKinesisStream"
+    Name           = "LedgerKinesisStream"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -522,7 +552,9 @@ resource "aws_cloudwatch_log_group" "StreamConsumer" {
   log_group_class   = "STANDARD"
   retention_in_days = 1
   tags = {
-    Name = "StreamConsumer"
+    Name           = "StreamConsumer"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
   }
 }
 
