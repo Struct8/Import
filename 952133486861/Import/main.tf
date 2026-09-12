@@ -23,6 +23,21 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
+data "aws_iam_policy_document" "lambda_function_StreamConsumer1_st_Import_doc" {
+  statement {
+    sid       = "AllowEventSourceRead"
+    effect    = "Allow"
+    actions   = ["dynamodb:DescribeStream", "dynamodb:GetRecords", "dynamodb:GetShardIterator"]
+    resources = [aws_dynamodb_table.Ledger1.stream_arn]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_StreamConsumer1_st_Import" {
+  name        = "lambda_function_StreamConsumer1_st_Import"
+  description = "Access Policy for StreamConsumer1"
+  policy      = data.aws_iam_policy_document.lambda_function_StreamConsumer1_st_Import_doc.json
+}
+
 resource "aws_iam_role" "StreamConsumer1_role" {
   name                  = "StreamConsumer1_role"
   assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
@@ -31,9 +46,14 @@ resource "aws_iam_role" "StreamConsumer1_role" {
   path                  = "/"
   tags = {
     Name           = "StreamConsumer1_role"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_StreamConsumer1_st_Import_attach" {
+  policy_arn = aws_iam_policy.lambda_function_StreamConsumer1_st_Import.arn
+  role       = aws_iam_role.StreamConsumer1_role.name
 }
 
 
@@ -62,7 +82,7 @@ resource "aws_dynamodb_table" "Events-OnDemand1" {
   }
   tags = {
     Name           = "Events-OnDemand1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -92,7 +112,7 @@ resource "aws_dynamodb_table" "Ledger1" {
   }
   tags = {
     Name           = "Ledger1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -121,7 +141,7 @@ resource "aws_dynamodb_table" "Metrics-Autoscaling1" {
   }
   tags = {
     Name           = "Metrics-Autoscaling1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -152,7 +172,7 @@ resource "aws_dynamodb_table" "Orders1" {
   }
   tags = {
     Name           = "Orders1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -177,7 +197,7 @@ resource "aws_dynamodb_table" "Sessions1" {
   }
   tags = {
     Name           = "Sessions1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -263,7 +283,7 @@ resource "aws_dynamodb_table" "Users1" {
   }
   tags = {
     Name           = "Users1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -289,7 +309,7 @@ resource "aws_lambda_event_source_mapping" "LedgerStreamMapping1" {
   starting_position                  = "LATEST"
   tags = {
     Name           = "LedgerStreamMapping1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -306,25 +326,26 @@ resource "aws_lambda_function" "StreamConsumer1" {
   timeout                        = 30
   environment {
     variables = {
-    ACCOUNT = "952133486861"
+    ACCOUNT = data.aws_caller_identity.current.account_id
     NAME    = "StreamConsumer1"
-    REGION  = "us-west-2"
+    REGION  = data.aws_region.current.region
   }
   }
   ephemeral_storage {
     size = 512
   }
   lifecycle {
-    ignore_changes = [filename, source_code_hash, publish]
+    ignore_changes = [filename, source_code_hash]
   }
   logging_config {
     log_format = "Text"
   }
   tags = {
     Name           = "StreamConsumer1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_StreamConsumer1_st_Import_attach]
 }
 
 resource "aws_appautoscaling_policy" "sc_policy_Read_ByEmailAutoscale_Users1" {
@@ -391,7 +412,7 @@ resource "aws_appautoscaling_target" "sc_target_Read_ByEmailAutoscale_Users1" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Read_ByEmailAutoscale_Users1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -404,7 +425,7 @@ resource "aws_appautoscaling_target" "sc_target_Read_Metrics-Autoscaling1" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Read_Metrics-Autoscaling1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -417,7 +438,7 @@ resource "aws_appautoscaling_target" "sc_target_Write_ByEmailAutoscale_Users1" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Write_ByEmailAutoscale_Users1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -430,7 +451,7 @@ resource "aws_appautoscaling_target" "sc_target_Write_Metrics-Autoscaling1" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Write_Metrics-Autoscaling1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -448,7 +469,7 @@ resource "aws_kinesis_stream" "LedgerKinesisStream1" {
   }
   tags = {
     Name           = "LedgerKinesisStream1"
-    State          = "dynamodb-tour1"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
