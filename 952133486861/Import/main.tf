@@ -23,12 +23,24 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
-resource "aws_iam_policy" "lambda_function_StreamConsumer1_st_dynamodb-tour1" {
-  name        = "lambda_function_StreamConsumer1_st_dynamodb-tour1"
-  description = "Access Policy for StreamConsumer1"
+resource "aws_iam_policy" "lambda_function_StreamConsumer_st_dynamodb-tour" {
+  name        = "lambda_function_StreamConsumer_st_dynamodb-tour"
+  description = "Access Policy for StreamConsumer"
   policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": [
+        "${aws_cloudwatch_log_group.StreamConsumer.arn}:*"
+      ],
+      "Sid": "AllowWriteLogs"
+    },
     {
       "Effect": "Allow",
       "Action": [
@@ -37,7 +49,7 @@ resource "aws_iam_policy" "lambda_function_StreamConsumer1_st_dynamodb-tour1" {
         "dynamodb:GetShardIterator"
       ],
       "Resource": [
-        "${aws_dynamodb_table.Ledger1.stream_arn}"
+        "${aws_dynamodb_table.Ledger.stream_arn}"
       ],
       "Sid": "AllowEventSourceRead"
     }
@@ -45,22 +57,22 @@ resource "aws_iam_policy" "lambda_function_StreamConsumer1_st_dynamodb-tour1" {
 })
 }
 
-resource "aws_iam_role" "StreamConsumer1_role" {
-  name                  = "StreamConsumer1_role"
+resource "aws_iam_role" "StreamConsumer_role" {
+  name                  = "StreamConsumer_role"
   assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   force_detach_policies = false
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "StreamConsumer1_role"
-    State          = "dynamodb-tour1"
+    Name           = "StreamConsumer_role"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_function_StreamConsumer1_st_dynamodb-tour1_attach_StreamConsumer1_role" {
-  policy_arn = aws_iam_policy.lambda_function_StreamConsumer1_st_dynamodb-tour1.arn
-  role       = aws_iam_role.StreamConsumer1_role.name
+resource "aws_iam_role_policy_attachment" "lambda_function_StreamConsumer_st_dynamodb-tour_attach_StreamConsumer_role" {
+  policy_arn = aws_iam_policy.lambda_function_StreamConsumer_st_dynamodb-tour.arn
+  role       = aws_iam_role.StreamConsumer_role.name
 }
 
 
@@ -68,13 +80,13 @@ resource "aws_iam_role_policy_attachment" "lambda_function_StreamConsumer1_st_dy
 
 ### CATEGORY: DATABASE ###
 
-resource "aws_dynamodb_kinesis_streaming_destination" "Ledger1_to_LedgerKinesisStream1" {
-  table_name = aws_dynamodb_table.Ledger1.name
-  stream_arn = aws_kinesis_stream.LedgerKinesisStream1.arn
+resource "aws_dynamodb_kinesis_streaming_destination" "Ledger_to_LedgerKinesisStream" {
+  table_name = aws_dynamodb_table.Ledger.name
+  stream_arn = aws_kinesis_stream.LedgerKinesisStream.arn
 }
 
-resource "aws_dynamodb_table" "Events-OnDemand1" {
-  name                        = "Events-OnDemand1"
+resource "aws_dynamodb_table" "EventsOnDemand" {
+  name                        = "EventsOnDemand"
   billing_mode                = "PAY_PER_REQUEST"
   deletion_protection_enabled = false
   hash_key                    = "EventId"
@@ -88,8 +100,8 @@ resource "aws_dynamodb_table" "Events-OnDemand1" {
     enabled = false
   }
   tags = {
-    Name           = "Events-OnDemand1"
-    State          = "dynamodb-tour1"
+    Name           = "EventsOnDemand"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -97,8 +109,8 @@ resource "aws_dynamodb_table" "Events-OnDemand1" {
   }
 }
 
-resource "aws_dynamodb_table" "Ledger1" {
-  name                        = "Ledger1"
+resource "aws_dynamodb_table" "Ledger" {
+  name                        = "Ledger"
   billing_mode                = "PAY_PER_REQUEST"
   deletion_protection_enabled = false
   hash_key                    = "AccountId"
@@ -118,8 +130,8 @@ resource "aws_dynamodb_table" "Ledger1" {
     enabled = false
   }
   tags = {
-    Name           = "Ledger1"
-    State          = "dynamodb-tour1"
+    Name           = "Ledger"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -127,8 +139,8 @@ resource "aws_dynamodb_table" "Ledger1" {
   }
 }
 
-resource "aws_dynamodb_table" "Metrics-Autoscaling1" {
-  name                        = "Metrics-Autoscaling1"
+resource "aws_dynamodb_table" "MetricsAutoscaling" {
+  name                        = "MetricsAutoscaling"
   billing_mode                = "PROVISIONED"
   deletion_protection_enabled = false
   hash_key                    = "MetricId"
@@ -147,8 +159,8 @@ resource "aws_dynamodb_table" "Metrics-Autoscaling1" {
     enabled = false
   }
   tags = {
-    Name           = "Metrics-Autoscaling1"
-    State          = "dynamodb-tour1"
+    Name           = "MetricsAutoscaling"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -156,8 +168,8 @@ resource "aws_dynamodb_table" "Metrics-Autoscaling1" {
   }
 }
 
-resource "aws_dynamodb_table" "Orders1" {
-  name                        = "Orders1"
+resource "aws_dynamodb_table" "Orders" {
+  name                        = "Orders"
   billing_mode                = "PROVISIONED"
   deletion_protection_enabled = false
   hash_key                    = "OrderId"
@@ -178,8 +190,8 @@ resource "aws_dynamodb_table" "Orders1" {
     enabled = false
   }
   tags = {
-    Name           = "Orders1"
-    State          = "dynamodb-tour1"
+    Name           = "Orders"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -187,8 +199,56 @@ resource "aws_dynamodb_table" "Orders1" {
   }
 }
 
-resource "aws_dynamodb_table" "Sessions1" {
-  name                        = "Sessions1"
+resource "aws_dynamodb_table" "RestoredLatest" {
+  name                        = "RestoredLatest"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = false
+  hash_key                    = "Id"
+  stream_enabled              = false
+  table_class                 = "STANDARD"
+  attribute {
+    name = "Id"
+    type = "S"
+  }
+  point_in_time_recovery {
+    enabled = false
+  }
+  tags = {
+    Name           = "RestoredLatest"
+    State          = "dynamodb-tour"
+    Struct8Creator = "Contato Struct"
+  }
+  ttl {
+    enabled = false
+  }
+}
+
+resource "aws_dynamodb_table" "RestoredPointInTime" {
+  name                        = "RestoredPointInTime"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = false
+  hash_key                    = "Id"
+  stream_enabled              = false
+  table_class                 = "STANDARD"
+  attribute {
+    name = "Id"
+    type = "S"
+  }
+  point_in_time_recovery {
+    enabled = false
+  }
+  tags = {
+    Name           = "RestoredPointInTime"
+    State          = "dynamodb-tour"
+    Struct8Creator = "Contato Struct"
+  }
+  ttl {
+    enabled = false
+  }
+}
+
+resource "aws_dynamodb_table" "Sessions" {
+  name                        = "Sessions"
   billing_mode                = "PAY_PER_REQUEST"
   deletion_protection_enabled = false
   hash_key                    = "SessionId"
@@ -203,8 +263,8 @@ resource "aws_dynamodb_table" "Sessions1" {
     recovery_period_in_days = 35
   }
   tags = {
-    Name           = "Sessions1"
-    State          = "dynamodb-tour1"
+    Name           = "Sessions"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -213,8 +273,8 @@ resource "aws_dynamodb_table" "Sessions1" {
   }
 }
 
-resource "aws_dynamodb_table" "Users1" {
-  name                        = "Users1"
+resource "aws_dynamodb_table" "Users" {
+  name                        = "Users"
   billing_mode                = "PROVISIONED"
   deletion_protection_enabled = false
   hash_key                    = "UserId"
@@ -289,8 +349,8 @@ resource "aws_dynamodb_table" "Users1" {
     enabled = false
   }
   tags = {
-    Name           = "Users1"
-    State          = "dynamodb-tour1"
+    Name           = "Users"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -303,11 +363,11 @@ resource "aws_dynamodb_table" "Users1" {
 
 ### CATEGORY: COMPUTE ###
 
-resource "aws_lambda_event_source_mapping" "LedgerStreamMapping1" {
-  function_name                      = aws_lambda_function.StreamConsumer1.arn
+resource "aws_lambda_event_source_mapping" "LedgerStreamMapping" {
+  function_name                      = aws_lambda_function.StreamConsumer.arn
   batch_size                         = 100
   bisect_batch_on_function_error     = false
-  event_source_arn                   = aws_dynamodb_table.Ledger1.stream_arn
+  event_source_arn                   = aws_dynamodb_table.Ledger.stream_arn
   function_response_types            = ["ReportBatchItemFailures"]
   maximum_batching_window_in_seconds = 5
   maximum_record_age_in_seconds      = -1
@@ -315,26 +375,27 @@ resource "aws_lambda_event_source_mapping" "LedgerStreamMapping1" {
   parallelization_factor             = 1
   starting_position                  = "LATEST"
   tags = {
-    Name           = "LedgerStreamMapping1"
-    State          = "dynamodb-tour1"
+    Name           = "LedgerStreamMapping"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_lambda_function" "StreamConsumer1" {
-  function_name                  = "StreamConsumer1"
+resource "aws_lambda_function" "StreamConsumer" {
+  function_name                  = "StreamConsumer"
   architectures                  = ["arm64"]
+  description                    = "Stream consumer running the Struct8 hub (code from Struct8/struct8-hub prebuilt). It reads the Ledger stream via the Event Source Mapping and reports each hop."
   filename                       = "imported_lambda_placeholder.zip"
   handler                        = "index.handler"
   memory_size                    = 128
   reserved_concurrent_executions = -1
-  role                           = aws_iam_role.StreamConsumer1_role.arn
+  role                           = aws_iam_role.StreamConsumer_role.arn
   runtime                        = "nodejs22.x"
   timeout                        = 30
   environment {
     variables = {
     ACCOUNT = "952133486861"
-    NAME    = "StreamConsumer1"
+    NAME    = "StreamConsumer"
     REGION  = "us-west-2"
   }
   }
@@ -348,19 +409,19 @@ resource "aws_lambda_function" "StreamConsumer1" {
     log_format = "Text"
   }
   tags = {
-    Name           = "StreamConsumer1"
-    State          = "dynamodb-tour1"
+    Name           = "StreamConsumer"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_iam_role_policy_attachment.lambda_function_StreamConsumer1_st_dynamodb-tour1_attach_StreamConsumer1_role]
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_StreamConsumer_st_dynamodb-tour_attach_StreamConsumer_role]
 }
 
-resource "aws_appautoscaling_policy" "sc_policy_Read_ByEmailAutoscale_Users1" {
-  name               = "DynamoDBReadCapacityUtilization:sc_target_Read_ByEmailAutoscale_Users1"
-  resource_id        = aws_appautoscaling_target.sc_target_Read_ByEmailAutoscale_Users1.resource_id
+resource "aws_appautoscaling_policy" "sc_policy_Read_ByEmailAutoscale_Users" {
+  name               = "DynamoDBReadCapacityUtilization:sc_target_Read_ByEmailAutoscale_Users"
+  resource_id        = aws_appautoscaling_target.sc_target_Read_ByEmailAutoscale_Users.resource_id
   policy_type        = "TargetTrackingScaling"
-  scalable_dimension = aws_appautoscaling_target.sc_target_Read_ByEmailAutoscale_Users1.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.sc_target_Read_ByEmailAutoscale_Users1.service_namespace
+  scalable_dimension = aws_appautoscaling_target.sc_target_Read_ByEmailAutoscale_Users.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.sc_target_Read_ByEmailAutoscale_Users.service_namespace
   target_tracking_scaling_policy_configuration {
     target_value = 70.0
     predefined_metric_specification {
@@ -369,12 +430,12 @@ resource "aws_appautoscaling_policy" "sc_policy_Read_ByEmailAutoscale_Users1" {
   }
 }
 
-resource "aws_appautoscaling_policy" "sc_policy_Read_Metrics-Autoscaling1" {
-  name               = "DynamoDBReadCapacityUtilization:sc_target_Read_Metrics-Autoscaling1"
-  resource_id        = aws_appautoscaling_target.sc_target_Read_Metrics-Autoscaling1.resource_id
+resource "aws_appautoscaling_policy" "sc_policy_Read_MetricsAutoscaling" {
+  name               = "DynamoDBReadCapacityUtilization:sc_target_Read_MetricsAutoscaling"
+  resource_id        = aws_appautoscaling_target.sc_target_Read_MetricsAutoscaling.resource_id
   policy_type        = "TargetTrackingScaling"
-  scalable_dimension = aws_appautoscaling_target.sc_target_Read_Metrics-Autoscaling1.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.sc_target_Read_Metrics-Autoscaling1.service_namespace
+  scalable_dimension = aws_appautoscaling_target.sc_target_Read_MetricsAutoscaling.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.sc_target_Read_MetricsAutoscaling.service_namespace
   target_tracking_scaling_policy_configuration {
     target_value = 70.0
     predefined_metric_specification {
@@ -383,12 +444,12 @@ resource "aws_appautoscaling_policy" "sc_policy_Read_Metrics-Autoscaling1" {
   }
 }
 
-resource "aws_appautoscaling_policy" "sc_policy_Write_ByEmailAutoscale_Users1" {
-  name               = "DynamoDBWriteCapacityUtilization:sc_target_Write_ByEmailAutoscale_Users1"
-  resource_id        = aws_appautoscaling_target.sc_target_Write_ByEmailAutoscale_Users1.resource_id
+resource "aws_appautoscaling_policy" "sc_policy_Write_ByEmailAutoscale_Users" {
+  name               = "DynamoDBWriteCapacityUtilization:sc_target_Write_ByEmailAutoscale_Users"
+  resource_id        = aws_appautoscaling_target.sc_target_Write_ByEmailAutoscale_Users.resource_id
   policy_type        = "TargetTrackingScaling"
-  scalable_dimension = aws_appautoscaling_target.sc_target_Write_ByEmailAutoscale_Users1.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.sc_target_Write_ByEmailAutoscale_Users1.service_namespace
+  scalable_dimension = aws_appautoscaling_target.sc_target_Write_ByEmailAutoscale_Users.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.sc_target_Write_ByEmailAutoscale_Users.service_namespace
   target_tracking_scaling_policy_configuration {
     target_value = 70.0
     predefined_metric_specification {
@@ -397,12 +458,12 @@ resource "aws_appautoscaling_policy" "sc_policy_Write_ByEmailAutoscale_Users1" {
   }
 }
 
-resource "aws_appautoscaling_policy" "sc_policy_Write_Metrics-Autoscaling1" {
-  name               = "DynamoDBWriteCapacityUtilization:sc_target_Write_Metrics-Autoscaling1"
-  resource_id        = aws_appautoscaling_target.sc_target_Write_Metrics-Autoscaling1.resource_id
+resource "aws_appautoscaling_policy" "sc_policy_Write_MetricsAutoscaling" {
+  name               = "DynamoDBWriteCapacityUtilization:sc_target_Write_MetricsAutoscaling"
+  resource_id        = aws_appautoscaling_target.sc_target_Write_MetricsAutoscaling.resource_id
   policy_type        = "TargetTrackingScaling"
-  scalable_dimension = aws_appautoscaling_target.sc_target_Write_Metrics-Autoscaling1.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.sc_target_Write_Metrics-Autoscaling1.service_namespace
+  scalable_dimension = aws_appautoscaling_target.sc_target_Write_MetricsAutoscaling.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.sc_target_Write_MetricsAutoscaling.service_namespace
   target_tracking_scaling_policy_configuration {
     target_value = 70.0
     predefined_metric_specification {
@@ -411,54 +472,54 @@ resource "aws_appautoscaling_policy" "sc_policy_Write_Metrics-Autoscaling1" {
   }
 }
 
-resource "aws_appautoscaling_target" "sc_target_Read_ByEmailAutoscale_Users1" {
-  resource_id        = "table/${aws_dynamodb_table.Users1.name}/index/ByEmailAutoscale"
+resource "aws_appautoscaling_target" "sc_target_Read_ByEmailAutoscale_Users" {
+  resource_id        = "table/${aws_dynamodb_table.Users.name}/index/ByEmailAutoscale"
   max_capacity       = 10
   min_capacity       = 1
   scalable_dimension = "dynamodb:index:ReadCapacityUnits"
   service_namespace  = "dynamodb"
   tags = {
-    Name           = "sc_target_Read_ByEmailAutoscale_Users1"
-    State          = "dynamodb-tour1"
+    Name           = "sc_target_Read_ByEmailAutoscale_Users"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_appautoscaling_target" "sc_target_Read_Metrics-Autoscaling1" {
-  resource_id        = "table/${aws_dynamodb_table.Metrics-Autoscaling1.name}"
+resource "aws_appautoscaling_target" "sc_target_Read_MetricsAutoscaling" {
+  resource_id        = "table/${aws_dynamodb_table.MetricsAutoscaling.name}"
   max_capacity       = 10
   min_capacity       = 1
   scalable_dimension = "dynamodb:table:ReadCapacityUnits"
   service_namespace  = "dynamodb"
   tags = {
-    Name           = "sc_target_Read_Metrics-Autoscaling1"
-    State          = "dynamodb-tour1"
+    Name           = "sc_target_Read_MetricsAutoscaling"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_appautoscaling_target" "sc_target_Write_ByEmailAutoscale_Users1" {
-  resource_id        = "table/${aws_dynamodb_table.Users1.name}/index/ByEmailAutoscale"
+resource "aws_appautoscaling_target" "sc_target_Write_ByEmailAutoscale_Users" {
+  resource_id        = "table/${aws_dynamodb_table.Users.name}/index/ByEmailAutoscale"
   max_capacity       = 10
   min_capacity       = 1
   scalable_dimension = "dynamodb:index:WriteCapacityUnits"
   service_namespace  = "dynamodb"
   tags = {
-    Name           = "sc_target_Write_ByEmailAutoscale_Users1"
-    State          = "dynamodb-tour1"
+    Name           = "sc_target_Write_ByEmailAutoscale_Users"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_appautoscaling_target" "sc_target_Write_Metrics-Autoscaling1" {
-  resource_id        = "table/${aws_dynamodb_table.Metrics-Autoscaling1.name}"
+resource "aws_appautoscaling_target" "sc_target_Write_MetricsAutoscaling" {
+  resource_id        = "table/${aws_dynamodb_table.MetricsAutoscaling.name}"
   max_capacity       = 10
   min_capacity       = 1
   scalable_dimension = "dynamodb:table:WriteCapacityUnits"
   service_namespace  = "dynamodb"
   tags = {
-    Name           = "sc_target_Write_Metrics-Autoscaling1"
-    State          = "dynamodb-tour1"
+    Name           = "sc_target_Write_MetricsAutoscaling"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -468,15 +529,31 @@ resource "aws_appautoscaling_target" "sc_target_Write_Metrics-Autoscaling1" {
 
 ### CATEGORY: INTEGRATION ###
 
-resource "aws_kinesis_stream" "LedgerKinesisStream1" {
-  name        = "LedgerKinesisStream1"
+resource "aws_kinesis_stream" "LedgerKinesisStream" {
+  name        = "LedgerKinesisStream"
   shard_count = 1
   stream_mode_details {
     stream_mode = "PROVISIONED"
   }
   tags = {
-    Name           = "LedgerKinesisStream1"
-    State          = "dynamodb-tour1"
+    Name           = "LedgerKinesisStream"
+    State          = "dynamodb-tour"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_log_group" "StreamConsumer" {
+  name              = "/aws/lambda/StreamConsumer"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  tags = {
+    Name           = "StreamConsumer"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
