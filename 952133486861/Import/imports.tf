@@ -55,3 +55,43 @@ import {
   to = aws_iam_role.StreamConsumer1_role
   id = "StreamConsumer1_role"
 }
+
+import {
+  to = aws_appautoscaling_target.sc_target_Read_ByEmailAutoscale_Users1
+  id = "dynamodb/table/Users1/index/ByEmailAutoscale/dynamodb:index:ReadCapacityUnits"
+}
+
+import {
+  to = aws_appautoscaling_target.sc_target_Read_Metrics-Autoscaling1
+  id = "dynamodb/table/Metrics-Autoscaling1/dynamodb:table:ReadCapacityUnits"
+}
+
+import {
+  to = aws_appautoscaling_target.sc_target_Write_ByEmailAutoscale_Users1
+  id = "dynamodb/table/Users1/index/ByEmailAutoscale/dynamodb:index:WriteCapacityUnits"
+}
+
+import {
+  to = aws_appautoscaling_target.sc_target_Write_Metrics-Autoscaling1
+  id = "dynamodb/table/Metrics-Autoscaling1/dynamodb:table:WriteCapacityUnits"
+}
+
+import {
+  to = aws_appautoscaling_policy.sc_policy_Read_ByEmailAutoscale_Users1
+  id = "dynamodb/table/Users1/index/ByEmailAutoscale/dynamodb:index:ReadCapacityUnits/DynamoDBReadCapacityUtilization:sc_target_Read_ByEmailAutoscale_Users1"
+}
+
+import {
+  to = aws_appautoscaling_policy.sc_policy_Read_Metrics-Autoscaling1
+  id = "dynamodb/table/Metrics-Autoscaling1/dynamodb:table:ReadCapacityUnits/DynamoDBReadCapacityUtilization:sc_target_Read_Metrics-Autoscaling1"
+}
+
+import {
+  to = aws_appautoscaling_policy.sc_policy_Write_ByEmailAutoscale_Users1
+  id = "dynamodb/table/Users1/index/ByEmailAutoscale/dynamodb:index:WriteCapacityUnits/DynamoDBWriteCapacityUtilization:sc_target_Write_ByEmailAutoscale_Users1"
+}
+
+import {
+  to = aws_appautoscaling_policy.sc_policy_Write_Metrics-Autoscaling1
+  id = "dynamodb/table/Metrics-Autoscaling1/dynamodb:table:WriteCapacityUnits/DynamoDBWriteCapacityUtilization:sc_target_Write_Metrics-Autoscaling1"
+}
