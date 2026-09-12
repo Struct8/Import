@@ -65,7 +65,7 @@ resource "aws_iam_role" "StreamConsumer_role" {
   path                  = "/"
   tags = {
     Name           = "StreamConsumer_role"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -101,7 +101,7 @@ resource "aws_dynamodb_table" "EventsOnDemand" {
   }
   tags = {
     Name           = "EventsOnDemand"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -131,7 +131,7 @@ resource "aws_dynamodb_table" "Ledger" {
   }
   tags = {
     Name           = "Ledger"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -160,7 +160,7 @@ resource "aws_dynamodb_table" "MetricsAutoscaling" {
   }
   tags = {
     Name           = "MetricsAutoscaling"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -191,7 +191,7 @@ resource "aws_dynamodb_table" "Orders" {
   }
   tags = {
     Name           = "Orders"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -215,7 +215,7 @@ resource "aws_dynamodb_table" "RestoredLatest" {
   }
   tags = {
     Name           = "RestoredLatest"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -239,7 +239,7 @@ resource "aws_dynamodb_table" "RestoredPointInTime" {
   }
   tags = {
     Name           = "RestoredPointInTime"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -264,7 +264,7 @@ resource "aws_dynamodb_table" "Sessions" {
   }
   tags = {
     Name           = "Sessions"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -350,7 +350,7 @@ resource "aws_dynamodb_table" "Users" {
   }
   tags = {
     Name           = "Users"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   ttl {
@@ -376,7 +376,7 @@ resource "aws_lambda_event_source_mapping" "LedgerStreamMapping" {
   starting_position                  = "LATEST"
   tags = {
     Name           = "LedgerStreamMapping"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -394,9 +394,9 @@ resource "aws_lambda_function" "StreamConsumer" {
   timeout                        = 30
   environment {
     variables = {
-    ACCOUNT = data.aws_caller_identity.current.account_id
+    ACCOUNT = "952133486861"
     NAME    = "StreamConsumer"
-    REGION  = data.aws_region.current.region
+    REGION  = "us-west-2"
   }
   }
   ephemeral_storage {
@@ -410,7 +410,7 @@ resource "aws_lambda_function" "StreamConsumer" {
   }
   tags = {
     Name           = "StreamConsumer"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_StreamConsumer_st_dynamodb-tour_attach_StreamConsumer_role]
@@ -480,7 +480,7 @@ resource "aws_appautoscaling_target" "sc_target_Read_ByEmailAutoscale_Users" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Read_ByEmailAutoscale_Users"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -493,7 +493,7 @@ resource "aws_appautoscaling_target" "sc_target_Read_MetricsAutoscaling" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Read_MetricsAutoscaling"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -506,7 +506,7 @@ resource "aws_appautoscaling_target" "sc_target_Write_ByEmailAutoscale_Users" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Write_ByEmailAutoscale_Users"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -519,7 +519,7 @@ resource "aws_appautoscaling_target" "sc_target_Write_MetricsAutoscaling" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Write_MetricsAutoscaling"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -537,7 +537,7 @@ resource "aws_kinesis_stream" "LedgerKinesisStream" {
   }
   tags = {
     Name           = "LedgerKinesisStream"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -553,7 +553,7 @@ resource "aws_cloudwatch_log_group" "StreamConsumer" {
   retention_in_days = 1
   tags = {
     Name           = "StreamConsumer"
-    State          = "Import"
+    State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
 }
