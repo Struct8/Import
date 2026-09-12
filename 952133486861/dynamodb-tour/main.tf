@@ -18,21 +18,11 @@ terraform {
 
 # --- Main Cloud Provider ---
 provider "aws" {
-  region = "ca-central-1"
+  region = "us-west-2"
 }
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
-
-### RENAMES ###
-
-moved {
-  from = aws_cloudwatch_log_group.LogGroup
-  to   = aws_cloudwatch_log_group.StreamConsumer
-}
-
-
-
 
 ### CATEGORY: IAM ###
 
