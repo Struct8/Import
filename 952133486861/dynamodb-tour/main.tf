@@ -24,6 +24,16 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### RENAMES ###
+
+moved {
+  from = aws_cloudwatch_log_group.LogGroup
+  to   = aws_cloudwatch_log_group.StreamConsumer
+}
+
+
+
+
 ### CATEGORY: IAM ###
 
 data "aws_iam_policy_document" "lambda_function_StreamConsumer_st_dynamodb-tour_doc" {
@@ -31,7 +41,7 @@ data "aws_iam_policy_document" "lambda_function_StreamConsumer_st_dynamodb-tour_
     sid       = "AllowWriteLogs"
     effect    = "Allow"
     actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["${aws_cloudwatch_log_group.LogGroup.arn}:*"]
+    resources = ["${aws_cloudwatch_log_group.StreamConsumer.arn}:*"]
   }
   statement {
     sid       = "AllowEventSourceRead"
@@ -559,13 +569,13 @@ resource "aws_kinesis_stream" "LedgerKinesisStream" {
 
 ### CATEGORY: MONITORING ###
 
-resource "aws_cloudwatch_log_group" "LogGroup" {
+resource "aws_cloudwatch_log_group" "StreamConsumer" {
   name              = "/aws/lambda/StreamConsumer"
   log_group_class   = "STANDARD"
   retention_in_days = 1
   skip_destroy      = false
   tags = {
-    Name           = "LogGroup"
+    Name           = "StreamConsumer"
     State          = "dynamodb-tour"
     Struct8Creator = "Contato Struct"
   }
