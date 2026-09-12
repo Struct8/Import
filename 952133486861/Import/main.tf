@@ -391,7 +391,7 @@ resource "aws_appautoscaling_target" "sc_target_Read_ByEmailAutoscale_Users1" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Read_ByEmailAutoscale_Users1"
-    State          = "Import"
+    State          = "dynamodb-tour1"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -404,7 +404,7 @@ resource "aws_appautoscaling_target" "sc_target_Read_Metrics-Autoscaling1" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Read_Metrics-Autoscaling1"
-    State          = "Import"
+    State          = "dynamodb-tour1"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -417,7 +417,7 @@ resource "aws_appautoscaling_target" "sc_target_Write_ByEmailAutoscale_Users1" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Write_ByEmailAutoscale_Users1"
-    State          = "Import"
+    State          = "dynamodb-tour1"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -430,7 +430,7 @@ resource "aws_appautoscaling_target" "sc_target_Write_Metrics-Autoscaling1" {
   service_namespace  = "dynamodb"
   tags = {
     Name           = "sc_target_Write_Metrics-Autoscaling1"
-    State          = "Import"
+    State          = "dynamodb-tour1"
     Struct8Creator = "Contato Struct"
   }
 }
