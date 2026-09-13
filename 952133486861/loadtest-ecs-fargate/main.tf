@@ -534,14 +534,33 @@ resource "aws_lb_target_group" "tg-hub" {
 
 ### CATEGORY: COMPUTE ###
 
+data "local_file" "UserData_nat-a" {
+  filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-nat-private/v1/user_data/Nat.sh"
+}
+
+data "aws_ami" "AMI_Data_Source_nat-a" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-kernel-6.1-x86_64"]
+  }
+}
+
 resource "aws_instance" "nat-a" {
   subnet_id                   = aws_subnet.public-alb-b.id
-  ami                         = "ami-0469a6bed63b8634c"
+  ami                         = data.aws_ami.AMI_Data_Source_nat-a.id
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.nat-a1_profile.name
   instance_type               = "t3.nano"
-  private_ip                  = "10.4.3.239"
   source_dest_check           = false
+  user_data_base64 = base64encode(<<-EOFUData
+#!/bin/bash
+
+${data.local_file.UserData_nat-a.content}
+EOFUData
+)
+  user_data_replace_on_change = false
   vpc_security_group_ids      = [aws_security_group.instance_nat-a1_group.id]
   cpu_options {
     core_count       = 1
@@ -555,7 +574,6 @@ resource "aws_instance" "nat-a" {
   }
   lifecycle {
     create_before_destroy = false
-    ignore_changes        = [user_data]
     prevent_destroy       = false
   }
   metadata_options {
@@ -701,6 +719,7 @@ resource "aws_ecs_service" "hub_1" {
     State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [terraform_data.seed_struct8-hub]
 }
 
 resource "aws_ecs_service" "k6_1" {
@@ -733,7 +752,7 @@ resource "aws_ecs_service" "k6_1" {
 locals {
   container_def_hub_hub_2 = {
     name      = "hub"
-    image     = "952133486861.dkr.ecr.us-west-2.amazonaws.com/struct8-hub:latest"
+    image     = "${aws_ecr_repository.struct8-hub.repository_url}@struct8-hub:latest"
     essential = true
     cpu       = 256
     memory    = 512
@@ -746,24 +765,24 @@ locals {
     ]
     environment = [
       {
-        name  = "ACCOUNT"
-        value = "952133486861"
-      },
-      {
         name  = "HUB_LOADTEST"
         value = "on"
-      },
-      {
-        name  = "NAME"
-        value = "hub"
       },
       {
         name  = "PORT"
         value = "8080"
       },
       {
+        name  = "NAME"
+        value = "hub"
+      },
+      {
         name  = "REGION"
-        value = "us-west-2"
+        value = data.aws_region.current.region
+      },
+      {
+        name  = "ACCOUNT"
+        value = data.aws_caller_identity.current.account_id
       }
     ]
     logConfiguration = {
@@ -812,14 +831,6 @@ locals {
     memory    = 512
     environment = [
       {
-        name  = "ACCOUNT"
-        value = "952133486861"
-      },
-      {
-        name  = "AWS_LB_DNSNAME_0"
-        value = "alb-hub1-355339787.us-west-2.elb.amazonaws.com"
-      },
-      {
         name  = "DURATION"
         value = "20m"
       },
@@ -844,14 +855,29 @@ locals {
         value = "60"
       },
       {
-        name  = "TARGET_URL"
-        value = "http://alb-hub1-355339787.us-west-2.elb.amazonaws.com"
-      },
-      {
         name  = "VUS"
         value = "30"
+      },
+      {
+        name  = "ACCOUNT"
+        value = data.aws_caller_identity.current.account_id
+      },
+      {
+        name  = "AWS_LB_DNSNAME_0"
+        value = aws_lb.alb-hub.dns_name
       }
     ]
+    mountPoints    = []
+    systemControls = []
+    volumesFrom    = []
+    command = [
+      <<EOF
+export TARGET_URL="$${TARGET_URL:-http://${AWS_LB_DNSNAME_0}}"; echo "[k6] target $${TARGET_URL} waiting $${STARTUP_DELAY}s for warm-up"; sleep $${STARTUP_DELAY}; printf 'import http from "k6/http";\nimport { check } from "k6";\nconst URL = __ENV.TARGET_URL;\nconst METHOD = (__ENV.METHOD || "POST").toUpperCase();\nexport const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || "5m" };\nexport default function () {\n  const target = METHOD === "POST" ? URL + "/loadtest?ms=" + (__ENV.MS || "200") : URL;\n  const res = METHOD === "POST" ? http.post(target, null) : http.get(target);\n  check(res, { "ok": (r) => r.status >= 200 && r.status < 400 });\n}\n' > /tmp/load.js; k6 run /tmp/load.js
+      EOF
+    ]
+    entryPoint             = ["/bin/sh", "-c"]
+    privileged             = false
+    readonlyRootFilesystem = false
     logConfiguration = {
       logDriver = "awslogs"
       options = {
@@ -860,17 +886,6 @@ locals {
         awslogs-stream-prefix = "k6"
       }
     }
-    mountPoints    = []
-    systemControls = []
-    volumesFrom    = []
-    command = [
-      <<EOF
-echo "[k6] waiting $${STARTUP_DELAY}s for target warm-up"; sleep $${STARTUP_DELAY}; printf 'import http from "k6/http";\nimport { check } from "k6";\nconst URL = __ENV.TARGET_URL;\nconst METHOD = (__ENV.METHOD || "POST").toUpperCase();\nexport const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || "5m" };\nexport default function () {\n  const target = METHOD === "POST" ? URL + "/loadtest?ms=" + (__ENV.MS || "200") : URL;\n  const res = METHOD === "POST" ? http.post(target, null) : http.get(target);\n  check(res, { "ok": (r) => r.status >= 200 && r.status < 400 });\n}\n' > /tmp/load.js; k6 run /tmp/load.js
-      EOF
-    ]
-    entryPoint             = ["/bin/sh", "-c"]
-    privileged             = false
-    readonlyRootFilesystem = false
   }
 }
 
@@ -919,6 +934,28 @@ resource "aws_cloudwatch_log_group" "logs-tester" {
     Name           = "logs-tester"
     State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+resource "terraform_data" "seed_struct8-hub" {
+  triggers_replace = ["${path.module}/.external_modules/struct8-templates/templates/ec2-hub-docker/v1/image", "latest"]
+  lifecycle {
+    replace_triggered_by = [aws_ecr_repository.struct8-hub]
+  }
+  depends_on = [aws_ecr_repository.struct8-hub]
+  provisioner "local-exec" {
+    command = <<EOF
+set -e
+aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${split("/", aws_ecr_repository.struct8-hub.repository_url)[0]}
+docker build -t ${aws_ecr_repository.struct8-hub.repository_url}:latest ${path.module}/.external_modules/struct8-templates/templates/ec2-hub-docker/v1/image
+docker push ${aws_ecr_repository.struct8-hub.repository_url}:latest
+  EOF
+    interpreter = ["/bin/bash", "-c"]
   }
 }
 
