@@ -29,7 +29,7 @@ resource "aws_iam_instance_profile" "nat-a1_profile" {
   role = aws_iam_role.nat-a1_role.name
   tags = {
     Name           = "nat-a1_profile"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -108,7 +108,7 @@ resource "aws_iam_role" "execution_role_ecs_hub" {
   path                  = "/"
   tags = {
     Name           = "execution_role_ecs_hub"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -121,7 +121,7 @@ resource "aws_iam_role" "execution_role_ecs_k6" {
   path                  = "/"
   tags = {
     Name           = "execution_role_ecs_k6"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -134,7 +134,7 @@ resource "aws_iam_role" "nat-a1_role" {
   path                  = "/"
   tags = {
     Name           = "nat-a1_role"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -147,7 +147,7 @@ resource "aws_iam_role" "task_role_ecs_hub" {
   path                  = "/"
   tags = {
     Name           = "task_role_ecs_hub"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -160,7 +160,7 @@ resource "aws_iam_role" "task_role_ecs_k6" {
   path                  = "/"
   tags = {
     Name           = "task_role_ecs_k6"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -187,7 +187,7 @@ resource "aws_vpc" "ltfargate-vpc" {
   instance_tenancy     = "default"
   tags = {
     Name           = "ltfargate-vpc"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -200,7 +200,7 @@ resource "aws_subnet" "private-hub-a" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "private-hub-a"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -213,7 +213,7 @@ resource "aws_subnet" "private-hub-b" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "private-hub-b"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -226,7 +226,7 @@ resource "aws_subnet" "public-alb-a" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "public-alb-a"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -239,7 +239,7 @@ resource "aws_subnet" "public-alb-b" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "public-alb-b"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -252,7 +252,7 @@ resource "aws_subnet" "public-k1" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "public-k1"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -261,7 +261,7 @@ resource "aws_internet_gateway" "ltfargate-igw" {
   vpc_id = aws_vpc.ltfargate-vpc.id
   tags = {
     Name           = "ltfargate-igw"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -282,7 +282,7 @@ resource "aws_route_table" "rt-private2" {
   vpc_id = aws_vpc.ltfargate-vpc.id
   tags = {
     Name           = "rt-private2"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -291,7 +291,7 @@ resource "aws_route_table" "rt-public2" {
   vpc_id = aws_vpc.ltfargate-vpc.id
   tags = {
     Name           = "rt-public2"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -325,12 +325,9 @@ resource "aws_security_group" "ecs_task_definition_hub_group" {
   name        = "ecs_task_definition_hub_group"
   vpc_id      = aws_vpc.ltfargate-vpc.id
   description = "Managed by Terraform"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "ecs_task_definition_hub_group"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -339,12 +336,9 @@ resource "aws_security_group" "ecs_task_definition_k6_group" {
   name        = "ecs_task_definition_k6_group"
   vpc_id      = aws_vpc.ltfargate-vpc.id
   description = "Managed by Terraform"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "ecs_task_definition_k6_group"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -353,12 +347,9 @@ resource "aws_security_group" "instance_nat-a1_group" {
   name        = "instance_nat-a1_group"
   vpc_id      = aws_vpc.ltfargate-vpc.id
   description = "NAT instance SG. Must accept ALL traffic from the VPC CIDR (ingress -1 from 10.70.0.0/16) so it can forward/MASQUERADE the private Hub tasks egress to the internet (ECR image pull). Egress open."
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "instance_nat-a1_group"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -367,12 +358,9 @@ resource "aws_security_group" "lb_alb-hub1_group" {
   name        = "lb_alb-hub1_group"
   vpc_id      = aws_vpc.ltfargate-vpc.id
   description = "ALB SG. Accepts HTTP :80 from anywhere: the k6 Fargate task is in a public subnet and reaches the ALB by its public IP, so traffic arrives from the public range, not the VPC CIDR. Egress open to reach the Hub tasks on :8080."
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "lb_alb-hub1_group"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -463,7 +451,7 @@ resource "aws_lb" "alb-hub1" {
   subnets                          = [aws_subnet.public-alb-a.id, aws_subnet.public-alb-b.id]
   tags = {
     Name           = "alb-hub1"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -486,7 +474,7 @@ resource "aws_lb_listener" "listener-http1" {
   }
   tags = {
     Name           = "listener-http1"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -522,7 +510,7 @@ resource "aws_lb_target_group" "tg-hub1" {
   }
   tags = {
     Name           = "tg-hub1"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   target_group_health {
@@ -562,7 +550,7 @@ resource "aws_instance" "nat-a1" {
     enabled = false
   }
   lifecycle {
-    ignore_changes = [user_data, user_data_replace_on_change]
+    ignore_changes = [user_data]
   }
   metadata_options {
     http_endpoint               = "enabled"
@@ -583,7 +571,7 @@ resource "aws_instance" "nat-a1" {
   }
   tags = {
     Name           = "nat-a1"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -618,7 +606,7 @@ resource "aws_appautoscaling_target" "service_ltfargate-target_hub_ecs_service_D
   }
   tags = {
     Name           = "hub-scale-target"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -639,7 +627,7 @@ resource "aws_ecr_repository" "struct8-hub" {
   }
   tags = {
     Name           = "struct8-hub"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -652,7 +640,7 @@ resource "aws_ecs_cluster" "ltfargate-target" {
   }
   tags = {
     Name           = "ltfargate-target"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -665,7 +653,7 @@ resource "aws_ecs_cluster" "ltfargate-tester" {
   }
   tags = {
     Name           = "ltfargate-tester"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -703,7 +691,7 @@ resource "aws_ecs_service" "hub_1" {
   }
   tags = {
     Name           = "hub_1"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -730,7 +718,7 @@ resource "aws_ecs_service" "k6_1" {
   }
   tags = {
     Name           = "k6_1"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -802,7 +790,7 @@ resource "aws_ecs_task_definition" "hub" {
   }
   tags = {
     Name           = "hub"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_attach_execution_role_ecs_hub]
@@ -894,7 +882,7 @@ resource "aws_ecs_task_definition" "k6" {
   }
   tags = {
     Name           = "k6"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_k6_execution_st_loadtest-ecs-fargate_attach_execution_role_ecs_k6]
@@ -911,7 +899,7 @@ resource "aws_cloudwatch_log_group" "logs-target" {
   retention_in_days = 7
   tags = {
     Name           = "logs-target"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -922,7 +910,7 @@ resource "aws_cloudwatch_log_group" "logs-tester" {
   retention_in_days = 7
   tags = {
     Name           = "logs-tester"
-    State          = "loadtest-ecs-fargate"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
