@@ -383,7 +383,7 @@ resource "aws_security_group" "instance_nat-a1_group" {
 resource "aws_security_group" "lb_alb-hub1_group" {
   name                   = "lb_alb-hub1_group"
   vpc_id                 = aws_vpc.ltfargate-vpc.id
-  description            = "ALB SG. Accepts HTTP :80 from anywhere: the k6 Fargate task runs in a public subnet and reaches the ALB by its public IP, so traffic arrives from the public IP range, not the VPC CIDR (lesson from the ASG load-test template). Egress open so the ALB can reach the Hub tasks on :8080."
+  description            = "ALB SG. Accepts HTTP :80 from anywhere: the k6 Fargate task is in a public subnet and reaches the ALB by its public IP, so traffic arrives from the public range, not the VPC CIDR. Egress open to reach the Hub tasks on :8080."
   revoke_rules_on_delete = false
 }
 
