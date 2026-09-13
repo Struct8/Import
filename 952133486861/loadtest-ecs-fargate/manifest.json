@@ -1,26 +1,7 @@
 {
-  "external_repositories": [
-    {
-      "repo_name": "struct8-hub",
-      "org": "Struct8",
-      "branch": "main",
-      "target_dir": ".external_modules/struct8-hub",
-      "folders": [
-        "image"
-      ]
-    },
-    {
-      "repo_name": "struct8-templates",
-      "org": "Struct8",
-      "branch": "main",
-      "target_dir": ".external_modules/struct8-templates",
-      "folders": [
-        "templates/ec2-nat-private/v1/user_data"
-      ]
-    }
-  ],
-  "action": "apply",
-  "trigger_id": "1789329913619",
+  "external_repositories": [],
+  "action": "destroy",
+  "trigger_id": "1789338902767",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
