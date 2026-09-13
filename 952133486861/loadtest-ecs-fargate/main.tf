@@ -842,14 +842,6 @@ locals {
     mountPoints    = []
     systemControls = []
     volumesFrom    = []
-    command = [
-      <<EOF
-echo "[k6] waiting ${STARTUP_DELAY}s for target warm-up"; sleep ${STARTUP_DELAY}; printf 'import http from "k6/http";\nimport { check, sleep } from "k6";\nconst URL = __ENV.TARGET_URL;\nconst METHOD = (__ENV.METHOD || "POST").toUpperCase();\nconst MS = __ENV.MS || "200";\nexport const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || "5m" };\nexport default function () {\n  const target = METHOD === "POST" ? URL + "/loadtest?ms=" + MS : URL;\n  const res = METHOD === "POST" ? http.post(target, null) : http.get(target);\n  check(res, { "status 2xx-3xx": (r) => r.status >= 200 && r.status < 400 });\n  sleep(1);\n}\n' > /tmp/load.js; k6 run /tmp/load.js
-      EOF
-    ]
-    entryPoint             = [/bin/sh, -c]
-    privileged             = false
-    readonlyRootFilesystem = false
   }
 }
 
