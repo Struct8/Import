@@ -15,7 +15,7 @@ terraform {
 
 # --- Main Cloud Provider ---
 provider "aws" {
-  region = "us-east-1"
+  region = "us-west-2"
 }
 
 data "aws_caller_identity" "current" {}
@@ -211,7 +211,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_definition_k6_execution_st_l
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "ltfargate-vpc" {
-  cidr_block           = "10.70.0.0/16"
+  cidr_block           = "10.4.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
   instance_tenancy     = "default"
@@ -224,8 +224,8 @@ resource "aws_vpc" "ltfargate-vpc" {
 
 resource "aws_subnet" "private-hub-a" {
   vpc_id                  = aws_vpc.ltfargate-vpc.id
-  availability_zone       = "us-east-1a"
-  cidr_block              = "10.70.20.0/24"
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.4.2.0/24"
   map_public_ip_on_launch = false
   tags = {
     Name           = "private-hub-a"
@@ -236,8 +236,8 @@ resource "aws_subnet" "private-hub-a" {
 
 resource "aws_subnet" "private-hub-b" {
   vpc_id                  = aws_vpc.ltfargate-vpc.id
-  availability_zone       = "us-east-1b"
-  cidr_block              = "10.70.21.0/24"
+  availability_zone       = "us-west-2b"
+  cidr_block              = "10.4.4.0/24"
   map_public_ip_on_launch = false
   tags = {
     Name           = "private-hub-b"
@@ -248,8 +248,8 @@ resource "aws_subnet" "private-hub-b" {
 
 resource "aws_subnet" "public-alb-a" {
   vpc_id                  = aws_vpc.ltfargate-vpc.id
-  availability_zone       = "us-east-1a"
-  cidr_block              = "10.70.11.0/24"
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.4.1.0/24"
   map_public_ip_on_launch = true
   tags = {
     Name           = "public-alb-a"
@@ -260,8 +260,8 @@ resource "aws_subnet" "public-alb-a" {
 
 resource "aws_subnet" "public-alb-b" {
   vpc_id                  = aws_vpc.ltfargate-vpc.id
-  availability_zone       = "us-east-1b"
-  cidr_block              = "10.70.12.0/24"
+  availability_zone       = "us-west-2b"
+  cidr_block              = "10.4.3.0/24"
   map_public_ip_on_launch = true
   tags = {
     Name           = "public-alb-b"
@@ -272,8 +272,8 @@ resource "aws_subnet" "public-alb-b" {
 
 resource "aws_subnet" "public-k1" {
   vpc_id                  = aws_vpc.ltfargate-vpc.id
-  availability_zone       = "us-east-1a"
-  cidr_block              = "10.70.10.0/24"
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.4.0.0/24"
   map_public_ip_on_launch = true
   tags = {
     Name           = "public-k1"
@@ -380,6 +380,11 @@ resource "aws_security_group" "lb_alb-hub1_group" {
   vpc_id                 = aws_vpc.ltfargate-vpc.id
   description            = "ALB SG. Accepts HTTP :80 from anywhere: the k6 Fargate task is in a public subnet and reaches the ALB by its public IP, so traffic arrives from the public range, not the VPC CIDR. Egress open to reach the Hub tasks on :8080."
   revoke_rules_on_delete = false
+  tags = {
+    Name           = "lb_alb-hub1_group"
+    State          = "loadtest-ecs-fargate"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_security_group_rule" "rule_ecs_task_definition_hub_group_egress_all_protocols" {
@@ -589,7 +594,7 @@ resource "aws_appautoscaling_policy" "hub-scale-cpu" {
 
 resource "aws_appautoscaling_target" "hub-scale-target" {
   resource_id        = "service/${aws_ecs_cluster.ltfargate-target.name}/${aws_ecs_service.hub_1.name}"
-  max_capacity       = 4
+  max_capacity       = 3
   min_capacity       = 1
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -745,13 +750,15 @@ locals {
       logDriver = "awslogs"
       options = {
         awslogs-group         = aws_cloudwatch_log_group.logs-target.name
-        awslogs-region        = "us-east-1"
+        awslogs-region        = "us-west-2"
         awslogs-stream-prefix = "hub"
       }
     }
-    mountPoints    = []
-    systemControls = []
-    volumesFrom    = []
+    mountPoints            = []
+    systemControls         = []
+    volumesFrom            = []
+    privileged             = false
+    readonlyRootFilesystem = false
   }
 }
 
@@ -829,7 +836,7 @@ locals {
       logDriver = "awslogs"
       options = {
         awslogs-group         = aws_cloudwatch_log_group.logs-tester.name
-        awslogs-region        = "us-east-1"
+        awslogs-region        = "us-west-2"
         awslogs-stream-prefix = "k6"
       }
     }
@@ -841,7 +848,9 @@ locals {
 echo "[k6] waiting $${STARTUP_DELAY}s for target warm-up"; sleep $${STARTUP_DELAY}; printf 'import http from "k6/http";\nimport { check } from "k6";\nconst URL = __ENV.TARGET_URL;\nconst METHOD = (__ENV.METHOD || "POST").toUpperCase();\nexport const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || "5m" };\nexport default function () {\n  const target = METHOD === "POST" ? URL + "/loadtest?ms=" + (__ENV.MS || "200") : URL;\n  const res = METHOD === "POST" ? http.post(target, null) : http.get(target);\n  check(res, { "ok": (r) => r.status >= 200 && r.status < 400 });\n}\n' > /tmp/load.js; k6 run /tmp/load.js
       EOF
     ]
-    entryPoint = ["/bin/sh", "-c"]
+    entryPoint             = ["/bin/sh", "-c"]
+    privileged             = false
+    readonlyRootFilesystem = false
   }
 }
 
@@ -909,7 +918,7 @@ resource "terraform_data" "seed_struct8-hub" {
   provisioner "local-exec" {
     command = <<EOF
 set -e
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${split("/", aws_ecr_repository.struct8-hub.repository_url)[0]}
+aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${split("/", aws_ecr_repository.struct8-hub.repository_url)[0]}
 docker build -t ${aws_ecr_repository.struct8-hub.repository_url}:latest ${path.module}/.external_modules/struct8-hub/image
 docker push ${aws_ecr_repository.struct8-hub.repository_url}:latest
   EOF
