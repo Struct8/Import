@@ -102,6 +102,16 @@ import {
 }
 
 import {
+  to = aws_iam_role.hub-asg_role
+  id = "hub-asg_role"
+}
+
+import {
+  to = aws_iam_instance_profile.hub-asg_profile
+  id = "hub-asg_profile"
+}
+
+import {
   to = aws_security_group.instance_nat-a_group
   id = "sg-095276e284fb4c8a9"
 }
