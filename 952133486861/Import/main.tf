@@ -45,6 +45,33 @@ resource "aws_iam_instance_profile" "nat-a_profile" {
   }
 }
 
+resource "aws_iam_openid_connect_provider" "token_actions_githubusercontent_com" {
+  name = "token_actions_githubusercontent_com"
+  tags = {
+    Name           = "token_actions_githubusercontent_com"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role" "Struct8-Gitops-Struct8-import" {
+  name                  = "Struct8-Gitops-Struct8-import"
+  assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRoleWithWebIdentity\",\"Condition\":{\"StringEquals\":{\"token.actions.githubusercontent.com:aud\":\"sts.amazonaws.com\"},\"StringEqualsIgnoreCase\":{\"token.actions.githubusercontent.com:sub\":[\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/engine.yml@refs/heads/devlocal\",\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/engine.yml@refs/heads/dev\",\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/engine.yml@refs/heads/test\",\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/engine.yml@refs/heads/alpha\",\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/engine.yml@refs/heads/main\",\"repo:Struct8@276103125/Import@1360758768:ref:refs/heads/main:job_workflow_ref:Struct8/cloudman-core/.github/workflows/lambda-sync.yml@refs/heads/main\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Federated\":\"arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com\"}}],\"Version\":\"2012-10-17\"}"
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  inline_policy {
+    name   = "Struct8ProtectOwnTrust"
+    policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"iam:UpdateAssumeRolePolicy\",\"iam:UpdateRole\",\"iam:DeleteRole\",\"iam:PutRolePolicy\",\"iam:DeleteRolePolicy\",\"iam:AttachRolePolicy\",\"iam:DetachRolePolicy\",\"iam:PutRolePermissionsBoundary\",\"iam:DeleteRolePermissionsBoundary\"],\"Effect\":\"Deny\",\"Resource\":\"arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import\"},{\"Action\":[\"iam:DeleteOpenIDConnectProvider\",\"iam:UpdateOpenIDConnectProviderThumbprint\",\"iam:AddClientIDToOpenIDConnectProvider\",\"iam:RemoveClientIDFromOpenIDConnectProvider\"],\"Effect\":\"Deny\",\"Resource\":\"arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com\"},{\"Action\":[\"cloudtrail:StopLogging\",\"cloudtrail:DeleteTrail\",\"cloudtrail:UpdateTrail\",\"cloudtrail:PutEventSelectors\"],\"Effect\":\"Deny\",\"Resource\":\"*\"}]}"
+  }
+  tags = {
+    Name           = "Struct8-Gitops-Struct8-import"
+    State          = "Struct8-Gitops-Struct8-import"
+    Struct8User    = "Contato Struct"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role" "k6-load-generator_role" {
   name                  = "k6-load-generator_role"
   assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
@@ -846,6 +873,33 @@ resource "aws_autoscaling_policy" "cpu-scale" {
     predefined_metric_specification {
       predefined_metric_type = "ASGAverageCPUUtilization"
     }
+  }
+}
+
+
+
+
+### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_log_group" "aws_lambda_us-east-1_Redirector" {
+  name              = "/aws/lambda/us-east-1.Redirector"
+  log_group_class   = "STANDARD"
+  retention_in_days = 0
+  tags = {
+    Name           = "aws_lambda_us-east-1_Redirector"
+    State          = "Import"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "aws_vpc_flowlogs_oregon-asg" {
+  name              = "/aws/vpc/flowlogs/oregon-asg"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  tags = {
+    Name           = "aws_vpc_flowlogs_oregon-asg"
+    State          = "oregon-reimport"
+    Struct8Creator = "Contato Struct"
   }
 }
 
