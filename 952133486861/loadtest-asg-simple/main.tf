@@ -740,7 +740,7 @@ resource "aws_autoscaling_group" "hub-asg" {
   health_check_grace_period = 600
   health_check_type         = "ELB"
   max_instance_lifetime     = 0
-  max_size                  = 3
+  max_size                  = 1
   metrics_granularity       = "1Minute"
   min_elb_capacity          = 0
   min_size                  = 1
