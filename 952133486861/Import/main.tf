@@ -259,6 +259,20 @@ resource "aws_security_group" "instance_nat-a_group" {
   }
 }
 
+resource "aws_security_group" "lb_alb-hub_group" {
+  name        = "lb_alb-hub_group"
+  vpc_id      = aws_vpc.loadtest-asg-simple.id
+  description = "Managed by Terraform"
+  lifecycle {
+    ignore_changes = [revoke_rules_on_delete]
+  }
+  tags = {
+    Name           = "lb_alb-hub_group"
+    State          = "loadtest-asg-simple"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_security_group_rule" "rule_autoscaling_group_hub_asg_group_egress_all_protocols" {
   security_group_id = aws_security_group.autoscaling_group_hub-asg_group.id
   cidr_blocks       = ["0.0.0.0/0"]
@@ -276,16 +290,6 @@ resource "aws_security_group_rule" "rule_autoscaling_group_hub_asg_group_ingress
   protocol          = "tcp"
   to_port           = 8080
   type              = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_autoscaling_group_hub_asg_group_ingress_tcp_8080" {
-  security_group_id        = aws_security_group.autoscaling_group_hub-asg_group.id
-  source_security_group_id = "sg-056ed8737d5a3efdd"
-  description              = "Hub HTTP from the ALB target group"
-  from_port                = 8080
-  protocol                 = "tcp"
-  to_port                  = 8080
-  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_instance_k6_load_generator_group_egress_all_protocols" {
@@ -307,13 +311,13 @@ resource "aws_security_group_rule" "rule_instance_k6_load_generator_group_ingres
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_instance_k6_load_generator_group_ingress_tcp_5665" {
-  security_group_id        = aws_security_group.instance_k6-load-generator_group.id
-  source_security_group_id = "sg-056ed8737d5a3efdd"
-  description              = "k6 web dashboard from the ALB"
-  from_port                = 5665
+resource "aws_security_group_rule" "rule_instance_k6_load_generator_group_to_lb_alb_hub_group_tcp_80" {
+  security_group_id        = aws_security_group.lb_alb-hub_group.id
+  source_security_group_id = aws_security_group.instance_k6-load-generator_group.id
+  description              = "HTTP load test traffic from k6 to the ALB"
+  from_port                = 80
   protocol                 = "tcp"
-  to_port                  = 5665
+  to_port                  = 80
   type                     = "ingress"
 }
 
@@ -346,12 +350,62 @@ resource "aws_security_group_rule" "rule_instance_nat_a_group_ingress_tcp_5665" 
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "rule_lb_alb_hub_group_egress_all_protocols" {
+  security_group_id = aws_security_group.lb_alb-hub_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_lb_alb_hub_group_ingress_tcp_5665" {
+  security_group_id = aws_security_group.lb_alb-hub_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "k6 dashboard via ALB (public, ephemeral test env)"
+  from_port         = 5665
+  protocol          = "tcp"
+  to_port           = 5665
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lb_alb_hub_group_ingress_tcp_80" {
+  security_group_id = aws_security_group.lb_alb-hub_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "k6 load traffic to Hub via ALB (public: k6 reaches the ALB by its public IP)"
+  from_port         = 80
+  protocol          = "tcp"
+  to_port           = 80
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lb_alb_hub_group_to_autoscaling_group_hub_asg_group_tcp_8080" {
+  security_group_id        = aws_security_group.autoscaling_group_hub-asg_group.id
+  source_security_group_id = aws_security_group.lb_alb-hub_group.id
+  description              = "Hub HTTP from the ALB target group"
+  from_port                = 8080
+  protocol                 = "tcp"
+  to_port                  = 8080
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lb_alb_hub_group_to_instance_k6_load_generator_group_tcp_5665" {
+  security_group_id        = aws_security_group.instance_k6-load-generator_group.id
+  source_security_group_id = aws_security_group.lb_alb-hub_group.id
+  description              = "k6 web dashboard from the ALB"
+  from_port                = 5665
+  protocol                 = "tcp"
+  to_port                  = 5665
+  type                     = "ingress"
+}
+
 resource "aws_lb" "alb-hub" {
   name                             = "alb-hub"
   enable_cross_zone_load_balancing = true
   enable_http2                     = true
   idle_timeout                     = 60
   load_balancer_type               = "application"
+  security_groups                  = [aws_security_group.lb_alb-hub_group.id]
   subnets                          = [aws_subnet.public-a.id, aws_subnet.public-b.id]
   tags = {
     Name           = "alb-hub"
@@ -464,7 +518,7 @@ resource "aws_lb_target_group" "tg-k6-dashboard" {
   protocol                          = "HTTP"
   protocol_version                  = "HTTP1"
   slow_start                        = 0
-  target_type                       = "ip"
+  target_type                       = "instance"
   health_check {
     enabled             = true
     healthy_threshold   = 5
@@ -496,6 +550,12 @@ resource "aws_lb_target_group" "tg-k6-dashboard" {
       minimum_healthy_targets_percentage = "off"
     }
   }
+}
+
+resource "aws_lb_target_group_attachment" "attach_k6-load-generator_to_tg-k6-dashboard" {
+  target_id        = aws_instance.k6-load-generator.id
+  port             = 5665
+  target_group_arn = aws_lb_target_group.tg-k6-dashboard.arn
 }
 
 
@@ -771,6 +831,21 @@ resource "aws_autoscaling_group" "hub-asg" {
     key                 = "Struct8Creator"
     propagate_at_launch = true
     value               = "Contato Struct"
+  }
+}
+
+resource "aws_autoscaling_policy" "cpu-scale" {
+  autoscaling_group_name    = aws_autoscaling_group.hub-asg.name
+  name                      = "cpu-scale"
+  enabled                   = true
+  estimated_instance_warmup = 300
+  policy_type               = "TargetTrackingScaling"
+  target_tracking_configuration {
+    disable_scale_in = false
+    target_value     = 50
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
   }
 }
 
