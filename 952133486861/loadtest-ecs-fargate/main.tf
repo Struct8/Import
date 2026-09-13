@@ -24,6 +24,11 @@ data "aws_region" "current" {}
 ### RENAMES ###
 
 moved {
+  from = aws_vpc.ltfargate-vpc
+  to   = aws_vpc.ecs-fargate-vpc
+}
+
+moved {
   from = aws_appautoscaling_target.service_ltfargate-target_hub_ecs_service_DesiredCount_ecs
   to   = aws_appautoscaling_target.hub-scale-target
 }
@@ -174,20 +179,20 @@ resource "aws_iam_role_policy_attachment" "ecs_task_definition_k6_execution_st_l
 
 ### CATEGORY: NETWORK ###
 
-resource "aws_vpc" "ltfargate-vpc" {
+resource "aws_vpc" "ecs-fargate-vpc" {
   cidr_block           = "10.4.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
   instance_tenancy     = "default"
   tags = {
-    Name           = "ltfargate-vpc"
+    Name           = "ecs-fargate-vpc"
     State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
 resource "aws_subnet" "private-hub-a" {
-  vpc_id                              = aws_vpc.ltfargate-vpc.id
+  vpc_id                              = aws_vpc.ecs-fargate-vpc.id
   availability_zone                   = "us-west-2a"
   cidr_block                          = "10.4.2.0/24"
   map_public_ip_on_launch             = false
@@ -200,7 +205,7 @@ resource "aws_subnet" "private-hub-a" {
 }
 
 resource "aws_subnet" "private-hub-b" {
-  vpc_id                              = aws_vpc.ltfargate-vpc.id
+  vpc_id                              = aws_vpc.ecs-fargate-vpc.id
   availability_zone                   = "us-west-2b"
   cidr_block                          = "10.4.4.0/24"
   map_public_ip_on_launch             = false
@@ -213,7 +218,7 @@ resource "aws_subnet" "private-hub-b" {
 }
 
 resource "aws_subnet" "public-alb-a" {
-  vpc_id                              = aws_vpc.ltfargate-vpc.id
+  vpc_id                              = aws_vpc.ecs-fargate-vpc.id
   availability_zone                   = "us-west-2a"
   cidr_block                          = "10.4.1.0/24"
   map_public_ip_on_launch             = true
@@ -226,7 +231,7 @@ resource "aws_subnet" "public-alb-a" {
 }
 
 resource "aws_subnet" "public-alb-b" {
-  vpc_id                              = aws_vpc.ltfargate-vpc.id
+  vpc_id                              = aws_vpc.ecs-fargate-vpc.id
   availability_zone                   = "us-west-2b"
   cidr_block                          = "10.4.3.0/24"
   map_public_ip_on_launch             = true
@@ -239,7 +244,7 @@ resource "aws_subnet" "public-alb-b" {
 }
 
 resource "aws_subnet" "public-k6" {
-  vpc_id                              = aws_vpc.ltfargate-vpc.id
+  vpc_id                              = aws_vpc.ecs-fargate-vpc.id
   availability_zone                   = "us-west-2a"
   cidr_block                          = "10.4.0.0/24"
   map_public_ip_on_launch             = true
@@ -252,7 +257,7 @@ resource "aws_subnet" "public-k6" {
 }
 
 resource "aws_internet_gateway" "ltfargate-igw" {
-  vpc_id = aws_vpc.ltfargate-vpc.id
+  vpc_id = aws_vpc.ecs-fargate-vpc.id
   tags = {
     Name           = "ltfargate-igw"
     State          = "loadtest-ecs-fargate"
@@ -273,7 +278,7 @@ resource "aws_route" "route_rt-public2_to_ltfargate-igw_ipv4" {
 }
 
 resource "aws_route_table" "rt-private2" {
-  vpc_id = aws_vpc.ltfargate-vpc.id
+  vpc_id = aws_vpc.ecs-fargate-vpc.id
   tags = {
     Name           = "rt-private2"
     State          = "loadtest-ecs-fargate"
@@ -282,7 +287,7 @@ resource "aws_route_table" "rt-private2" {
 }
 
 resource "aws_route_table" "rt-public2" {
-  vpc_id = aws_vpc.ltfargate-vpc.id
+  vpc_id = aws_vpc.ecs-fargate-vpc.id
   tags = {
     Name           = "rt-public2"
     State          = "loadtest-ecs-fargate"
@@ -317,7 +322,7 @@ resource "aws_route_table_association" "aws_route_table_association_public_k6_rt
 
 resource "aws_security_group" "ecs_task_definition_hub_group" {
   name        = "ecs_task_definition_hub_group"
-  vpc_id      = aws_vpc.ltfargate-vpc.id
+  vpc_id      = aws_vpc.ecs-fargate-vpc.id
   description = "Managed by Terraform"
   tags = {
     Name           = "ecs_task_definition_hub_group"
@@ -328,7 +333,7 @@ resource "aws_security_group" "ecs_task_definition_hub_group" {
 
 resource "aws_security_group" "ecs_task_definition_k6_group" {
   name        = "ecs_task_definition_k6_group"
-  vpc_id      = aws_vpc.ltfargate-vpc.id
+  vpc_id      = aws_vpc.ecs-fargate-vpc.id
   description = "Managed by Terraform"
   tags = {
     Name           = "ecs_task_definition_k6_group"
@@ -339,7 +344,7 @@ resource "aws_security_group" "ecs_task_definition_k6_group" {
 
 resource "aws_security_group" "instance_nat-a1_group" {
   name        = "instance_nat-a1_group"
-  vpc_id      = aws_vpc.ltfargate-vpc.id
+  vpc_id      = aws_vpc.ecs-fargate-vpc.id
   description = "NAT instance SG. Must accept ALL traffic from the VPC CIDR (ingress -1 from 10.70.0.0/16) so it can forward/MASQUERADE the private Hub tasks egress to the internet (ECR image pull). Egress open."
   tags = {
     Name           = "instance_nat-a1_group"
@@ -350,7 +355,7 @@ resource "aws_security_group" "instance_nat-a1_group" {
 
 resource "aws_security_group" "lb_alb-hub1_group" {
   name        = "lb_alb-hub1_group"
-  vpc_id      = aws_vpc.ltfargate-vpc.id
+  vpc_id      = aws_vpc.ecs-fargate-vpc.id
   description = "ALB SG. Accepts HTTP :80 from anywhere: the k6 Fargate task is in a public subnet and reaches the ALB by its public IP, so traffic arrives from the public range, not the VPC CIDR. Egress open to reach the Hub tasks on :8080."
   tags = {
     Name           = "lb_alb-hub1_group"
@@ -475,7 +480,7 @@ resource "aws_lb_listener" "listener-http" {
 
 resource "aws_lb_target_group" "tg-hub" {
   name                              = "tg-hub"
-  vpc_id                            = aws_vpc.ltfargate-vpc.id
+  vpc_id                            = aws_vpc.ecs-fargate-vpc.id
   deregistration_delay              = "30"
   ip_address_type                   = "ipv4"
   load_balancing_algorithm_type     = "round_robin"
@@ -775,14 +780,6 @@ locals {
         value = data.aws_caller_identity.current.account_id
       }
     ]
-    logConfiguration = {
-      logDriver = "awslogs"
-      options = {
-        awslogs-group         = "/ecs/ltfargate-hub"
-        awslogs-region        = "us-west-2"
-        awslogs-stream-prefix = "hub"
-      }
-    }
     mountPoints            = []
     systemControls         = []
     volumesFrom            = []
@@ -857,17 +854,6 @@ locals {
         value = aws_lb.alb-hub.dns_name
       }
     ]
-    mountPoints    = []
-    systemControls = []
-    volumesFrom    = []
-    command = [
-      <<EOF
-export TARGET_URL="$${TARGET_URL:-http://${AWS_LB_DNSNAME_0}}"; echo "[k6] target $${TARGET_URL} waiting $${STARTUP_DELAY}s for warm-up"; sleep $${STARTUP_DELAY}; printf 'import http from "k6/http";\nimport { check } from "k6";\nconst URL = __ENV.TARGET_URL;\nconst METHOD = (__ENV.METHOD || "POST").toUpperCase();\nexport const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || "5m" };\nexport default function () {\n  const target = METHOD === "POST" ? URL + "/loadtest?ms=" + (__ENV.MS || "200") : URL;\n  const res = METHOD === "POST" ? http.post(target, null) : http.get(target);\n  check(res, { "ok": (r) => r.status >= 200 && r.status < 400 });\n}\n' > /tmp/load.js; k6 run /tmp/load.js
-      EOF
-    ]
-    entryPoint             = ["/bin/sh", "-c"]
-    privileged             = false
-    readonlyRootFilesystem = false
     logConfiguration = {
       logDriver = "awslogs"
       options = {
@@ -876,6 +862,17 @@ export TARGET_URL="$${TARGET_URL:-http://${AWS_LB_DNSNAME_0}}"; echo "[k6] targe
         awslogs-stream-prefix = "k6"
       }
     }
+    mountPoints    = []
+    systemControls = []
+    volumesFrom    = []
+    command = [
+      <<EOF
+export TARGET_URL="$${TARGET_URL:-http://$${AWS_LB_DNSNAME_0}}"; echo "[k6] target $${TARGET_URL} waiting $${STARTUP_DELAY}s for warm-up"; sleep $${STARTUP_DELAY}; printf 'import http from "k6/http";\nimport { check } from "k6";\nconst URL = __ENV.TARGET_URL;\nconst METHOD = (__ENV.METHOD || "POST").toUpperCase();\nexport const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || "5m" };\nexport default function () {\n  const target = METHOD === "POST" ? URL + "/loadtest?ms=" + (__ENV.MS || "200") : URL;\n  const res = METHOD === "POST" ? http.post(target, null) : http.get(target);\n  check(res, { "ok": (r) => r.status >= 200 && r.status < 400 });\n}\n' > /tmp/load.js; k6 run /tmp/load.js
+      EOF
+    ]
+    entryPoint             = ["/bin/sh", "-c"]
+    privileged             = false
+    readonlyRootFilesystem = false
   }
 }
 
