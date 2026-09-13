@@ -2,26 +2,6 @@
 # Every block below points at a resource that ALREADY exists.
 
 import {
-  to = aws_cloudwatch_log_group.aws_lambda_us-east-1_Redirector
-  id = "/aws/lambda/us-east-1.Redirector"
-}
-
-import {
-  to = aws_cloudwatch_log_group.aws_vpc_flowlogs_oregon-asg
-  id = "/aws/vpc/flowlogs/oregon-asg"
-}
-
-import {
-  to = aws_iam_openid_connect_provider.token_actions_githubusercontent_com
-  id = "arn:aws:iam::952133486861:oidc-provider/token.actions.githubusercontent.com"
-}
-
-import {
-  to = aws_iam_role.Struct8-Gitops-Struct8-import
-  id = "Struct8-Gitops-Struct8-import"
-}
-
-import {
   to = aws_vpc.loadtest-asg-simple
   id = "vpc-0653bd333a0ed7467"
 }
