@@ -21,6 +21,16 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### RENAMES ###
+
+moved {
+  from = aws_appautoscaling_target.service_ltfargate-target_hub_ecs_service_DesiredCount_ecs
+  to   = aws_appautoscaling_target.hub-scale-target
+}
+
+
+
+
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "nat-a1_profile" {
@@ -50,31 +60,16 @@ data "aws_iam_policy_document" "ecs_task_definition_hub_execution_st_loadtest-ec
 }
 
 resource "aws_iam_policy" "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate" {
+  # ajuste manual · statement[+] — Generator emits TWO aws_iam_policy with the SAME Terraform name for the Hub execution role (one from the ECR connection, one from the log-group connection) - Terraform rejects duplicate resource names at init. Workaround: keep only the ECR-connection policy and fold the CloudWatch Logs permissions into it as an extra statement, so the Hub can write to its log group without the duplicate.
   name        = "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate"
   description = "Access Policy for hub (Role: execution)"
   policy      = data.aws_iam_policy_document.ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_doc.json
-}
-
-resource "aws_iam_policy" "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate" {
-  name        = "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate"
-  description = "Access Policy for hub (Role: execution)"
-  policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": [
-        "${aws_cloudwatch_log_group.logs-target.arn}:*"
-      ],
-      "Sid": "AllowWriteLogs"
-    }
-  ]
-})
+  statement {
+    sid       = "AllowWriteLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents", "logs:CreateLogGroup"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "ecs_task_definition_k6_execution_st_loadtest-ecs-fargate" {
@@ -165,11 +160,6 @@ resource "aws_iam_role" "task_role_ecs_k6" {
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_attach" {
-  policy_arn = aws_iam_policy.ecs_task_definition_hub_execution_st_loadtest-ecs-fargate.arn
-  role       = aws_iam_role.execution_role_ecs_hub.name
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_attach_execution_role_ecs_hub" {
   policy_arn = aws_iam_policy.ecs_task_definition_hub_execution_st_loadtest-ecs-fargate.arn
   role       = aws_iam_role.execution_role_ecs_hub.name
 }
@@ -602,10 +592,10 @@ EOFUData
 
 resource "aws_appautoscaling_policy" "hub-scale-cpu" {
   name               = "hub-scale-cpu"
-  resource_id        = aws_appautoscaling_target.service_ltfargate-target_hub_ecs_service_DesiredCount_ecs.resource_id
+  resource_id        = aws_appautoscaling_target.hub-scale-target.resource_id
   policy_type        = "TargetTrackingScaling"
-  scalable_dimension = aws_appautoscaling_target.service_ltfargate-target_hub_ecs_service_DesiredCount_ecs.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.service_ltfargate-target_hub_ecs_service_DesiredCount_ecs.service_namespace
+  scalable_dimension = aws_appautoscaling_target.hub-scale-target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.hub-scale-target.service_namespace
   target_tracking_scaling_policy_configuration {
     disable_scale_in   = false
     scale_in_cooldown  = 120
@@ -617,7 +607,7 @@ resource "aws_appautoscaling_policy" "hub-scale-cpu" {
   }
 }
 
-resource "aws_appautoscaling_target" "service_ltfargate-target_hub_ecs_service_DesiredCount_ecs" {
+resource "aws_appautoscaling_target" "hub-scale-target" {
   resource_id        = "service/${aws_ecs_cluster.ltfargate-target.name}/${aws_ecs_service.hub_1.name}"
   max_capacity       = 3
   min_capacity       = 1
@@ -752,7 +742,7 @@ resource "aws_ecs_service" "k6_1" {
 locals {
   container_def_hub_hub_2 = {
     name      = "hub"
-    image     = "${aws_ecr_repository.struct8-hub.repository_url}@struct8-hub:latest"
+    image     = "${aws_ecr_repository.struct8-hub.repository_url}:latest"
     essential = true
     cpu       = 256
     memory    = 512
@@ -788,7 +778,7 @@ locals {
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        awslogs-group         = aws_cloudwatch_log_group.logs-target.name
+        awslogs-group         = "/ecs/ltfargate-hub"
         awslogs-region        = "us-west-2"
         awslogs-stream-prefix = "hub"
       }
@@ -819,7 +809,7 @@ resource "aws_ecs_task_definition" "hub" {
     State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_attach, aws_iam_role_policy_attachment.ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_attach_execution_role_ecs_hub]
+  depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_attach]
 }
 
 locals {
