@@ -531,7 +531,7 @@ resource "aws_lb_target_group" "tg-hub1" {
 ### CATEGORY: COMPUTE ###
 
 data "local_file" "UserData_nat-a1" {
-  filename = "${path.module}/templates/ec2-nat-private/v1/user_data/Nat.sh"
+  filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-nat-private/v1/user_data/Nat.sh"
 }
 
 data "aws_ami" "AMI_Data_Source_nat-a1" {
@@ -839,9 +839,11 @@ locals {
         awslogs-stream-prefix = "k6"
       }
     }
-    mountPoints    = []
-    systemControls = []
-    volumesFrom    = []
+    mountPoints            = []
+    systemControls         = []
+    volumesFrom            = []
+    privileged             = false
+    readonlyRootFilesystem = false
   }
 }
 
