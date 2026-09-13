@@ -23,76 +23,156 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
-resource "aws_iam_instance_profile" "hub-asg_profile" {
-  name = "hub-asg_profile"
+resource "aws_iam_instance_profile" "nat-a1_profile" {
+  name = "nat-a1_profile"
   path = "/"
-  role = aws_iam_role.hub-asg_role.name
+  role = aws_iam_role.nat-a1_role.name
   tags = {
-    Name           = "hub-asg_profile"
-    State          = "Import"
+    Name           = "nat-a1_profile"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_instance_profile" "k6-load-generator_profile" {
-  name = "k6-load-generator_profile"
-  path = "/"
-  role = aws_iam_role.k6-load-generator_role.name
+resource "aws_iam_policy" "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate" {
+  name        = "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate"
+  description = "Access Policy for hub (Role: execution)"
+  policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": [
+        "${aws_cloudwatch_log_group.logs-target.arn}:*"
+      ],
+      "Sid": "AllowWriteLogs"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer"
+      ],
+      "Resource": [
+        "${aws_ecr_repository.struct8-hub.arn}"
+      ],
+      "Sid": "AllowPullFromRepo"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Sid": "AllowEcrAuth"
+    }
+  ]
+})
+}
+
+resource "aws_iam_policy" "ecs_task_definition_k6_execution_st_loadtest-ecs-fargate" {
+  name        = "ecs_task_definition_k6_execution_st_loadtest-ecs-fargate"
+  description = "Access Policy for k6 (Role: execution)"
+  policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": [
+        "${aws_cloudwatch_log_group.logs-tester.arn}:*"
+      ],
+      "Sid": "AllowWriteLogs"
+    }
+  ]
+})
+}
+
+resource "aws_iam_role" "execution_role_ecs_hub" {
+  name                  = "execution_role_ecs_hub"
+  assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
   tags = {
-    Name           = "k6-load-generator_profile"
-    State          = "Import"
+    Name           = "execution_role_ecs_hub"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_instance_profile" "nat-a_profile" {
-  name = "nat-a_profile"
-  path = "/"
-  role = aws_iam_role.nat-a_role.name
+resource "aws_iam_role" "execution_role_ecs_k6" {
+  name                  = "execution_role_ecs_k6"
+  assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
   tags = {
-    Name           = "nat-a_profile"
-    State          = "Import"
+    Name           = "execution_role_ecs_k6"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_role" "hub-asg_role" {
-  name                  = "hub-asg_role"
+resource "aws_iam_role" "nat-a1_role" {
+  name                  = "nat-a1_role"
   assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   force_detach_policies = false
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "hub-asg_role"
-    State          = "Import"
+    Name           = "nat-a1_role"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_role" "k6-load-generator_role" {
-  name                  = "k6-load-generator_role"
-  assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+resource "aws_iam_role" "task_role_ecs_hub" {
+  name                  = "task_role_ecs_hub"
+  assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   force_detach_policies = false
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "k6-load-generator_role"
-    State          = "Import"
+    Name           = "task_role_ecs_hub"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_role" "nat-a_role" {
-  name                  = "nat-a_role"
-  assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+resource "aws_iam_role" "task_role_ecs_k6" {
+  name                  = "task_role_ecs_k6"
+  assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   force_detach_policies = false
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "nat-a_role"
-    State          = "Import"
+    Name           = "task_role_ecs_k6"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_attach_execution_role_ecs_hub" {
+  policy_arn = aws_iam_policy.ecs_task_definition_hub_execution_st_loadtest-ecs-fargate.arn
+  role       = aws_iam_role.execution_role_ecs_hub.name
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_definition_k6_execution_st_loadtest-ecs-fargate_attach_execution_role_ecs_k6" {
+  policy_arn = aws_iam_policy.ecs_task_definition_k6_execution_st_loadtest-ecs-fargate.arn
+  role       = aws_iam_role.execution_role_ecs_k6.name
 }
 
 
@@ -100,193 +180,205 @@ resource "aws_iam_role" "nat-a_role" {
 
 ### CATEGORY: NETWORK ###
 
-resource "aws_vpc" "loadtest-asg-simple" {
-  cidr_block           = "10.60.0.0/16"
+resource "aws_vpc" "ltfargate-vpc" {
+  cidr_block           = "10.4.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
   instance_tenancy     = "default"
   tags = {
-    Name           = "loadtest-asg-simple"
-    State          = "Import"
+    Name           = "ltfargate-vpc"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_subnet" "private-a" {
-  vpc_id                              = aws_vpc.loadtest-asg-simple.id
+resource "aws_subnet" "private-hub-a" {
+  vpc_id                              = aws_vpc.ltfargate-vpc.id
   availability_zone                   = "us-west-2a"
-  cidr_block                          = "10.60.11.0/24"
+  cidr_block                          = "10.4.2.0/24"
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "private-a"
-    State          = "Import"
+    Name           = "private-hub-a"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_subnet" "private-b" {
-  vpc_id                              = aws_vpc.loadtest-asg-simple.id
+resource "aws_subnet" "private-hub-b" {
+  vpc_id                              = aws_vpc.ltfargate-vpc.id
   availability_zone                   = "us-west-2b"
-  cidr_block                          = "10.60.0.0/24"
+  cidr_block                          = "10.4.4.0/24"
   map_public_ip_on_launch             = false
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "private-b"
-    State          = "Import"
+    Name           = "private-hub-b"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_subnet" "public-a" {
-  vpc_id                              = aws_vpc.loadtest-asg-simple.id
+resource "aws_subnet" "public-alb-a" {
+  vpc_id                              = aws_vpc.ltfargate-vpc.id
   availability_zone                   = "us-west-2a"
-  cidr_block                          = "10.60.1.0/24"
+  cidr_block                          = "10.4.1.0/24"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "public-a"
-    State          = "Import"
+    Name           = "public-alb-a"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_subnet" "public-b" {
-  vpc_id                              = aws_vpc.loadtest-asg-simple.id
+resource "aws_subnet" "public-alb-b" {
+  vpc_id                              = aws_vpc.ltfargate-vpc.id
   availability_zone                   = "us-west-2b"
-  cidr_block                          = "10.60.2.0/24"
+  cidr_block                          = "10.4.3.0/24"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "public-b"
-    State          = "Import"
+    Name           = "public-alb-b"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_subnet" "public-k6" {
-  vpc_id                              = aws_vpc.loadtest-asg-simple.id
+resource "aws_subnet" "public-k1" {
+  vpc_id                              = aws_vpc.ltfargate-vpc.id
   availability_zone                   = "us-west-2a"
-  cidr_block                          = "10.60.3.0/24"
+  cidr_block                          = "10.4.0.0/24"
   map_public_ip_on_launch             = true
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
-    Name           = "public-k6"
-    State          = "Import"
+    Name           = "public-k1"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_internet_gateway" "igw-k6" {
-  vpc_id = aws_vpc.loadtest-asg-simple.id
+resource "aws_internet_gateway" "ltfargate-igw" {
+  vpc_id = aws_vpc.ltfargate-vpc.id
   tags = {
-    Name           = "igw-k6"
-    State          = "Import"
+    Name           = "ltfargate-igw"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_route" "route_rt-private1_to_nat-a_ipv4" {
-  network_interface_id   = aws_instance.nat-a.primary_network_interface_id
-  route_table_id         = aws_route_table.rt-private1.id
+resource "aws_route" "route_rt-private2_to_nat-a1_ipv4" {
+  network_interface_id   = aws_instance.nat-a1.primary_network_interface_id
+  route_table_id         = aws_route_table.rt-private2.id
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route" "route_rt-public1_to_igw-k6_ipv4" {
-  gateway_id             = aws_internet_gateway.igw-k6.id
-  route_table_id         = aws_route_table.rt-public1.id
+resource "aws_route" "route_rt-public2_to_ltfargate-igw_ipv4" {
+  gateway_id             = aws_internet_gateway.ltfargate-igw.id
+  route_table_id         = aws_route_table.rt-public2.id
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route_table" "rt-private1" {
-  vpc_id = aws_vpc.loadtest-asg-simple.id
+resource "aws_route_table" "rt-private2" {
+  vpc_id = aws_vpc.ltfargate-vpc.id
   tags = {
-    Name           = "rt-private1"
-    State          = "Import"
+    Name           = "rt-private2"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_route_table" "rt-public1" {
-  vpc_id = aws_vpc.loadtest-asg-simple.id
+resource "aws_route_table" "rt-public2" {
+  vpc_id = aws_vpc.ltfargate-vpc.id
   tags = {
-    Name           = "rt-public1"
-    State          = "Import"
+    Name           = "rt-public2"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_route_table_association" "aws_route_table_association_private_a_rt_private1" {
-  route_table_id = aws_route_table.rt-private1.id
-  subnet_id      = aws_subnet.private-a.id
+resource "aws_route_table_association" "aws_route_table_association_private_hub_a_rt_private2" {
+  route_table_id = aws_route_table.rt-private2.id
+  subnet_id      = aws_subnet.private-hub-a.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_private_b_rt_private1" {
-  route_table_id = aws_route_table.rt-private1.id
-  subnet_id      = aws_subnet.private-b.id
+resource "aws_route_table_association" "aws_route_table_association_private_hub_b_rt_private2" {
+  route_table_id = aws_route_table.rt-private2.id
+  subnet_id      = aws_subnet.private-hub-b.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_public_a_rt_public1" {
-  route_table_id = aws_route_table.rt-public1.id
-  subnet_id      = aws_subnet.public-a.id
+resource "aws_route_table_association" "aws_route_table_association_public_alb_a_rt_public2" {
+  route_table_id = aws_route_table.rt-public2.id
+  subnet_id      = aws_subnet.public-alb-a.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_public_b_rt_public1" {
-  route_table_id = aws_route_table.rt-public1.id
-  subnet_id      = aws_subnet.public-b.id
+resource "aws_route_table_association" "aws_route_table_association_public_alb_b_rt_public2" {
+  route_table_id = aws_route_table.rt-public2.id
+  subnet_id      = aws_subnet.public-alb-b.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_public_k6_rt_public1" {
-  route_table_id = aws_route_table.rt-public1.id
-  subnet_id      = aws_subnet.public-k6.id
+resource "aws_route_table_association" "aws_route_table_association_public_k1_rt_public2" {
+  route_table_id = aws_route_table.rt-public2.id
+  subnet_id      = aws_subnet.public-k1.id
 }
 
-resource "aws_security_group" "autoscaling_group_hub-asg_group" {
-  name        = "autoscaling_group_hub-asg_group"
-  vpc_id      = aws_vpc.loadtest-asg-simple.id
+resource "aws_security_group" "ecs_task_definition_hub_group" {
+  name        = "ecs_task_definition_hub_group"
+  vpc_id      = aws_vpc.ltfargate-vpc.id
   description = "Managed by Terraform"
+  lifecycle {
+    ignore_changes = [revoke_rules_on_delete]
+  }
   tags = {
-    Name           = "autoscaling_group_hub-asg_group"
-    State          = "Import"
+    Name           = "ecs_task_definition_hub_group"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_security_group" "instance_k6-load-generator_group" {
-  name        = "instance_k6-load-generator_group"
-  vpc_id      = aws_vpc.loadtest-asg-simple.id
+resource "aws_security_group" "ecs_task_definition_k6_group" {
+  name        = "ecs_task_definition_k6_group"
+  vpc_id      = aws_vpc.ltfargate-vpc.id
   description = "Managed by Terraform"
+  lifecycle {
+    ignore_changes = [revoke_rules_on_delete]
+  }
   tags = {
-    Name           = "instance_k6-load-generator_group"
-    State          = "Import"
+    Name           = "ecs_task_definition_k6_group"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_security_group" "instance_nat-a_group" {
-  name        = "instance_nat-a_group"
-  vpc_id      = aws_vpc.loadtest-asg-simple.id
-  description = "Managed by Terraform"
+resource "aws_security_group" "instance_nat-a1_group" {
+  name        = "instance_nat-a1_group"
+  vpc_id      = aws_vpc.ltfargate-vpc.id
+  description = "NAT instance SG. Must accept ALL traffic from the VPC CIDR (ingress -1 from 10.70.0.0/16) so it can forward/MASQUERADE the private Hub tasks egress to the internet (ECR image pull). Egress open."
+  lifecycle {
+    ignore_changes = [revoke_rules_on_delete]
+  }
   tags = {
-    Name           = "instance_nat-a_group"
-    State          = "Import"
+    Name           = "instance_nat-a1_group"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_security_group" "lb_alb-hub_group" {
-  name        = "lb_alb-hub_group"
-  vpc_id      = aws_vpc.loadtest-asg-simple.id
-  description = "Managed by Terraform"
+resource "aws_security_group" "lb_alb-hub1_group" {
+  name        = "lb_alb-hub1_group"
+  vpc_id      = aws_vpc.ltfargate-vpc.id
+  description = "ALB SG. Accepts HTTP :80 from anywhere: the k6 Fargate task is in a public subnet and reaches the ALB by its public IP, so traffic arrives from the public range, not the VPC CIDR. Egress open to reach the Hub tasks on :8080."
+  lifecycle {
+    ignore_changes = [revoke_rules_on_delete]
+  }
   tags = {
-    Name           = "lb_alb-hub_group"
-    State          = "Import"
+    Name           = "lb_alb-hub1_group"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_security_group_rule" "rule_autoscaling_group_hub_asg_group_egress_all_protocols" {
-  security_group_id = aws_security_group.autoscaling_group_hub-asg_group.id
+resource "aws_security_group_rule" "rule_ecs_task_definition_hub_group_egress_all_protocols" {
+  security_group_id = aws_security_group.ecs_task_definition_hub_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -294,18 +386,8 @@ resource "aws_security_group_rule" "rule_autoscaling_group_hub_asg_group_egress_
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_autoscaling_group_hub_asg_group_ingress_tcp_8080" {
-  security_group_id = aws_security_group.autoscaling_group_hub-asg_group.id
-  cidr_blocks       = ["10.60.0.0/16"]
-  description       = "Hub HTTP from k6 generator (direct, ALB disabled during minimal test)"
-  from_port         = 8080
-  protocol          = "tcp"
-  to_port           = 8080
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_instance_k6_load_generator_group_egress_all_protocols" {
-  security_group_id = aws_security_group.instance_k6-load-generator_group.id
+resource "aws_security_group_rule" "rule_ecs_task_definition_k6_group_egress_all_protocols" {
+  security_group_id = aws_security_group.ecs_task_definition_k6_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -313,28 +395,18 @@ resource "aws_security_group_rule" "rule_instance_k6_load_generator_group_egress
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_instance_k6_load_generator_group_ingress_tcp_5665" {
-  security_group_id = aws_security_group.instance_k6-load-generator_group.id
-  cidr_blocks       = ["10.60.0.0/16"]
-  description       = "k6 web dashboard, forwarded from the NAT instance"
-  from_port         = 5665
-  protocol          = "tcp"
-  to_port           = 5665
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_instance_k6_load_generator_group_to_lb_alb_hub_group_tcp_80" {
-  security_group_id        = aws_security_group.lb_alb-hub_group.id
-  source_security_group_id = aws_security_group.instance_k6-load-generator_group.id
-  description              = "HTTP load test traffic from k6 to the ALB"
+resource "aws_security_group_rule" "rule_ecs_task_definition_k6_group_to_lb_alb_hub1_group_tcp_80" {
+  security_group_id        = aws_security_group.lb_alb-hub1_group.id
+  source_security_group_id = aws_security_group.ecs_task_definition_k6_group.id
+  description              = "Allow from ecs_task_definition_k6_group (tcp:80-80)"
   from_port                = 80
   protocol                 = "tcp"
   to_port                  = 80
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_instance_nat_a_group_egress_all_protocols" {
-  security_group_id = aws_security_group.instance_nat-a_group.id
+resource "aws_security_group_rule" "rule_instance_nat_a1_group_egress_all_protocols" {
+  security_group_id = aws_security_group.instance_nat-a1_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -342,9 +414,9 @@ resource "aws_security_group_rule" "rule_instance_nat_a_group_egress_all_protoco
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_instance_nat_a_group_ingress_all_protocols" {
-  security_group_id = aws_security_group.instance_nat-a_group.id
-  cidr_blocks       = ["10.60.0.0/16"]
+resource "aws_security_group_rule" "rule_instance_nat_a1_group_ingress_all_protocols" {
+  security_group_id = aws_security_group.instance_nat-a1_group.id
+  cidr_blocks       = ["10.70.0.0/16"]
   description       = "NAT: all traffic from the VPC to be routed out"
   from_port         = 0
   protocol          = "-1"
@@ -352,18 +424,8 @@ resource "aws_security_group_rule" "rule_instance_nat_a_group_ingress_all_protoc
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_instance_nat_a_group_ingress_tcp_5665" {
-  security_group_id = aws_security_group.instance_nat-a_group.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  description       = "k6 web dashboard from the internet"
-  from_port         = 5665
-  protocol          = "tcp"
-  to_port           = 5665
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_lb_alb_hub_group_egress_all_protocols" {
-  security_group_id = aws_security_group.lb_alb-hub_group.id
+resource "aws_security_group_rule" "rule_lb_alb_hub1_group_egress_all_protocols" {
+  security_group_id = aws_security_group.lb_alb-hub1_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -371,111 +433,68 @@ resource "aws_security_group_rule" "rule_lb_alb_hub_group_egress_all_protocols" 
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_lb_alb_hub_group_ingress_tcp_5665" {
-  security_group_id = aws_security_group.lb_alb-hub_group.id
+resource "aws_security_group_rule" "rule_lb_alb_hub1_group_ingress_tcp_80" {
+  security_group_id = aws_security_group.lb_alb-hub1_group.id
   cidr_blocks       = ["0.0.0.0/0"]
-  description       = "k6 dashboard via ALB (public, ephemeral test env)"
-  from_port         = 5665
-  protocol          = "tcp"
-  to_port           = 5665
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_lb_alb_hub_group_ingress_tcp_80" {
-  security_group_id = aws_security_group.lb_alb-hub_group.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  description       = "k6 load traffic to Hub via ALB (public: k6 reaches the ALB by its public IP)"
+  description       = "HTTP from k6 (arrives by public IP)"
   from_port         = 80
   protocol          = "tcp"
   to_port           = 80
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_lb_alb_hub_group_to_autoscaling_group_hub_asg_group_tcp_8080" {
-  security_group_id        = aws_security_group.autoscaling_group_hub-asg_group.id
-  source_security_group_id = aws_security_group.lb_alb-hub_group.id
-  description              = "Hub HTTP from the ALB target group"
+resource "aws_security_group_rule" "rule_lb_alb_hub1_group_to_ecs_task_definition_hub_group_tcp_8080" {
+  security_group_id        = aws_security_group.ecs_task_definition_hub_group.id
+  source_security_group_id = aws_security_group.lb_alb-hub1_group.id
+  description              = "Allow from lb_alb-hub1_group (tcp:8080-8080)"
   from_port                = 8080
   protocol                 = "tcp"
   to_port                  = 8080
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_lb_alb_hub_group_to_instance_k6_load_generator_group_udp_5665" {
-  security_group_id        = aws_security_group.instance_k6-load-generator_group.id
-  source_security_group_id = aws_security_group.lb_alb-hub_group.id
-  description              = "k6 web dashboard from the ALB"
-  from_port                = 5665
-  protocol                 = "udp"
-  to_port                  = 5665
-  type                     = "ingress"
-}
-
-resource "aws_lb" "alb-hub" {
-  name                             = "alb-hub"
+resource "aws_lb" "alb-hub1" {
+  name                             = "alb-hub1"
   enable_cross_zone_load_balancing = true
   enable_http2                     = true
   idle_timeout                     = 60
   load_balancer_type               = "application"
-  security_groups                  = [aws_security_group.lb_alb-hub_group.id]
-  subnets                          = [aws_subnet.public-a.id, aws_subnet.public-b.id]
+  security_groups                  = [aws_security_group.lb_alb-hub1_group.id]
+  subnets                          = [aws_subnet.public-alb-a.id, aws_subnet.public-alb-b.id]
   tags = {
-    Name           = "alb-hub"
-    State          = "Import"
+    Name           = "alb-hub1"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_lb_listener" "listener-dashboard" {
-  load_balancer_arn                    = aws_lb.alb-hub.arn
-  port                                 = 5665
-  protocol                             = "HTTP"
-  routing_http_response_server_enabled = true
-  default_action {
-    order            = 1
-    target_group_arn = aws_lb_target_group.tg-k6-dashboard.arn
-    type             = "forward"
-    forward {
-      target_group {
-        arn    = aws_lb_target_group.tg-k6-dashboard.arn
-        weight = 1
-      }
-    }
-  }
-  tags = {
-    Name           = "listener-dashboard"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_lb_listener" "listener-http" {
-  load_balancer_arn                    = aws_lb.alb-hub.arn
+resource "aws_lb_listener" "listener-http1" {
+  load_balancer_arn                    = aws_lb.alb-hub1.arn
   port                                 = 80
   protocol                             = "HTTP"
   routing_http_response_server_enabled = true
   default_action {
     order            = 1
-    target_group_arn = aws_lb_target_group.tg-hub.arn
+    target_group_arn = aws_lb_target_group.tg-hub1.arn
     type             = "forward"
     forward {
       target_group {
-        arn    = aws_lb_target_group.tg-hub.arn
+        arn    = aws_lb_target_group.tg-hub1.arn
         weight = 1
       }
     }
   }
   tags = {
-    Name           = "listener-http"
-    State          = "Import"
+    Name           = "listener-http1"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_lb_target_group" "tg-hub" {
-  name                              = "tg-hub"
-  vpc_id                            = aws_vpc.loadtest-asg-simple.id
-  deregistration_delay              = "300"
+resource "aws_lb_target_group" "tg-hub1" {
+  name                              = "tg-hub1"
+  vpc_id                            = aws_vpc.ltfargate-vpc.id
+  deregistration_delay              = "30"
   ip_address_type                   = "ipv4"
   load_balancing_algorithm_type     = "round_robin"
   load_balancing_anomaly_mitigation = "off"
@@ -484,12 +503,12 @@ resource "aws_lb_target_group" "tg-hub" {
   protocol                          = "HTTP"
   protocol_version                  = "HTTP1"
   slow_start                        = 0
-  target_type                       = "instance"
+  target_type                       = "ip"
   health_check {
     enabled             = true
     healthy_threshold   = 2
     interval            = 30
-    matcher             = "200"
+    matcher             = "200-399"
     path                = "/"
     port                = "traffic-port"
     protocol            = "HTTP"
@@ -502,8 +521,8 @@ resource "aws_lb_target_group" "tg-hub" {
     type            = "lb_cookie"
   }
   tags = {
-    Name           = "tg-hub"
-    State          = "Import"
+    Name           = "tg-hub1"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
   target_group_health {
@@ -516,58 +535,6 @@ resource "aws_lb_target_group" "tg-hub" {
       minimum_healthy_targets_percentage = "off"
     }
   }
-}
-
-resource "aws_lb_target_group" "tg-k6-dashboard" {
-  name                              = "tg-k6-dashboard"
-  vpc_id                            = aws_vpc.loadtest-asg-simple.id
-  deregistration_delay              = "300"
-  ip_address_type                   = "ipv4"
-  load_balancing_algorithm_type     = "round_robin"
-  load_balancing_anomaly_mitigation = "off"
-  load_balancing_cross_zone_enabled = "use_load_balancer_configuration"
-  port                              = 5665
-  protocol                          = "HTTP"
-  protocol_version                  = "HTTP1"
-  slow_start                        = 0
-  target_type                       = "instance"
-  health_check {
-    enabled             = true
-    healthy_threshold   = 5
-    interval            = 30
-    matcher             = "200"
-    path                = "/"
-    port                = "traffic-port"
-    protocol            = "HTTP"
-    timeout             = 5
-    unhealthy_threshold = 2
-  }
-  stickiness {
-    cookie_duration = 86400
-    enabled         = false
-    type            = "lb_cookie"
-  }
-  tags = {
-    Name           = "tg-k6-dashboard"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-  target_group_health {
-    dns_failover {
-      minimum_healthy_targets_count      = "1"
-      minimum_healthy_targets_percentage = "off"
-    }
-    unhealthy_state_routing {
-      minimum_healthy_targets_count      = 1
-      minimum_healthy_targets_percentage = "off"
-    }
-  }
-}
-
-resource "aws_lb_target_group_attachment" "attach_k6-load-generator_to_tg-k6-dashboard" {
-  target_id        = aws_instance.k6-load-generator.id
-  port             = 5665
-  target_group_arn = aws_lb_target_group.tg-k6-dashboard.arn
 }
 
 
@@ -575,60 +542,15 @@ resource "aws_lb_target_group_attachment" "attach_k6-load-generator_to_tg-k6-das
 
 ### CATEGORY: COMPUTE ###
 
-resource "aws_instance" "k6-load-generator" {
-  subnet_id                   = aws_subnet.public-k6.id
-  ami                         = "ami-0467666181e60a1ee"
-  associate_public_ip_address = true
-  iam_instance_profile        = aws_iam_instance_profile.k6-load-generator_profile.name
-  instance_type               = "t4g.nano"
-  private_ip                  = "10.60.3.159"
-  vpc_security_group_ids      = [aws_security_group.instance_k6-load-generator_group.id]
-  cpu_options {
-    core_count       = 2
-    threads_per_core = 1
-  }
-  credit_specification {
-    cpu_credits = "unlimited"
-  }
-  enclave_options {
-    enabled = false
-  }
-  lifecycle {
-    ignore_changes = [user_data]
-  }
-  metadata_options {
-    http_endpoint               = "enabled"
-    http_put_response_hop_limit = 2
-    http_tokens                 = "required"
-  }
-  private_dns_name_options {
-    enable_resource_name_dns_a_record    = false
-    enable_resource_name_dns_aaaa_record = false
-    hostname_type                        = "ip-name"
-  }
-  root_block_device {
-    encrypted   = false
-    iops        = 3000
-    throughput  = 125
-    volume_size = 8
-    volume_type = "gp3"
-  }
-  tags = {
-    Name           = "k6-load-generator"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_instance" "nat-a" {
-  subnet_id                   = aws_subnet.public-a.id
+resource "aws_instance" "nat-a1" {
+  subnet_id                   = aws_subnet.public-alb-b.id
   ami                         = "ami-0469a6bed63b8634c"
   associate_public_ip_address = true
-  iam_instance_profile        = aws_iam_instance_profile.nat-a_profile.name
+  iam_instance_profile        = aws_iam_instance_profile.nat-a1_profile.name
   instance_type               = "t3.nano"
-  private_ip                  = "10.60.1.151"
+  private_ip                  = "10.4.3.239"
   source_dest_check           = false
-  vpc_security_group_ids      = [aws_security_group.instance_nat-a_group.id]
+  vpc_security_group_ids      = [aws_security_group.instance_nat-a1_group.id]
   cpu_options {
     core_count       = 1
     threads_per_core = 2
@@ -640,7 +562,7 @@ resource "aws_instance" "nat-a" {
     enabled = false
   }
   lifecycle {
-    ignore_changes = [user_data]
+    ignore_changes = [user_data, user_data_replace_on_change]
   }
   metadata_options {
     http_endpoint               = "enabled"
@@ -660,209 +582,348 @@ resource "aws_instance" "nat-a" {
     volume_type = "gp3"
   }
   tags = {
-    Name           = "nat-a"
-    State          = "Import"
+    Name           = "nat-a1"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_launch_template" "hub-lt" {
-  image_id        = "ami-0467666181e60a1ee"
-  name            = "hub-lt"
-  default_version = 1
-  description     = "ASG launch template. user_data hub-docker.sh installs Docker, clones struct8-hub, builds the arm64 image and runs the Hub with the load-test endpoint enabled. arm64 AMI for t4g. The boot build takes about 5 min, which is why the ASG grace period is high."
-  instance_type   = "t4g.nano"
-  user_data = base64encode(<<-EOFUData
-#!/bin/bash
-
-
-# --- BEGIN STRUCT8 VARIABLES ---
-cat << 'EOFENV' > /etc/struct8_env
-HUB_LOADTEST="on"
-HUB_PORT="8080"
-BOOT_GEN="3"
-NAME="hub-asg"
-REGION="us-west-2"
-ACCOUNT="952133486861"
-EOFENV
-cat /etc/struct8_env >> /etc/environment
-sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
-chmod +x /etc/profile.d/struct8_vars.sh
-chmod 644 /etc/struct8_env
-# --- END STRUCT8 VARIABLES ---
-
-#!/bin/bash
-# Struct8 Hub on Docker - generic EC2 bootstrap for Amazon Linux 2023.
-#
-# Reusable across templates: any EC2 or Auto Scaling group that should run the
-# Struct8 Hub container points its user_data at a COPY of this script (the
-# struct8-templates repo forbids sharing a folder between templates, so each
-# template keeps its own copy).
-#
-# What it does, on boot:
-#   1. installs Docker,
-#   2. gets the Hub source (git clone of Struct8/struct8-hub) and builds the
-#      container image from image/ -- the image is not published to any
-#      registry, and building from source keeps this independent of one,
-#   3. runs the container, restarting it on reboot.
-#
-# The image is "one file, no dependencies" (image/index.mjs + Dockerfile), so
-# the build is small and fast.
-#
-# Everything tunable is a NODE ENVIRONMENT VARIABLE, so the same script serves
-# every template without an edit. The generator writes them to
-# /etc/profile.d/struct8_vars.sh as `export KEY = "value"` (spaces + quotes),
-# which is NOT valid shell to source, so we parse the value out instead.
-#
-#   HUB_PORT       port the container listens on and is published on. Default 8080.
-#   HUB_LOADTEST   'on' enables the load-test endpoint (POST /loadtest?ms=N).
-#                  Default unset (off). Only set it where load testing is the point.
-#   HUB_REF        git ref (branch/tag/commit) of struct8-hub to build. Default 'main'.
-#   HUB_POLL       optional: name a wired queue to consume (see the Hub docs).
-#
-# The Hub itself discovers its neighbours from the environment variables the
-# generator injects from the diagram's wires; nothing about the topology is set
-# here.
-set -uo pipefail
-LOGFILE="/var/log/user-data.log"
-exec >"$LOGFILE" 2>&1
-set -x
-
-VARS=/etc/profile.d/struct8_vars.sh
-getvar() { [ -f "$VARS" ] && awk -F= -v k="$1" '$0 ~ ("^[[:space:]]*export[[:space:]]+" k "[[:space:]]*=") {gsub(/[ "]/,"",$2); print $2; exit}' "$VARS"; }
-
-HUB_PORT="$(getvar HUB_PORT)";       HUB_PORT="$${HUB_PORT:-8080}"
-HUB_LOADTEST="$(getvar HUB_LOADTEST)"
-HUB_REF="$(getvar HUB_REF)";         HUB_REF="$${HUB_REF:-main}"
-HUB_POLL="$(getvar HUB_POLL)"
-echo "HUB_PORT=$HUB_PORT HUB_LOADTEST=$${HUB_LOADTEST:-<off>} HUB_REF=$HUB_REF HUB_POLL=$${HUB_POLL:-<none>}"
-
-echo "Updating the system..."
-dnf update -y
-
-echo "Installing Docker and git..."
-dnf install -y docker git
-systemctl enable docker
-systemctl start docker
-
-echo "Fetching the Hub source ($HUB_REF)..."
-rm -rf /opt/struct8-hub
-git clone --depth 1 --branch "$HUB_REF" https://github.com/Struct8/struct8-hub /opt/struct8-hub \
-  || git clone --depth 1 https://github.com/Struct8/struct8-hub /opt/struct8-hub
-
-echo "Building the Hub image..."
-docker build -t struct8-hub:local /opt/struct8-hub/image
-
-# The Hub reads the wires from its OWN environment. The generator wrote them to
-# /etc/struct8_env; pass that whole file into the container so discovery works,
-# then add the runtime knobs on top.
-ENV_ARGS=()
-[ -f /etc/struct8_env ] && ENV_ARGS+=(--env-file /etc/struct8_env)
-ENV_ARGS+=(-e "PORT=$${HUB_PORT}")
-[ -n "$${HUB_LOADTEST:-}" ] && ENV_ARGS+=(-e "HUB_LOADTEST=$${HUB_LOADTEST}")
-[ -n "$${HUB_POLL:-}" ]     && ENV_ARGS+=(-e "HUB_POLL=$${HUB_POLL}")
-
-echo "Running the Hub container on port $${HUB_PORT}..."
-docker rm -f struct8-hub 2>/dev/null || true
-docker run -d \
-  --name struct8-hub \
-  --restart unless-stopped \
-  -p "$${HUB_PORT}:$${HUB_PORT}" \
-  "$${ENV_ARGS[@]}" \
-  struct8-hub:local
-
-echo "Done. Hub is starting on port $${HUB_PORT}. GET / is health; POST / fans out."
-[ -n "$${HUB_LOADTEST:-}" ] && echo "Load-test endpoint enabled: POST /loadtest?ms=N"
-
-
-EOFUData
-)
-  vpc_security_group_ids = [aws_security_group.autoscaling_group_hub-asg_group.id]
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      delete_on_termination = true
-      encrypted             = true
-      iops                  = 3000
-      throughput            = 125
-      volume_size           = 8
-      volume_type           = "gp3"
+resource "aws_appautoscaling_policy" "hub-scale-cpu" {
+  name               = "hub-scale-cpu"
+  resource_id        = aws_appautoscaling_target.service_ltfargate-target_hub_ecs_service_DesiredCount_ecs.resource_id
+  policy_type        = "TargetTrackingScaling"
+  scalable_dimension = aws_appautoscaling_target.service_ltfargate-target_hub_ecs_service_DesiredCount_ecs.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.service_ltfargate-target_hub_ecs_service_DesiredCount_ecs.service_namespace
+  target_tracking_scaling_policy_configuration {
+    disable_scale_in   = false
+    scale_in_cooldown  = 120
+    scale_out_cooldown = 60
+    target_value       = 40
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
   }
-  iam_instance_profile {
-    name = aws_iam_instance_profile.hub-asg_profile.name
-  }
-  metadata_options {
-    http_endpoint               = "enabled"
-    http_put_response_hop_limit = 1
-    http_tokens                 = "required"
-  }
-  tag_specifications {
-    resource_type = "volume"
-    tags = {
-    Name           = "hub-asg"
-    State          = "Import"
-    Struct8Creator = "Contato Struct"
-  }
+}
+
+resource "aws_appautoscaling_target" "service_ltfargate-target_hub_ecs_service_DesiredCount_ecs" {
+  resource_id        = "service/${aws_ecs_cluster.ltfargate-target.name}/${aws_ecs_service.hub_1.name}"
+  max_capacity       = 3
+  min_capacity       = 1
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+  suspended_state {
+    dynamic_scaling_in_suspended  = false
+    dynamic_scaling_out_suspended = false
+    scheduled_scaling_suspended   = false
   }
   tags = {
-    Name           = "hub-lt"
-    State          = "Import"
+    Name           = "hub-scale-target"
+    State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_autoscaling_group" "hub-asg" {
-  name                      = "hub-asg"
-  default_instance_warmup   = 420
-  desired_capacity          = 1
-  enabled_metrics           = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  health_check_grace_period = 600
-  health_check_type         = "ELB"
-  max_instance_lifetime     = 0
-  max_size                  = 1
-  min_size                  = 1
-  target_group_arns         = [aws_lb_target_group.tg-hub.arn]
-  vpc_zone_identifier       = [aws_subnet.private-a.id, aws_subnet.private-b.id]
-  availability_zone_distribution {
-    capacity_distribution_strategy = "balanced-best-effort"
+
+
+
+### CATEGORY: CONTAINERS ###
+
+resource "aws_ecr_repository" "struct8-hub" {
+  name                 = "struct8-hub"
+  image_tag_mutability = "MUTABLE"
+  encryption_configuration {
+    encryption_type = "AES256"
   }
-  capacity_reservation_specification {
-    capacity_reservation_preference = "default"
+  image_scanning_configuration {
+    scan_on_push = true
   }
-  launch_template {
-    version = "1"
-    id      = aws_launch_template.hub-lt.id
-  }
-  tag {
-    key                 = "Name"
-    propagate_at_launch = true
-    value               = "hub-asg"
-  }
-  tag {
-    key                 = "State"
-    propagate_at_launch = true
-    value               = "Import"
-  }
-  tag {
-    key                 = "Struct8Creator"
-    propagate_at_launch = true
-    value               = "Contato Struct"
+  tags = {
+    Name           = "struct8-hub"
+    State          = "loadtest-ecs-fargate"
+    Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_autoscaling_policy" "cpu-scale" {
-  autoscaling_group_name    = aws_autoscaling_group.hub-asg.name
-  name                      = "cpu-scale"
-  enabled                   = true
-  estimated_instance_warmup = 300
-  policy_type               = "TargetTrackingScaling"
-  target_tracking_configuration {
-    disable_scale_in = false
-    target_value     = 50
-    predefined_metric_specification {
-      predefined_metric_type = "ASGAverageCPUUtilization"
+resource "aws_ecs_cluster" "ltfargate-target" {
+  name = "ltfargate-target"
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+  tags = {
+    Name           = "ltfargate-target"
+    State          = "loadtest-ecs-fargate"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_ecs_cluster" "ltfargate-tester" {
+  name = "ltfargate-tester"
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+  tags = {
+    Name           = "ltfargate-tester"
+    State          = "loadtest-ecs-fargate"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_ecs_service" "hub_1" {
+  name                              = "hub"
+  availability_zone_rebalancing     = "ENABLED"
+  cluster                           = aws_ecs_cluster.ltfargate-target.id
+  desired_count                     = 1
+  enable_ecs_managed_tags           = true
+  enable_execute_command            = true
+  health_check_grace_period_seconds = 120
+  iam_role                          = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  launch_type                       = "FARGATE"
+  platform_version                  = "LATEST"
+  propagate_tags                    = "NONE"
+  scheduling_strategy               = "REPLICA"
+  task_definition                   = "${aws_ecs_task_definition.hub.family}:${aws_ecs_task_definition.hub.revision}"
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
+  load_balancer {
+    container_name   = "hub"
+    container_port   = 8080
+    target_group_arn = aws_lb_target_group.tg-hub1.arn
+  }
+  network_configuration {
+    assign_public_ip = false
+    security_groups  = [aws_security_group.ecs_task_definition_hub_group.id]
+    subnets          = [aws_subnet.private-hub-a.id, aws_subnet.private-hub-b.id]
+  }
+  tags = {
+    Name           = "hub_1"
+    State          = "loadtest-ecs-fargate"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_ecs_service" "k6_1" {
+  name                               = "k6"
+  availability_zone_rebalancing      = "DISABLED"
+  cluster                            = aws_ecs_cluster.ltfargate-tester.id
+  deployment_maximum_percent         = 100
+  deployment_minimum_healthy_percent = 0
+  desired_count                      = 1
+  enable_ecs_managed_tags            = true
+  enable_execute_command             = true
+  iam_role                           = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  launch_type                        = "FARGATE"
+  platform_version                   = "LATEST"
+  propagate_tags                     = "NONE"
+  scheduling_strategy                = "REPLICA"
+  task_definition                    = "${aws_ecs_task_definition.k6.family}:${aws_ecs_task_definition.k6.revision}"
+  network_configuration {
+    assign_public_ip = true
+    security_groups  = [aws_security_group.ecs_task_definition_k6_group.id]
+    subnets          = [aws_subnet.public-k1.id]
+  }
+  tags = {
+    Name           = "k6_1"
+    State          = "loadtest-ecs-fargate"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+locals {
+  container_def_hub_hub_2 = {
+    name      = "hub"
+    image     = "952133486861.dkr.ecr.us-west-2.amazonaws.com/struct8-hub:latest"
+    essential = true
+    cpu       = 256
+    memory    = 512
+    portMappings = [
+      {
+        protocol      = "tcp"
+        containerPort = 8080
+        hostPort      = 8080
+      }
+    ]
+    environment = [
+      {
+        name  = "ACCOUNT"
+        value = "952133486861"
+      },
+      {
+        name  = "HUB_LOADTEST"
+        value = "on"
+      },
+      {
+        name  = "NAME"
+        value = "hub"
+      },
+      {
+        name  = "PORT"
+        value = "8080"
+      },
+      {
+        name  = "REGION"
+        value = "us-west-2"
+      }
+    ]
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.logs-target.name
+        awslogs-region        = "us-west-2"
+        awslogs-stream-prefix = "hub"
+      }
     }
+    mountPoints            = []
+    systemControls         = []
+    volumesFrom            = []
+    privileged             = false
+    readonlyRootFilesystem = false
+  }
+}
+
+resource "aws_ecs_task_definition" "hub" {
+  container_definitions    = jsonencode([local.container_def_hub_hub_2])
+  cpu                      = "256"
+  execution_role_arn       = aws_iam_role.execution_role_ecs_hub.arn
+  family                   = "hub"
+  memory                   = "512"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  task_role_arn            = aws_iam_role.task_role_ecs_hub.arn
+  runtime_platform {
+    cpu_architecture        = "X86_64"
+    operating_system_family = "LINUX"
+  }
+  tags = {
+    Name           = "hub"
+    State          = "loadtest-ecs-fargate"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_attach_execution_role_ecs_hub]
+}
+
+locals {
+  container_def_k6_k6_2 = {
+    name      = "k6"
+    image     = "grafana/k6:latest"
+    essential = true
+    cpu       = 256
+    memory    = 512
+    environment = [
+      {
+        name  = "ACCOUNT"
+        value = "952133486861"
+      },
+      {
+        name  = "AWS_LB_DNSNAME_0"
+        value = "alb-hub1-355339787.us-west-2.elb.amazonaws.com"
+      },
+      {
+        name  = "DURATION"
+        value = "20m"
+      },
+      {
+        name  = "METHOD"
+        value = "POST"
+      },
+      {
+        name  = "MS"
+        value = "250"
+      },
+      {
+        name  = "NAME"
+        value = "k6"
+      },
+      {
+        name  = "REGION"
+        value = "us-west-2"
+      },
+      {
+        name  = "STARTUP_DELAY"
+        value = "60"
+      },
+      {
+        name  = "TARGET_URL"
+        value = "http://alb-hub1-355339787.us-west-2.elb.amazonaws.com"
+      },
+      {
+        name  = "VUS"
+        value = "30"
+      }
+    ]
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.logs-tester.name
+        awslogs-region        = "us-west-2"
+        awslogs-stream-prefix = "k6"
+      }
+    }
+    mountPoints    = []
+    systemControls = []
+    volumesFrom    = []
+    command = [
+      <<EOF
+echo "[k6] waiting $${STARTUP_DELAY}s for target warm-up"; sleep $${STARTUP_DELAY}; printf 'import http from "k6/http";\nimport { check } from "k6";\nconst URL = __ENV.TARGET_URL;\nconst METHOD = (__ENV.METHOD || "POST").toUpperCase();\nexport const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || "5m" };\nexport default function () {\n  const target = METHOD === "POST" ? URL + "/loadtest?ms=" + (__ENV.MS || "200") : URL;\n  const res = METHOD === "POST" ? http.post(target, null) : http.get(target);\n  check(res, { "ok": (r) => r.status >= 200 && r.status < 400 });\n}\n' > /tmp/load.js; k6 run /tmp/load.js
+      EOF
+    ]
+    entryPoint             = ["/bin/sh", "-c"]
+    privileged             = false
+    readonlyRootFilesystem = false
+  }
+}
+
+resource "aws_ecs_task_definition" "k6" {
+  container_definitions    = jsonencode([local.container_def_k6_k6_2])
+  cpu                      = "256"
+  execution_role_arn       = aws_iam_role.execution_role_ecs_k6.arn
+  family                   = "k6"
+  memory                   = "512"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  task_role_arn            = aws_iam_role.task_role_ecs_k6.arn
+  runtime_platform {
+    cpu_architecture        = "X86_64"
+    operating_system_family = "LINUX"
+  }
+  tags = {
+    Name           = "k6"
+    State          = "loadtest-ecs-fargate"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_k6_execution_st_loadtest-ecs-fargate_attach_execution_role_ecs_k6]
+}
+
+
+
+
+### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_log_group" "logs-target" {
+  name              = "/ecs/ltfargate-hub"
+  log_group_class   = "STANDARD"
+  retention_in_days = 7
+  tags = {
+    Name           = "logs-target"
+    State          = "loadtest-ecs-fargate"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "logs-tester" {
+  name              = "/ecs/ltfargate-k6"
+  log_group_class   = "STANDARD"
+  retention_in_days = 7
+  tags = {
+    Name           = "logs-tester"
+    State          = "loadtest-ecs-fargate"
+    Struct8Creator = "Contato Struct"
   }
 }
 
