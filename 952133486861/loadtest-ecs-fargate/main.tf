@@ -371,13 +371,8 @@ resource "aws_security_group" "ecs_task_definition_k6_group" {
 resource "aws_security_group" "instance_nat-a1_group" {
   name                   = "instance_nat-a1_group"
   vpc_id                 = aws_vpc.ltfargate-vpc.id
-  description            = "NAT instance SG. Must accept ALL traffic from the VPC CIDR (ingress -1 from 10.70.0.0/16) so it can forward/MASQUERADE the private Hub tasks' egress to the internet (ECR image pull). Egress open."
+  description            = "NAT instance SG. Must accept ALL traffic from the VPC CIDR (ingress -1 from 10.70.0.0/16) so it can forward/MASQUERADE the private Hub tasks egress to the internet (ECR image pull). Egress open."
   revoke_rules_on_delete = false
-  tags = {
-    Name           = "instance_nat-a1_group"
-    State          = "loadtest-ecs-fargate"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_security_group" "lb_alb-hub1_group" {
