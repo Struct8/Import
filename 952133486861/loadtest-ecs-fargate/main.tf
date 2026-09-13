@@ -51,6 +51,12 @@ resource "aws_iam_instance_profile" "nat-a1_profile" {
 
 data "aws_iam_policy_document" "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_doc" {
   statement {
+    sid       = "AllowWriteLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.logs-target.arn}:*"]
+  }
+  statement {
     sid       = "AllowPullFromRepo"
     effect    = "Allow"
     actions   = ["ecr:BatchCheckLayerAvailability", "ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"]
@@ -65,16 +71,9 @@ data "aws_iam_policy_document" "ecs_task_definition_hub_execution_st_loadtest-ec
 }
 
 resource "aws_iam_policy" "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate" {
-  # ajuste manual · statement[+] — Generator emits TWO aws_iam_policy with the SAME Terraform name for the Hub execution role (one from the ECR connection, one from the log-group connection) - Terraform rejects duplicate resource names at init. Workaround: keep only the ECR-connection policy and fold the CloudWatch Logs permissions into it as an extra statement, so the Hub can write to its log group without the duplicate.
   name        = "ecs_task_definition_hub_execution_st_loadtest-ecs-fargate"
   description = "Access Policy for hub (Role: execution)"
   policy      = data.aws_iam_policy_document.ecs_task_definition_hub_execution_st_loadtest-ecs-fargate_doc.json
-  statement {
-    sid       = "AllowWriteLogs"
-    effect    = "Allow"
-    actions   = ["logs:CreateLogStream", "logs:PutLogEvents", "logs:CreateLogGroup"]
-    resources = ["*"]
-  }
 }
 
 resource "aws_iam_policy" "ecs_task_definition_k6_execution_st_loadtest-ecs-fargate" {
@@ -785,6 +784,14 @@ locals {
     volumesFrom            = []
     privileged             = false
     readonlyRootFilesystem = false
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.logs-target.name
+        awslogs-region        = "us-west-2"
+        awslogs-stream-prefix = "hub"
+      }
+    }
   }
 }
 
