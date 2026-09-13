@@ -19,8 +19,8 @@
       ]
     }
   ],
-  "action": "destroy",
-  "trigger_id": "1789316898094",
+  "action": "plan",
+  "trigger_id": "1789329493985",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -40,7 +40,7 @@
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-east-1",
+            "region": "us-west-2",
             "secret_name": "AUTH_AWS_952133486861"
           }
         }
