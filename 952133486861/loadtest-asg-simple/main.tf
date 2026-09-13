@@ -53,60 +53,6 @@ resource "aws_iam_instance_profile" "nat-a_profile" {
   }
 }
 
-data "aws_iam_policy_document" "k6-debug_debug_permissions" {
-  statement {
-    sid       = "SendToTaggedInstancesOnly"
-    effect    = "Allow"
-    actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ec2:*:*:instance/*"]
-    condition {
-      test     = "StringEquals"
-      values   = ["WhIY5pXWLOzuZFuXfmQ2v"]
-      variable = "aws:ResourceTag/Struct8Debug"
-    }
-  }
-  statement {
-    sid       = "PinnedDocumentOnly"
-    effect    = "Allow"
-    actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-WhIY5pXWLOzuZFuXfmQ2v"]
-  }
-  statement {
-    sid       = "ReadOwnResults"
-    effect    = "Allow"
-    actions   = ["ssm:GetCommandInvocation", "ssm:DescribeInstanceInformation"]
-    resources = ["*"]
-  }
-  statement {
-    sid       = "CancelOnTaggedInstancesOnly"
-    effect    = "Allow"
-    actions   = ["ssm:CancelCommand"]
-    resources = ["arn:aws:ec2:*:*:instance/*"]
-    condition {
-      test     = "StringEquals"
-      values   = ["WhIY5pXWLOzuZFuXfmQ2v"]
-      variable = "aws:ResourceTag/Struct8Debug"
-    }
-  }
-}
-
-data "aws_iam_policy_document" "k6-debug_debug_trust" {
-  statement {
-    effect = "Allow"
-    principals {
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
-      type        = "AWS"
-    }
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-resource "aws_iam_role" "Struct8Debug-k6-debug" {
-  name                 = "Struct8Debug-WhIY5pXWLOzuZFuXfmQ2v"
-  assume_role_policy   = data.aws_iam_policy_document.k6-debug_debug_trust.json
-  max_session_duration = 3600
-}
-
 resource "aws_iam_role" "hub-asg_role" {
   name = "hub-asg_role"
   assume_role_policy = jsonencode({
@@ -177,17 +123,6 @@ resource "aws_iam_role" "nat-a_role" {
     State          = "loadtest-asg-simple"
     Struct8Creator = "Contato Struct"
   }
-}
-
-resource "aws_iam_role_policy" "Struct8Debug-k6-debug_policy" {
-  name   = "Struct8Debug-WhIY5pXWLOzuZFuXfmQ2v-policy"
-  policy = data.aws_iam_policy_document.k6-debug_debug_permissions.json
-  role   = aws_iam_role.Struct8Debug-k6-debug.id
-}
-
-resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_k6-load-generator_attach" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.k6-load-generator_role.name
 }
 
 
@@ -658,7 +593,6 @@ EOFUData
     http_tokens   = "required"
   }
   tags = {
-    Struct8Debug   = "WhIY5pXWLOzuZFuXfmQ2v"
     Name           = "k6-load-generator"
     State          = "loadtest-asg-simple"
     Struct8Creator = "Contato Struct"
@@ -848,57 +782,6 @@ resource "aws_autoscaling_policy" "cpu-scale" {
       predefined_metric_type = "ASGAverageCPUUtilization"
     }
   }
-}
-
-
-
-
-### CATEGORY: CONFIG ###
-
-resource "aws_ssm_document" "Struct8Probe-k6-debug" {
-  name = "Struct8Probe-WhIY5pXWLOzuZFuXfmQ2v"
-  content = <<EOF
-{
-  "schemaVersion": "2.2",
-  "description": "Struct8 network probe. The command text is fixed here; the caller supplies only a target and a port.",
-  "parameters": {
-    "target": {
-      "type": "String",
-      "description": "Hostname or IP address to probe.",
-      "interpolationType": "ENV_VAR",
-      "allowedPattern": "^[A-Za-z0-9._-]{1,253}$"
-    },
-    "port": {
-      "type": "String",
-      "description": "TCP port to test.",
-      "default": "443",
-      "interpolationType": "ENV_VAR",
-      "allowedPattern": "^[0-9]{1,5}$"
-    }
-  },
-  "mainSteps": [
-    {
-      "action": "aws:runShellScript",
-      "name": "struct8Probe",
-      "inputs": {
-        "timeoutSeconds": "60",
-        "runCommand": [
-          "if [ -z \"$SSM_target\" ]; then export SSM_target=\"{{target}}\"; fi",
-          "if [ -z \"$SSM_port\" ]; then export SSM_port=\"{{port}}\"; fi",
-          "echo '--- resolve ---'",
-          "getent hosts \"$SSM_target\" || echo \"no DNS answer\"",
-          "echo '--- icmp ---'",
-          "ping -c 3 -W 2 \"$SSM_target\" || echo \"no ICMP reply (often filtered, not conclusive)\"",
-          "echo '--- tcp ---'",
-          "if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$SSM_target\" \"$SSM_port\" 2>/dev/null; then echo \"port $SSM_port open\"; else echo \"port $SSM_port closed or filtered\"; fi"
-        ]
-      }
-    }
-  ]
-}
-  EOF
-  document_format = "JSON"
-  document_type   = "Command"
 }
 
 
