@@ -790,11 +790,11 @@ locals {
       },
       {
         name  = "DURATION"
-        value = "5m"
+        value = "20m"
       },
       {
         name  = "VUS"
-        value = "20"
+        value = "30"
       },
       {
         name  = "METHOD"
@@ -802,7 +802,7 @@ locals {
       },
       {
         name  = "MS"
-        value = "200"
+        value = "250"
       },
       {
         name  = "TARGET_URL"
