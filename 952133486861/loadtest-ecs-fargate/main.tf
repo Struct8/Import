@@ -588,8 +588,7 @@ resource "aws_appautoscaling_policy" "hub-scale-cpu" {
 }
 
 resource "aws_appautoscaling_target" "hub-scale-target" {
-  # ajuste manual · depends_on — The appautoscaling target references the ECS service by the literal string 'service/ltfargate-target/hub' (resource_id), so Terraform sees no dependency and may create the scalable target before the service exists, which fails with 'no scalable target'. Force ordering with depends_on the ECS service.
-  resource_id        = "service/ltfargate-target/hub"
+  resource_id        = "service/${aws_ecs_cluster.ltfargate-target.name}/${aws_ecs_service.hub_1.name}"
   max_capacity       = 4
   min_capacity       = 1
   scalable_dimension = "ecs:service:DesiredCount"
@@ -599,7 +598,6 @@ resource "aws_appautoscaling_target" "hub-scale-target" {
     State          = "loadtest-ecs-fargate"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_ecs_service.hub_1]
 }
 
 
@@ -661,6 +659,9 @@ resource "aws_ecs_service" "hub_1" {
   deployment_circuit_breaker {
     enable   = true
     rollback = true
+  }
+  lifecycle {
+    ignore_changes = [desired_count]
   }
   load_balancer {
     container_name   = "hub"
@@ -834,41 +835,20 @@ locals {
         awslogs-stream-prefix = "k6"
       }
     }
-    mountPoints            = []
-    systemControls         = []
-    volumesFrom            = []
-    privileged             = false
-    readonlyRootFilesystem = false
+    mountPoints    = []
+    systemControls = []
+    volumesFrom    = []
+    command = [
+      <<EOF
+echo "[k6] waiting $${STARTUP_DELAY}s for target warm-up"; sleep $${STARTUP_DELAY}; printf 'import http from "k6/http";\nimport { check, sleep } from "k6";\nconst URL = __ENV.TARGET_URL;\nconst METHOD = (__ENV.METHOD || "POST").toUpperCase();\nexport const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || "5m" };\nexport default function () {\n  const target = METHOD === "POST" ? URL + "/loadtest?ms=" + (__ENV.MS || "200") : URL;\n  const res = METHOD === "POST" ? http.post(target, null) : http.get(target);\n  check(res, { "ok": (r) => r.status >= 200 && r.status < 400 });\n  sleep(1);\n}\n' > /tmp/load.js; k6 run /tmp/load.js
+      EOF
+    ]
+    entryPoint = ["/bin/sh", "-c"]
   }
 }
 
 resource "aws_ecs_task_definition" "k6" {
-  # ajuste manual · container_definitions — Generator bug: embedded ECS container entryPoint compiles as unquoted HCL tokens ([/bin/sh, -c]) and command is emitted in a heredoc where Terraform interpolates the shell ${VAR} at plan time. Overriding container_definitions with a correct jsonencode where shell vars are escaped as $${VAR} (Terraform emits literal ${VAR} for the shell) and the k6 script is written with printf. See mcp-template-issues.md.
-  container_definitions = jsonencode([{
-    name      = "k6"
-    image     = "grafana/k6:latest"
-    essential = true
-    cpu       = 512
-    memory    = 1024
-    environment = [
-      { name = "STARTUP_DELAY", value = "60" },
-      { name = "DURATION", value = "5m" },
-      { name = "VUS", value = "20" },
-      { name = "METHOD", value = "POST" },
-      { name = "MS", value = "200" },
-      { name = "TARGET_URL", value = "http://${aws_lb.alb-hub1.dns_name}" }
-    ]
-    logConfiguration = {
-      logDriver = "awslogs"
-      options = {
-        awslogs-group         = aws_cloudwatch_log_group.logs-tester.name
-        awslogs-region        = "us-east-1"
-        awslogs-stream-prefix = "k6"
-      }
-    }
-    entryPoint = ["/bin/sh", "-c"]
-    command    = ["echo \"[k6] waiting $${STARTUP_DELAY}s for target warm-up\"; sleep $${STARTUP_DELAY}; printf '%s' \"import http from 'k6/http'; import { check, sleep } from 'k6'; const URL = __ENV.TARGET_URL; const METHOD = (__ENV.METHOD || 'POST').toUpperCase(); const MS = __ENV.MS || '200'; export const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || '5m' }; export default function () { const target = METHOD === 'POST' ? URL + '/loadtest?ms=' + MS : URL; const res = METHOD === 'POST' ? http.post(target, null) : http.get(target); check(res, { 'ok': (r) => r.status >= 200 && r.status < 400 }); sleep(1); }\" > /tmp/load.js; k6 run /tmp/load.js"]
-  }])
+  container_definitions    = jsonencode([local.container_def_k6_k6_2])
   cpu                      = "512"
   execution_role_arn       = aws_iam_role.execution_role_ecs_k6.arn
   family                   = "k6"
