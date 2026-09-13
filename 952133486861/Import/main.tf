@@ -857,14 +857,6 @@ locals {
         value = "30"
       }
     ]
-    logConfiguration = {
-      logDriver = "awslogs"
-      options = {
-        awslogs-group         = aws_cloudwatch_log_group.logs-tester.name
-        awslogs-region        = "us-west-2"
-        awslogs-stream-prefix = "k6"
-      }
-    }
     mountPoints    = []
     systemControls = []
     volumesFrom    = []
@@ -876,6 +868,14 @@ echo "[k6] waiting $${STARTUP_DELAY}s for target warm-up"; sleep $${STARTUP_DELA
     entryPoint             = ["/bin/sh", "-c"]
     privileged             = false
     readonlyRootFilesystem = false
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.logs-tester.name
+        awslogs-region        = "us-west-2"
+        awslogs-stream-prefix = "k6"
+      }
+    }
   }
 }
 
