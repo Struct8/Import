@@ -580,7 +580,7 @@ resource "aws_appautoscaling_policy" "hub-scale-cpu" {
   target_tracking_scaling_policy_configuration {
     scale_in_cooldown  = 120
     scale_out_cooldown = 60
-    target_value       = 50
+    target_value       = 40
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
@@ -838,7 +838,7 @@ locals {
     volumesFrom    = []
     command = [
       <<EOF
-echo "[k6] waiting $${STARTUP_DELAY}s for target warm-up"; sleep $${STARTUP_DELAY}; printf 'import http from "k6/http";\nimport { check, sleep } from "k6";\nconst URL = __ENV.TARGET_URL;\nconst METHOD = (__ENV.METHOD || "POST").toUpperCase();\nexport const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || "5m" };\nexport default function () {\n  const target = METHOD === "POST" ? URL + "/loadtest?ms=" + (__ENV.MS || "200") : URL;\n  const res = METHOD === "POST" ? http.post(target, null) : http.get(target);\n  check(res, { "ok": (r) => r.status >= 200 && r.status < 400 });\n  sleep(1);\n}\n' > /tmp/load.js; k6 run /tmp/load.js
+echo "[k6] waiting $${STARTUP_DELAY}s for target warm-up"; sleep $${STARTUP_DELAY}; printf 'import http from "k6/http";\nimport { check } from "k6";\nconst URL = __ENV.TARGET_URL;\nconst METHOD = (__ENV.METHOD || "POST").toUpperCase();\nexport const options = { vus: Number(__ENV.VUS || 20), duration: __ENV.DURATION || "5m" };\nexport default function () {\n  const target = METHOD === "POST" ? URL + "/loadtest?ms=" + (__ENV.MS || "200") : URL;\n  const res = METHOD === "POST" ? http.post(target, null) : http.get(target);\n  check(res, { "ok": (r) => r.status >= 200 && r.status < 400 });\n}\n' > /tmp/load.js; k6 run /tmp/load.js
       EOF
     ]
     entryPoint = ["/bin/sh", "-c"]
