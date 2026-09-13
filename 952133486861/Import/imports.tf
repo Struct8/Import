@@ -2,6 +2,16 @@
 # Every block below points at a resource that ALREADY exists.
 
 import {
+  to = aws_vpc.loadtest-asg-simple
+  id = "vpc-0653bd333a0ed7467"
+}
+
+import {
+  to = aws_autoscaling_policy.cpu-scale
+  id = "hub-asg/cpu-scale"
+}
+
+import {
   to = aws_internet_gateway.igw-k6
   id = "igw-0de941d6034969d71"
 }
@@ -87,11 +97,6 @@ import {
 }
 
 import {
-  to = aws_vpc.loadtest-asg-simple
-  id = "vpc-0653bd333a0ed7467"
-}
-
-import {
   to = aws_security_group.autoscaling_group_hub-asg_group
   id = "sg-0f00e047b305fb386"
 }
@@ -172,11 +177,6 @@ import {
 }
 
 import {
-  to = aws_security_group_rule.rule_autoscaling_group_hub_asg_group_ingress_tcp_8080
-  id = "sg-0f00e047b305fb386_ingress_tcp_8080_8080_sg-056ed8737d5a3efdd"
-}
-
-import {
   to = aws_security_group_rule.rule_instance_k6_load_generator_group_egress_all_protocols
   id = "sg-0de36f4876c9ce72c_egress_all_0_0_0.0.0.0/0"
 }
@@ -184,11 +184,6 @@ import {
 import {
   to = aws_security_group_rule.rule_instance_k6_load_generator_group_ingress_tcp_5665
   id = "sg-0de36f4876c9ce72c_ingress_tcp_5665_5665_10.60.0.0/16"
-}
-
-import {
-  to = aws_security_group_rule.rule_instance_k6_load_generator_group_ingress_tcp_5665
-  id = "sg-0de36f4876c9ce72c_ingress_tcp_5665_5665_sg-056ed8737d5a3efdd"
 }
 
 import {
@@ -204,4 +199,9 @@ import {
 import {
   to = aws_security_group_rule.rule_instance_nat_a_group_ingress_tcp_5665
   id = "sg-095276e284fb4c8a9_ingress_tcp_5665_5665_0.0.0.0/0"
+}
+
+import {
+  to = aws_lb_target_group_attachment.attach_k6-load-generator_to_tg-k6-dashboard
+  id = "arn:aws:elasticloadbalancing:us-west-2:952133486861:targetgroup/tg-k6-dashboard/19c75c81216fe779,i-0a5ff1e001ff4ea7a,5665"
 }
