@@ -1,7 +1,18 @@
 {
-  "external_repositories": [],
-  "action": "apply",
-  "trigger_id": "1789340814410",
+  "external_repositories": [
+    {
+      "repo_name": "struct8-templates",
+      "org": "Struct8",
+      "branch": "main",
+      "target_dir": ".external_modules/struct8-templates",
+      "folders": [
+        "templates/ec2-hub-docker/v1/image",
+        "templates/ec2-nat-private/v1/user_data"
+      ]
+    }
+  ],
+  "action": "plan",
+  "trigger_id": "1789342985062",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
