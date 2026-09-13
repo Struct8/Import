@@ -710,8 +710,8 @@ locals {
     name      = "hub"
     image     = "${aws_ecr_repository.struct8-hub.repository_url}:latest"
     essential = true
-    cpu       = 512
-    memory    = 1024
+    cpu       = 256
+    memory    = 512
     portMappings = [
       {
         protocol      = "tcp"
@@ -749,20 +749,18 @@ locals {
         awslogs-stream-prefix = "hub"
       }
     }
-    mountPoints            = []
-    systemControls         = []
-    volumesFrom            = []
-    privileged             = false
-    readonlyRootFilesystem = false
+    mountPoints    = []
+    systemControls = []
+    volumesFrom    = []
   }
 }
 
 resource "aws_ecs_task_definition" "hub" {
   container_definitions    = jsonencode([local.container_def_hub_hub_2])
-  cpu                      = "512"
+  cpu                      = "256"
   execution_role_arn       = aws_iam_role.execution_role_ecs_hub.arn
   family                   = "hub"
-  memory                   = "1024"
+  memory                   = "512"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = aws_iam_role.task_role_ecs_hub.arn
@@ -783,8 +781,8 @@ locals {
     name      = "k6"
     image     = "grafana/k6:latest"
     essential = true
-    cpu       = 512
-    memory    = 1024
+    cpu       = 256
+    memory    = 512
     environment = [
       {
         name  = "STARTUP_DELAY"
@@ -849,10 +847,10 @@ echo "[k6] waiting $${STARTUP_DELAY}s for target warm-up"; sleep $${STARTUP_DELA
 
 resource "aws_ecs_task_definition" "k6" {
   container_definitions    = jsonencode([local.container_def_k6_k6_2])
-  cpu                      = "512"
+  cpu                      = "256"
   execution_role_arn       = aws_iam_role.execution_role_ecs_k6.arn
   family                   = "k6"
-  memory                   = "1024"
+  memory                   = "512"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = aws_iam_role.task_role_ecs_k6.arn
