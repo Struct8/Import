@@ -29,7 +29,7 @@ resource "aws_iam_instance_profile" "hub-asg_profile" {
   role = aws_iam_role.hub-asg_role.name
   tags = {
     Name           = "hub-asg_profile"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -40,7 +40,7 @@ resource "aws_iam_instance_profile" "k6-load-generator_profile" {
   role = aws_iam_role.k6-load-generator_role.name
   tags = {
     Name           = "k6-load-generator_profile"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -51,7 +51,7 @@ resource "aws_iam_instance_profile" "nat-a_profile" {
   role = aws_iam_role.nat-a_role.name
   tags = {
     Name           = "nat-a_profile"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -64,7 +64,7 @@ resource "aws_iam_role" "hub-asg_role" {
   path                  = "/"
   tags = {
     Name           = "hub-asg_role"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -77,7 +77,7 @@ resource "aws_iam_role" "k6-load-generator_role" {
   path                  = "/"
   tags = {
     Name           = "k6-load-generator_role"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -90,7 +90,7 @@ resource "aws_iam_role" "nat-a_role" {
   path                  = "/"
   tags = {
     Name           = "nat-a_role"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -107,7 +107,7 @@ resource "aws_vpc" "loadtest-asg-simple" {
   instance_tenancy     = "default"
   tags = {
     Name           = "loadtest-asg-simple"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -120,7 +120,7 @@ resource "aws_subnet" "private-a" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "private-a"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -133,7 +133,7 @@ resource "aws_subnet" "private-b" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "private-b"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -146,7 +146,7 @@ resource "aws_subnet" "public-a" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "public-a"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -159,7 +159,7 @@ resource "aws_subnet" "public-b" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "public-b"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -172,7 +172,7 @@ resource "aws_subnet" "public-k6" {
   private_dns_hostname_type_on_launch = "ip-name"
   tags = {
     Name           = "public-k6"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -181,7 +181,7 @@ resource "aws_internet_gateway" "igw-k6" {
   vpc_id = aws_vpc.loadtest-asg-simple.id
   tags = {
     Name           = "igw-k6"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -202,7 +202,7 @@ resource "aws_route_table" "rt-private1" {
   vpc_id = aws_vpc.loadtest-asg-simple.id
   tags = {
     Name           = "rt-private1"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -211,7 +211,7 @@ resource "aws_route_table" "rt-public1" {
   vpc_id = aws_vpc.loadtest-asg-simple.id
   tags = {
     Name           = "rt-public1"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -245,12 +245,9 @@ resource "aws_security_group" "autoscaling_group_hub-asg_group" {
   name        = "autoscaling_group_hub-asg_group"
   vpc_id      = aws_vpc.loadtest-asg-simple.id
   description = "Managed by Terraform"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "autoscaling_group_hub-asg_group"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -259,12 +256,9 @@ resource "aws_security_group" "instance_k6-load-generator_group" {
   name        = "instance_k6-load-generator_group"
   vpc_id      = aws_vpc.loadtest-asg-simple.id
   description = "Managed by Terraform"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "instance_k6-load-generator_group"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -273,12 +267,9 @@ resource "aws_security_group" "instance_nat-a_group" {
   name        = "instance_nat-a_group"
   vpc_id      = aws_vpc.loadtest-asg-simple.id
   description = "Managed by Terraform"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "instance_nat-a_group"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -287,12 +278,9 @@ resource "aws_security_group" "lb_alb-hub_group" {
   name        = "lb_alb-hub_group"
   vpc_id      = aws_vpc.loadtest-asg-simple.id
   description = "Managed by Terraform"
-  lifecycle {
-    ignore_changes = [revoke_rules_on_delete]
-  }
   tags = {
     Name           = "lb_alb-hub_group"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -413,12 +401,12 @@ resource "aws_security_group_rule" "rule_lb_alb_hub_group_to_autoscaling_group_h
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_lb_alb_hub_group_to_instance_k6_load_generator_group_tcp_5665" {
+resource "aws_security_group_rule" "rule_lb_alb_hub_group_to_instance_k6_load_generator_group_udp_5665" {
   security_group_id        = aws_security_group.instance_k6-load-generator_group.id
   source_security_group_id = aws_security_group.lb_alb-hub_group.id
   description              = "k6 web dashboard from the ALB"
   from_port                = 5665
-  protocol                 = "tcp"
+  protocol                 = "udp"
   to_port                  = 5665
   type                     = "ingress"
 }
@@ -433,7 +421,7 @@ resource "aws_lb" "alb-hub" {
   subnets                          = [aws_subnet.public-a.id, aws_subnet.public-b.id]
   tags = {
     Name           = "alb-hub"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -456,7 +444,7 @@ resource "aws_lb_listener" "listener-dashboard" {
   }
   tags = {
     Name           = "listener-dashboard"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -479,7 +467,7 @@ resource "aws_lb_listener" "listener-http" {
   }
   tags = {
     Name           = "listener-http"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -515,7 +503,7 @@ resource "aws_lb_target_group" "tg-hub" {
   }
   tags = {
     Name           = "tg-hub"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   target_group_health {
@@ -561,7 +549,7 @@ resource "aws_lb_target_group" "tg-k6-dashboard" {
   }
   tags = {
     Name           = "tg-k6-dashboard"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   target_group_health {
@@ -606,7 +594,7 @@ resource "aws_instance" "k6-load-generator" {
     enabled = false
   }
   lifecycle {
-    ignore_changes = [user_data, user_data_replace_on_change]
+    ignore_changes = [user_data]
   }
   metadata_options {
     http_endpoint               = "enabled"
@@ -627,7 +615,7 @@ resource "aws_instance" "k6-load-generator" {
   }
   tags = {
     Name           = "k6-load-generator"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -652,7 +640,7 @@ resource "aws_instance" "nat-a" {
     enabled = false
   }
   lifecycle {
-    ignore_changes = [user_data, user_data_replace_on_change]
+    ignore_changes = [user_data]
   }
   metadata_options {
     http_endpoint               = "enabled"
@@ -673,7 +661,7 @@ resource "aws_instance" "nat-a" {
   }
   tags = {
     Name           = "nat-a"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -686,6 +674,7 @@ resource "aws_launch_template" "hub-lt" {
   instance_type   = "t4g.nano"
   user_data = base64encode(<<-EOFUData
 #!/bin/bash
+
 
 # --- BEGIN STRUCT8 VARIABLES ---
 cat << 'EOFENV' > /etc/struct8_env
@@ -785,6 +774,7 @@ docker run -d \
 echo "Done. Hub is starting on port $${HUB_PORT}. GET / is health; POST / fans out."
 [ -n "$${HUB_LOADTEST:-}" ] && echo "Load-test endpoint enabled: POST /loadtest?ms=N"
 
+
 EOFUData
 )
   vpc_security_group_ids = [aws_security_group.autoscaling_group_hub-asg_group.id]
@@ -811,13 +801,13 @@ EOFUData
     resource_type = "volume"
     tags = {
     Name           = "hub-asg"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
   }
   tags = {
     Name           = "hub-lt"
-    State          = "loadtest-asg-simple"
+    State          = "Import"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -852,7 +842,7 @@ resource "aws_autoscaling_group" "hub-asg" {
   tag {
     key                 = "State"
     propagate_at_launch = true
-    value               = "loadtest-asg-simple"
+    value               = "Import"
   }
   tag {
     key                 = "Struct8Creator"
