@@ -132,6 +132,21 @@ import {
 }
 
 import {
+  to = aws_security_group.ecs_task_definition_k6_group
+  id = "sg-0200eb7dd60f773a3"
+}
+
+import {
+  to = aws_iam_role.task_role_ecs_k6
+  id = "task_role_ecs_k6"
+}
+
+import {
+  to = aws_iam_role.execution_role_ecs_k6
+  id = "execution_role_ecs_k6"
+}
+
+import {
   to = aws_security_group.lb_alb-hub1_group
   id = "sg-05d485cb2ecda0082"
 }
@@ -207,6 +222,16 @@ import {
 }
 
 import {
+  to = aws_security_group_rule.rule_ecs_task_definition_k6_group_egress_all_protocols
+  id = "sg-0200eb7dd60f773a3_egress_all_0_0_0.0.0.0/0"
+}
+
+import {
+  to = aws_security_group_rule.rule_ecs_task_definition_k6_group_to_lb_alb_hub1_group_tcp_80
+  id = "sg-05d485cb2ecda0082_ingress_tcp_80_80_sg-0200eb7dd60f773a3"
+}
+
+import {
   to = aws_security_group_rule.rule_instance_nat_a1_group_egress_all_protocols
   id = "sg-03f06085c9d641a04_egress_all_0_0_0.0.0.0/0"
 }
@@ -229,4 +254,14 @@ import {
 import {
   to = aws_security_group_rule.rule_lb_alb_hub1_group_to_ecs_task_definition_hub_group_tcp_8080
   id = "sg-09c72c80334bf2d68_ingress_tcp_8080_8080_sg-05d485cb2ecda0082"
+}
+
+import {
+  to = aws_ecs_service.hub_1
+  id = "ltfargate-target/hub"
+}
+
+import {
+  to = aws_ecs_service.k6_1
+  id = "ltfargate-tester/k6"
 }
