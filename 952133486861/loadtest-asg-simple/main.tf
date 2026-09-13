@@ -21,16 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
-
-moved {
-  from = aws_vpc.k6-loadtest
-  to   = aws_vpc.loadtest-asg-simple
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "hub-asg_profile" {
@@ -749,7 +739,7 @@ data "aws_ami" "AMI_Data_Source_hub-lt" {
 resource "aws_launch_template" "hub-lt" {
   image_id               = data.aws_ami.AMI_Data_Source_hub-lt.id
   name                   = "hub-lt"
-  description            = "Launch Template do ASG. user_data hub-docker.sh: instala Docker,clona struct8-hub,${builda a imagem arm64 e roda o Hub com HUB_LOADTEST=on (endpoint POST /loadtest?ms=N que queima CPU). AMI arm64 (t4g). O build no boot leva ~5min - por isso o grace period do ASG e alto.}"
+  description            = "ASG launch template. user_data hub-docker.sh installs Docker, clones struct8-hub, builds the arm64 image and runs the Hub with the load-test endpoint enabled. arm64 AMI for t4g. The boot build takes about 5 min, which is why the ASG grace period is high."
   instance_type          = "t4g.nano"
   update_default_version = true
   user_data = base64encode(<<-EOFUData
