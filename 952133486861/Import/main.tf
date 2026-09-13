@@ -23,6 +23,17 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
+resource "aws_iam_instance_profile" "hub-asg_profile" {
+  name = "hub-asg_profile"
+  path = "/"
+  role = aws_iam_role.hub-asg_role.name
+  tags = {
+    Name           = "hub-asg_profile"
+    State          = "loadtest-asg-simple"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_instance_profile" "k6-load-generator_profile" {
   name = "k6-load-generator_profile"
   path = "/"
@@ -40,6 +51,19 @@ resource "aws_iam_instance_profile" "nat-a_profile" {
   role = aws_iam_role.nat-a_role.name
   tags = {
     Name           = "nat-a_profile"
+    State          = "loadtest-asg-simple"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role" "hub-asg_role" {
+  name                  = "hub-asg_role"
+  assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "hub-asg_role"
     State          = "loadtest-asg-simple"
     Struct8Creator = "Contato Struct"
   }
@@ -774,6 +798,9 @@ EOFUData
       volume_size           = 8
       volume_type           = "gp3"
     }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.hub-asg_profile.name
   }
   metadata_options {
     http_endpoint               = "enabled"
