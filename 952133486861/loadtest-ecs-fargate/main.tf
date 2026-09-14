@@ -21,21 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
-
-moved {
-  from = aws_vpc.ltfargate-vpc
-  to   = aws_vpc.ecs-fargate-vpc
-}
-
-moved {
-  from = aws_appautoscaling_target.service_ltfargate-target_hub_ecs_service_DesiredCount_ecs
-  to   = aws_appautoscaling_target.hub-scale-target
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "nat-a1_profile" {
@@ -685,7 +670,6 @@ resource "aws_ecs_service" "hub_1" {
   enable_ecs_managed_tags           = true
   enable_execute_command            = true
   health_check_grace_period_seconds = 120
-  iam_role                          = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
   launch_type                       = "FARGATE"
   platform_version                  = "LATEST"
   propagate_tags                    = "NONE"
@@ -725,7 +709,6 @@ resource "aws_ecs_service" "k6_1" {
   desired_count                      = 1
   enable_ecs_managed_tags            = true
   enable_execute_command             = true
-  iam_role                           = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
   launch_type                        = "FARGATE"
   platform_version                   = "LATEST"
   propagate_tags                     = "NONE"
@@ -737,8 +720,8 @@ resource "aws_ecs_service" "k6_1" {
     subnets          = [aws_subnet.public-k6.id]
   }
   tags = {
-    Name           = "k6_1"
     State          = "loadtest-ecs-fargate"
+    Name           = "k6_1"
     Struct8Creator = "Contato Struct"
   }
 }
@@ -937,7 +920,7 @@ resource "aws_cloudwatch_log_group" "logs-tester" {
 ### CATEGORY: MISC ###
 
 resource "terraform_data" "seed_struct8-hub" {
-  triggers_replace = ["${path.module}/.external_modules/struct8-templates/templates/ec2-hub-docker/v1/image", "latest"]
+  triggers_replace = ["${path.module}/.external_modules/struct8-hub/image", "latest"]
   lifecycle {
     replace_triggered_by = [aws_ecr_repository.struct8-hub]
   }
@@ -946,7 +929,7 @@ resource "terraform_data" "seed_struct8-hub" {
     command = <<EOF
 set -e
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${split("/", aws_ecr_repository.struct8-hub.repository_url)[0]}
-docker build -t ${aws_ecr_repository.struct8-hub.repository_url}:latest ${path.module}/.external_modules/struct8-templates/templates/ec2-hub-docker/v1/image
+docker build -t ${aws_ecr_repository.struct8-hub.repository_url}:latest ${path.module}/.external_modules/struct8-hub/image
 docker push ${aws_ecr_repository.struct8-hub.repository_url}:latest
   EOF
     interpreter = ["/bin/bash", "-c"]
