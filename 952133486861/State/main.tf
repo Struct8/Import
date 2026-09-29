@@ -33,6 +33,16 @@ resource "aws_iam_instance_profile" "lab2-ecs-asg_profile" {
   }
 }
 
+resource "aws_iam_instance_profile" "lab2-nat_profile" {
+  name = "lab2-nat_profile"
+  role = aws_iam_role.lab2-nat_role.name
+  tags = {
+    Name           = "lab2-nat_profile"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 data "aws_iam_policy_document" "autoscaling_group_lab2-ecs-asg_st_State_doc" {
   statement {
     sid       = "AllowLab2ecscluster"
@@ -93,6 +103,30 @@ resource "aws_iam_role" "lab2-ecs-asg_role" {
   }
 }
 
+resource "aws_iam_role" "lab2-nat_role" {
+  name = "lab2-nat_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "lab2-nat_role"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role" "task_role_ecs_lab2-nginx" {
   name = "task_role_ecs_lab2-nginx"
   assume_role_policy = jsonencode({
@@ -139,6 +173,18 @@ resource "aws_vpc" "VPC2" {
   }
 }
 
+resource "aws_subnet" "lab2-private-a" {
+  vpc_id                  = aws_vpc.VPC2.id
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.6.1.0/24"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "lab2-private-a"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_subnet" "lab2-public-a" {
   vpc_id                  = aws_vpc.VPC2.id
   availability_zone       = "us-west-2a"
@@ -160,10 +206,25 @@ resource "aws_internet_gateway" "lab2-igw" {
   }
 }
 
+resource "aws_route" "route_lab2-rtb-private_to_lab2-nat_ipv4" {
+  network_interface_id   = aws_instance.lab2-nat.primary_network_interface_id
+  route_table_id         = aws_route_table.lab2-rtb-private.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
 resource "aws_route" "route_lab2-rtb-public_to_lab2-igw_ipv4" {
   gateway_id             = aws_internet_gateway.lab2-igw.id
   route_table_id         = aws_route_table.lab2-rtb-public.id
   destination_cidr_block = "0.0.0.0/0"
+}
+
+resource "aws_route_table" "lab2-rtb-private" {
+  vpc_id = aws_vpc.VPC2.id
+  tags = {
+    Name           = "lab2-rtb-private"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_route_table" "lab2-rtb-public" {
@@ -175,17 +236,27 @@ resource "aws_route_table" "lab2-rtb-public" {
   }
 }
 
+resource "aws_route_table_association" "aws_route_table_association_lab2_private_a_lab2_rtb_private" {
+  route_table_id = aws_route_table.lab2-rtb-private.id
+  subnet_id      = aws_subnet.lab2-private-a.id
+}
+
 resource "aws_route_table_association" "aws_route_table_association_lab2_public_a_lab2_rtb_public" {
   route_table_id = aws_route_table.lab2-rtb-public.id
   subnet_id      = aws_subnet.lab2-public-a.id
 }
 
 resource "aws_security_group" "autoscaling_group_lab2-ecs-asg_group" {
-  name                   = "autoscaling_group_lab2-ecs-asg_group"
+  name   = "autoscaling_group_lab2-ecs-asg_group"
+  vpc_id = aws_vpc.VPC2.id
+}
+
+resource "aws_security_group" "instance_lab2-nat_group" {
+  name                   = "instance_lab2-nat_group"
   vpc_id                 = aws_vpc.VPC2.id
   revoke_rules_on_delete = false
   tags = {
-    Name           = "autoscaling_group_lab2-ecs-asg_group"
+    Name           = "instance_lab2-nat_group"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
@@ -202,18 +273,72 @@ resource "aws_security_group_rule" "rule_autoscaling_group_lab2_ecs_asg_group_eg
 
 resource "aws_security_group_rule" "rule_autoscaling_group_lab2_ecs_asg_group_ingress_tcp_80" {
   security_group_id = aws_security_group.autoscaling_group_lab2-ecs-asg_group.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  description       = "HTTP para teste do nginx"
+  cidr_blocks       = ["10.6.0.0/16"]
+  description       = "HTTP interno da VPC (teste via NAT)"
   from_port         = 80
   protocol          = "tcp"
   to_port           = 80
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "rule_instance_lab2_nat_group_egress_all_protocols" {
+  security_group_id = aws_security_group.instance_lab2-nat_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
 
 
 
 ### CATEGORY: COMPUTE ###
+
+data "local_file" "UserData_lab2-nat" {
+  filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-nat-private/v1/user_data/Nat.sh"
+}
+
+data "aws_ami" "AMI_Data_Source_lab2-nat" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-kernel-6.1-arm64"]
+  }
+}
+
+resource "aws_instance" "lab2-nat" {
+  subnet_id                   = aws_subnet.lab2-public-a.id
+  ami                         = data.aws_ami.AMI_Data_Source_lab2-nat.id
+  associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.lab2-nat_profile.name
+  instance_type               = "t4g.nano"
+  source_dest_check           = false
+  user_data_base64 = base64encode(<<-EOFUData
+#!/bin/bash
+
+${data.local_file.UserData_lab2-nat.content}
+EOFUData
+)
+  vpc_security_group_ids = [aws_security_group.instance_lab2-nat_group.id]
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+  root_block_device {
+    encrypted   = true
+    iops        = 3000
+    throughput  = 125
+    volume_size = 8
+    volume_type = "gp3"
+  }
+  tags = {
+    Name           = "lab2-nat"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
 
 data "aws_ami" "AMI_Data_Source_lab2-ecs-lt" {
   most_recent = true
@@ -293,7 +418,7 @@ resource "aws_autoscaling_group" "lab2-ecs-asg" {
   min_elb_capacity        = 0
   min_size                = 1
   termination_policies    = ["Default"]
-  vpc_zone_identifier     = [aws_subnet.lab2-public-a.id]
+  vpc_zone_identifier     = [aws_subnet.lab2-private-a.id]
   wait_for_elb_capacity   = 0
   launch_template {
     version = aws_launch_template.lab2-ecs-lt.latest_version
