@@ -6,13 +6,14 @@
       "branch": "main",
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
-        "templates/ec2-hub-docker/v1/image"
+        "templates/ec2-hub-docker/v1/image",
+        "templates/vpc-k6-load-generator/v1/user_data"
       ]
     }
   ],
-  "action": "destroy",
-  "trigger_id": "1790705049823",
-  "triggered_by": "Contato Struct",
+  "action": "apply",
+  "trigger_id": "1790705257160",
+  "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
