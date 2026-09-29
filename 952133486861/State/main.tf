@@ -33,11 +33,11 @@ resource "aws_iam_instance_profile" "lab2-ecs-asg_profile" {
   }
 }
 
-resource "aws_iam_instance_profile" "lab2-nat_profile" {
-  name = "lab2-nat_profile"
-  role = aws_iam_role.lab2-nat_role.name
+resource "aws_iam_instance_profile" "lab2-k6_profile" {
+  name = "lab2-k6_profile"
+  role = aws_iam_role.lab2-k6_role.name
   tags = {
-    Name           = "lab2-nat_profile"
+    Name           = "lab2-k6_profile"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
@@ -58,8 +58,29 @@ resource "aws_iam_policy" "autoscaling_group_lab2-ecs-asg_st_State" {
   policy      = data.aws_iam_policy_document.autoscaling_group_lab2-ecs-asg_st_State_doc.json
 }
 
-resource "aws_iam_role" "execution_role_ecs_lab2-nginx" {
-  name = "execution_role_ecs_lab2-nginx"
+data "aws_iam_policy_document" "ecs_task_definition_lab2-hub_execution_st_State_doc" {
+  statement {
+    sid       = "AllowPullFromRepo"
+    effect    = "Allow"
+    actions   = ["ecr:BatchCheckLayerAvailability", "ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"]
+    resources = [aws_ecr_repository.lab2-hub-ecr.arn]
+  }
+  statement {
+    sid       = "AllowEcrAuth"
+    effect    = "Allow"
+    actions   = ["ecr:GetAuthorizationToken"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "ecs_task_definition_lab2-hub_execution_st_State" {
+  name        = "ecs_task_definition_lab2-hub_execution_st_State"
+  description = "Access Policy for lab2-hub (Role: execution)"
+  policy      = data.aws_iam_policy_document.ecs_task_definition_lab2-hub_execution_st_State_doc.json
+}
+
+resource "aws_iam_role" "execution_role_ecs_lab2-hub" {
+  name = "execution_role_ecs_lab2-hub"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -73,7 +94,7 @@ resource "aws_iam_role" "execution_role_ecs_lab2-nginx" {
   ]
 })
   tags = {
-    Name           = "execution_role_ecs_lab2-nginx"
+    Name           = "execution_role_ecs_lab2-hub"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
@@ -103,8 +124,8 @@ resource "aws_iam_role" "lab2-ecs-asg_role" {
   }
 }
 
-resource "aws_iam_role" "lab2-nat_role" {
-  name = "lab2-nat_role"
+resource "aws_iam_role" "lab2-k6_role" {
+  name = "lab2-k6_role"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -121,14 +142,14 @@ resource "aws_iam_role" "lab2-nat_role" {
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "lab2-nat_role"
+    Name           = "lab2-k6_role"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_role" "task_role_ecs_lab2-nginx" {
-  name = "task_role_ecs_lab2-nginx"
+resource "aws_iam_role" "task_role_ecs_lab2-hub" {
+  name = "task_role_ecs_lab2-hub"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -142,7 +163,7 @@ resource "aws_iam_role" "task_role_ecs_lab2-nginx" {
   ]
 })
   tags = {
-    Name           = "task_role_ecs_lab2-nginx"
+    Name           = "task_role_ecs_lab2-hub"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
@@ -151,6 +172,11 @@ resource "aws_iam_role" "task_role_ecs_lab2-nginx" {
 resource "aws_iam_role_policy_attachment" "autoscaling_group_lab2-ecs-asg_st_State_attach" {
   policy_arn = aws_iam_policy.autoscaling_group_lab2-ecs-asg_st_State.arn
   role       = aws_iam_role.lab2-ecs-asg_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_definition_lab2-hub_execution_st_State_attach" {
+  policy_arn = aws_iam_policy.ecs_task_definition_lab2-hub_execution_st_State.arn
+  role       = aws_iam_role.execution_role_ecs_lab2-hub.name
 }
 
 resource "aws_iam_role_policy_attachment" "service_role_AmazonEC2ContainerServiceforEC2Role_to_lab2-ecs-asg_attach" {
@@ -185,6 +211,18 @@ resource "aws_subnet" "lab2-private-a" {
   }
 }
 
+resource "aws_subnet" "lab2-private-b" {
+  vpc_id                  = aws_vpc.VPC2.id
+  availability_zone       = "us-west-2b"
+  cidr_block              = "10.6.3.0/24"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "lab2-private-b"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_subnet" "lab2-public-a" {
   vpc_id                  = aws_vpc.VPC2.id
   availability_zone       = "us-west-2a"
@@ -192,6 +230,18 @@ resource "aws_subnet" "lab2-public-a" {
   map_public_ip_on_launch = true
   tags = {
     Name           = "lab2-public-a"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "lab2-public-b" {
+  vpc_id                  = aws_vpc.VPC2.id
+  availability_zone       = "us-west-2b"
+  cidr_block              = "10.6.2.0/24"
+  map_public_ip_on_launch = true
+  tags = {
+    Name           = "lab2-public-b"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
@@ -206,8 +256,19 @@ resource "aws_internet_gateway" "lab2-igw" {
   }
 }
 
-resource "aws_route" "route_lab2-rtb-private_to_lab2-nat_ipv4" {
-  network_interface_id   = aws_instance.lab2-nat.primary_network_interface_id
+resource "aws_nat_gateway" "lab2-natgw" {
+  vpc_id            = aws_vpc.VPC2.id
+  availability_mode = "regional"
+  connectivity_type = "public"
+  tags = {
+    Name           = "lab2-natgw"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_route" "route_lab2-rtb-private_to_lab2-natgw_ipv4" {
+  nat_gateway_id         = aws_nat_gateway.lab2-natgw.id
   route_table_id         = aws_route_table.lab2-rtb-private.id
   destination_cidr_block = "0.0.0.0/0"
 }
@@ -241,9 +302,19 @@ resource "aws_route_table_association" "aws_route_table_association_lab2_private
   subnet_id      = aws_subnet.lab2-private-a.id
 }
 
+resource "aws_route_table_association" "aws_route_table_association_lab2_private_b_lab2_rtb_private" {
+  route_table_id = aws_route_table.lab2-rtb-private.id
+  subnet_id      = aws_subnet.lab2-private-b.id
+}
+
 resource "aws_route_table_association" "aws_route_table_association_lab2_public_a_lab2_rtb_public" {
   route_table_id = aws_route_table.lab2-rtb-public.id
   subnet_id      = aws_subnet.lab2-public-a.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_lab2_public_b_lab2_rtb_public" {
+  route_table_id = aws_route_table.lab2-rtb-public.id
+  subnet_id      = aws_subnet.lab2-public-b.id
 }
 
 resource "aws_security_group" "autoscaling_group_lab2-ecs-asg_group" {
@@ -251,12 +322,23 @@ resource "aws_security_group" "autoscaling_group_lab2-ecs-asg_group" {
   vpc_id = aws_vpc.VPC2.id
 }
 
-resource "aws_security_group" "instance_lab2-nat_group" {
-  name                   = "instance_lab2-nat_group"
+resource "aws_security_group" "instance_lab2-k6_group" {
+  name                   = "instance_lab2-k6_group"
   vpc_id                 = aws_vpc.VPC2.id
   revoke_rules_on_delete = false
   tags = {
-    Name           = "instance_lab2-nat_group"
+    Name           = "instance_lab2-k6_group"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "lb_lab2-alb_group" {
+  name                   = "lb_lab2-alb_group"
+  vpc_id                 = aws_vpc.VPC2.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "lb_lab2-alb_group"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
@@ -281,8 +363,8 @@ resource "aws_security_group_rule" "rule_autoscaling_group_lab2_ecs_asg_group_in
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_instance_lab2_nat_group_egress_all_protocols" {
-  security_group_id = aws_security_group.instance_lab2-nat_group.id
+resource "aws_security_group_rule" "rule_instance_lab2_k6_group_egress_all_protocols" {
+  security_group_id = aws_security_group.instance_lab2-k6_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -290,16 +372,105 @@ resource "aws_security_group_rule" "rule_instance_lab2_nat_group_egress_all_prot
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "rule_instance_lab2_k6_group_to_lb_lab2_alb_group_tcp_80" {
+  security_group_id        = aws_security_group.lb_lab2-alb_group.id
+  source_security_group_id = aws_security_group.instance_lab2-k6_group.id
+  description              = "k6 acessa o ALB na porta 80"
+  from_port                = 80
+  protocol                 = "tcp"
+  to_port                  = 80
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lb_lab2_alb_group_egress_all_protocols" {
+  security_group_id = aws_security_group.lb_lab2-alb_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_lb_lab2_alb_group_to_autoscaling_group_lab2_ecs_asg_group_tcp_32768_65535" {
+  security_group_id        = aws_security_group.autoscaling_group_lab2-ecs-asg_group.id
+  source_security_group_id = aws_security_group.lb_lab2-alb_group.id
+  description              = "ALB para tasks ECS (bridge dynamic ports)"
+  from_port                = 32768
+  protocol                 = "tcp"
+  to_port                  = 65535
+  type                     = "ingress"
+}
+
+resource "aws_lb" "lab2-alb" {
+  name               = "lab2-alb"
+  enable_http2       = true
+  idle_timeout       = 60
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.lb_lab2-alb_group.id]
+  subnets            = [aws_subnet.lab2-public-a.id, aws_subnet.lab2-public-b.id]
+  tags = {
+    Name           = "lab2-alb"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_lb_listener" "lab2-listener" {
+  load_balancer_arn                    = aws_lb.lab2-alb.arn
+  port                                 = 80
+  protocol                             = "HTTP"
+  routing_http_response_server_enabled = true
+  default_action {
+    order            = 1
+    target_group_arn = aws_lb_target_group.lab2-tg-hub.arn
+    type             = "forward"
+    forward {
+      target_group {
+        arn = aws_lb_target_group.lab2-tg-hub.arn
+      }
+    }
+  }
+  tags = {
+    Name           = "lab2-listener"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_lb_target_group" "lab2-tg-hub" {
+  name                          = "lab2-tg-hub"
+  vpc_id                        = aws_vpc.VPC2.id
+  deregistration_delay          = "300"
+  ip_address_type               = "ipv4"
+  load_balancing_algorithm_type = "round_robin"
+  port                          = 8080
+  protocol                      = "HTTP"
+  slow_start                    = 0
+  target_type                   = "instance"
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    interval            = 30
+    matcher             = "200-399"
+    path                = "/"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 5
+    unhealthy_threshold = 3
+  }
+  tags = {
+    Name           = "lab2-tg-hub"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 
 
 
 ### CATEGORY: COMPUTE ###
 
-data "local_file" "UserData_lab2-nat" {
-  filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-nat-private/v1/user_data/Nat.sh"
-}
-
-data "aws_ami" "AMI_Data_Source_lab2-nat" {
+data "aws_ami" "AMI_Data_Source_lab2-k6" {
   most_recent = true
   owners      = ["amazon"]
   filter {
@@ -308,20 +479,55 @@ data "aws_ami" "AMI_Data_Source_lab2-nat" {
   }
 }
 
-resource "aws_instance" "lab2-nat" {
+resource "aws_instance" "lab2-k6" {
+  # ajuste manual · user_data — aws_instance nao permite user_data custom junto com env vars; k6 precisa instalar e rodar carga usando AWS_LB_DNSNAME_0 injetado no /etc/struct8_env
   subnet_id                   = aws_subnet.lab2-public-a.id
-  ami                         = data.aws_ami.AMI_Data_Source_lab2-nat.id
+  ami                         = data.aws_ami.AMI_Data_Source_lab2-k6.id
   associate_public_ip_address = true
-  iam_instance_profile        = aws_iam_instance_profile.lab2-nat_profile.name
-  instance_type               = "t4g.nano"
-  source_dest_check           = false
+  iam_instance_profile        = aws_iam_instance_profile.lab2-k6_profile.name
+  instance_type               = "t4g.small"
+  user_data = base64encode(<<-EOT
+#!/bin/bash
+cat << 'EOFENV' > /etc/struct8_env
+AWS_LB_DNSNAME_0="${aws_lb.lab2-alb.dns_name}"
+EOFENV
+curl -L https://github.com/grafana/k6/releases/download/v0.52.0/k6-v0.52.0-linux-arm64.tar.gz -o /tmp/k6.tgz
+tar xzf /tmp/k6.tgz -C /tmp
+cp /tmp/k6*/k6 /usr/local/bin/k6
+source /etc/struct8_env
+cat >/root/load.js <<'EOFJS'
+import http from 'k6/http';
+import { sleep } from 'k6';
+export const options = { vus: 30, duration: '30m' };
+const T = __ENV.TARGET_URL;
+export default function () {
+  http.post(`${T}/loadtest?ms=250`);
+  sleep(0.1);
+}
+EOFJS
+TARGET_URL="http://$${AWS_LB_DNSNAME_0}" nohup k6 run /root/load.js > /var/log/k6.log 2>&1 &
+EOT
+)
   user_data_base64 = base64encode(<<-EOFUData
 #!/bin/bash
 
-${data.local_file.UserData_lab2-nat.content}
+# --- BEGIN STRUCT8 VARIABLES ---
+cat << 'EOFENV' > /etc/struct8_env
+NAME="lab2-k6"
+REGION="${data.aws_region.current.region}"
+ACCOUNT="${data.aws_caller_identity.current.account_id}"
+AWS_LB_DNSNAME_0="${aws_lb.lab2-alb.dns_name}"
+EOFENV
+cat /etc/struct8_env >> /etc/environment
+sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
+chmod +x /etc/profile.d/struct8_vars.sh
+chmod 644 /etc/struct8_env
+# --- END STRUCT8 VARIABLES ---
+
+
 EOFUData
 )
-  vpc_security_group_ids = [aws_security_group.instance_lab2-nat_group.id]
+  vpc_security_group_ids = [aws_security_group.instance_lab2-k6_group.id]
   metadata_options {
     http_endpoint = "enabled"
     http_tokens   = "required"
@@ -334,7 +540,7 @@ EOFUData
     volume_type = "gp3"
   }
   tags = {
-    Name           = "lab2-nat"
+    Name           = "lab2-k6"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
@@ -413,7 +619,7 @@ resource "aws_autoscaling_group" "lab2-ecs-asg" {
   desired_capacity        = 1
   health_check_type       = "EC2"
   max_instance_lifetime   = 0
-  max_size                = 1
+  max_size                = 3
   metrics_granularity     = "1Minute"
   min_elb_capacity        = 0
   min_size                = 1
@@ -441,10 +647,51 @@ resource "aws_autoscaling_group" "lab2-ecs-asg" {
   }
 }
 
+resource "aws_appautoscaling_policy" "lab2-hub-cpu" {
+  name               = "lab2-hub-cpu"
+  resource_id        = aws_appautoscaling_target.lab2-hub-scale.resource_id
+  policy_type        = "TargetTrackingScaling"
+  scalable_dimension = aws_appautoscaling_target.lab2-hub-scale.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.lab2-hub-scale.service_namespace
+  target_tracking_scaling_policy_configuration {
+    disable_scale_in   = false
+    scale_in_cooldown  = 120
+    scale_out_cooldown = 60
+    target_value       = 50
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+  }
+}
+
+resource "aws_appautoscaling_target" "lab2-hub-scale" {
+  resource_id        = "service/${aws_ecs_cluster.lab2-ecs-cluster.name}/${aws_ecs_service.lab2-hub_service.name}"
+  max_capacity       = 4
+  min_capacity       = 1
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+  tags = {
+    Name           = "lab2-hub-scale"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 
 
 
 ### CATEGORY: CONTAINERS ###
+
+resource "aws_ecr_repository" "lab2-hub-ecr" {
+  name                 = "lab2-hub-ecr"
+  force_delete         = true
+  image_tag_mutability = "MUTABLE"
+  tags = {
+    Name           = "lab2-hub-ecr"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
 
 resource "aws_ecs_capacity_provider" "lab2-ec2-cp" {
   name = "lab2-ec2-cp"
@@ -481,44 +728,52 @@ resource "aws_ecs_cluster_capacity_providers" "assoc_cp_to_lab2-ecs-cluster" {
   capacity_providers = [aws_ecs_capacity_provider.lab2-ec2-cp.name]
 }
 
-resource "aws_ecs_service" "lab2-nginx_service" {
-  name                    = "lab2-nginx_service"
+resource "aws_ecs_service" "lab2-hub_service" {
+  name                    = "lab2-hub_service"
   cluster                 = aws_ecs_cluster.lab2-ecs-cluster.id
   desired_count           = 1
   enable_ecs_managed_tags = true
   force_delete            = true
   scheduling_strategy     = "REPLICA"
-  task_definition         = "${aws_ecs_task_definition.lab2-nginx.family}:${aws_ecs_task_definition.lab2-nginx.revision}"
+  task_definition         = "${aws_ecs_task_definition.lab2-hub.family}:${aws_ecs_task_definition.lab2-hub.revision}"
   capacity_provider_strategy {
     base              = 0
     capacity_provider = aws_ecs_capacity_provider.lab2-ec2-cp.name
     weight            = 1
   }
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
+  load_balancer {
+    container_name   = "hub"
+    container_port   = 8080
+    target_group_arn = aws_lb_target_group.lab2-tg-hub.arn
+  }
   tags = {
-    Name           = "lab2-nginx_service"
+    Name           = "lab2-hub_service"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [terraform_data.seed_lab2-hub-ecr]
 }
 
 locals {
-  container_def_lab2-nginx_nginx = {
-    name      = "nginx"
-    image     = "nginx:latest"
+  container_def_lab2-hub_hub = {
+    name      = "hub"
+    image     = "${aws_ecr_repository.lab2-hub-ecr.repository_url}:latest"
     essential = true
     cpu       = 128
     memory    = 200
     portMappings = [
       {
         protocol      = "tcp"
-        containerPort = 80
-        hostPort      = 80
+        containerPort = 8080
       }
     ]
     environment = [
       {
         name  = "NAME"
-        value = "lab2-nginx"
+        value = "lab2-hub"
       },
       {
         name  = "REGION"
@@ -541,20 +796,21 @@ locals {
   }
 }
 
-resource "aws_ecs_task_definition" "lab2-nginx" {
-  container_definitions    = jsonencode([local.container_def_lab2-nginx_nginx])
+resource "aws_ecs_task_definition" "lab2-hub" {
+  container_definitions    = jsonencode([local.container_def_lab2-hub_hub])
   cpu                      = "128"
-  execution_role_arn       = aws_iam_role.execution_role_ecs_lab2-nginx.arn
+  execution_role_arn       = aws_iam_role.execution_role_ecs_lab2-hub.arn
   family                   = "lab2-nginx"
   memory                   = "350"
   network_mode             = "bridge"
   requires_compatibilities = ["EC2"]
-  task_role_arn            = aws_iam_role.task_role_ecs_lab2-nginx.arn
+  task_role_arn            = aws_iam_role.task_role_ecs_lab2-hub.arn
   tags = {
-    Name           = "lab2-nginx"
+    Name           = "lab2-hub"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_lab2-hub_execution_st_State_attach]
 }
 
 
@@ -689,6 +945,23 @@ resource "null_resource" "cleanup_lab2-ecs-cluster" {
   EOF
     interpreter = ["/bin/bash", "-c"]
     when        = "destroy"
+  }
+}
+
+resource "terraform_data" "seed_lab2-hub-ecr" {
+  triggers_replace = ["${path.module}/.external_modules/struct8-templates/templates/ec2-hub-docker/v1/image", "latest"]
+  lifecycle {
+    replace_triggered_by = [aws_ecr_repository.lab2-hub-ecr]
+  }
+  depends_on = [aws_ecr_repository.lab2-hub-ecr]
+  provisioner "local-exec" {
+    command = <<EOF
+set -e
+aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${split("/", aws_ecr_repository.lab2-hub-ecr.repository_url)[0]}
+docker build -t ${aws_ecr_repository.lab2-hub-ecr.repository_url}:latest ${path.module}/.external_modules/struct8-templates/templates/ec2-hub-docker/v1/image
+docker push ${aws_ecr_repository.lab2-hub-ecr.repository_url}:latest
+  EOF
+    interpreter = ["/bin/bash", "-c"]
   }
 }
 
