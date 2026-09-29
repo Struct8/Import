@@ -480,7 +480,7 @@ data "aws_ami" "AMI_Data_Source_lab2-k6" {
 }
 
 resource "aws_instance" "lab2-k6" {
-  # ajuste manual · user_data — aws_instance nao permite user_data custom junto com env vars; k6 precisa instalar e rodar carga usando AWS_LB_DNSNAME_0 injetado no /etc/struct8_env
+  # ajuste manual · user_data — aws_instance nao permite user_data custom com env vars; k6 instala e roda carga usando o DNS do ALB. Vars shell/JS escapadas com $$ para nao virarem interpolacao Terraform.
   subnet_id                   = aws_subnet.lab2-public-a.id
   ami                         = data.aws_ami.AMI_Data_Source_lab2-k6.id
   associate_public_ip_address = true
@@ -501,7 +501,7 @@ import { sleep } from 'k6';
 export const options = { vus: 30, duration: '30m' };
 const T = __ENV.TARGET_URL;
 export default function () {
-  http.post(`${T}/loadtest?ms=250`);
+  http.post(`$${T}/loadtest?ms=250`);
   sleep(0.1);
 }
 EOFJS
