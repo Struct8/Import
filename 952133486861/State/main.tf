@@ -685,6 +685,14 @@ resource "aws_autoscaling_group" "ecs-asg-nodes" {
   termination_policies    = ["Default"]
   vpc_zone_identifier     = [aws_subnet.ecs-asg-private-a.id]
   wait_for_elb_capacity   = 0
+  instance_refresh {
+    strategy = "Rolling"
+    triggers = ["launch_template"]
+    preferences {
+      instance_warmup        = 60
+      min_healthy_percentage = 0
+    }
+  }
   launch_template {
     version = aws_launch_template.ecs-asg-lt.latest_version
     id      = aws_launch_template.ecs-asg-lt.id
