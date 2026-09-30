@@ -21,6 +21,16 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### RENAMES ###
+
+moved {
+  from = aws_ecs_capacity_provider.ecs-asg-cp
+  to   = aws_ecs_capacity_provider.asg-ec2-cp
+}
+
+
+
+
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "ecs-asg-k6_profile" {
@@ -752,8 +762,8 @@ resource "aws_ecr_repository" "ecs-asg-hub-ecr" {
   }
 }
 
-resource "aws_ecs_capacity_provider" "ecs-asg-cp" {
-  name = "ecs-asg-cp"
+resource "aws_ecs_capacity_provider" "asg-ec2-cp" {
+  name = "asg-ec2-cp"
   auto_scaling_group_provider {
     auto_scaling_group_arn         = aws_autoscaling_group.ecs-asg-nodes.arn
     managed_draining               = "ENABLED"
@@ -767,7 +777,7 @@ resource "aws_ecs_capacity_provider" "ecs-asg-cp" {
     }
   }
   tags = {
-    Name           = "ecs-asg-cp"
+    Name           = "asg-ec2-cp"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
@@ -784,7 +794,7 @@ resource "aws_ecs_cluster" "ecs-asg-cluster" {
 
 resource "aws_ecs_cluster_capacity_providers" "assoc_cp_to_ecs-asg-cluster" {
   cluster_name       = aws_ecs_cluster.ecs-asg-cluster.name
-  capacity_providers = [aws_ecs_capacity_provider.ecs-asg-cp.name]
+  capacity_providers = [aws_ecs_capacity_provider.asg-ec2-cp.name]
 }
 
 resource "aws_ecs_service" "ecs-asg-hub_service" {
@@ -797,7 +807,7 @@ resource "aws_ecs_service" "ecs-asg-hub_service" {
   task_definition         = "${aws_ecs_task_definition.ecs-asg-hub.family}:${aws_ecs_task_definition.ecs-asg-hub.revision}"
   capacity_provider_strategy {
     base              = 0
-    capacity_provider = aws_ecs_capacity_provider.ecs-asg-cp.name
+    capacity_provider = aws_ecs_capacity_provider.asg-ec2-cp.name
     weight            = 1
   }
   lifecycle {
@@ -844,7 +854,7 @@ locals {
       },
       {
         name  = "AWS_ECS_CAPACITY_PROVIDER_NAME_0"
-        value = "ecs-asg-cp"
+        value = "asg-ec2-cp"
       }
     ]
     mountPoints            = []
@@ -932,7 +942,7 @@ resource "null_resource" "cleanup_ecs-asg-cluster" {
   triggers = {
     cluster_name = aws_ecs_cluster.ecs-asg-cluster.name
   }
-  depends_on = [aws_ecs_cluster.ecs-asg-cluster, aws_autoscaling_group.ecs-asg-nodes, aws_ecs_capacity_provider.ecs-asg-cp]
+  depends_on = [aws_ecs_cluster.ecs-asg-cluster, aws_autoscaling_group.ecs-asg-nodes, aws_ecs_capacity_provider.asg-ec2-cp]
   provisioner "local-exec" {
     command = <<EOF
 
