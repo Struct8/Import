@@ -21,16 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
-
-moved {
-  from = aws_ecs_capacity_provider.ecs-asg-cp
-  to   = aws_ecs_capacity_provider.asg-ec2-cp
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "ecs-asg-k6_profile" {
@@ -620,14 +610,14 @@ data "aws_ami" "AMI_Data_Source_ecs-asg-lt" {
   owners      = ["amazon"]
   filter {
     name   = "name"
-    values = ["al2023-ami-ecs-hvm-2023.*-kernel-6.1-arm64"]
+    values = ["al2023-ami-ecs-hvm-2023.*-kernel-6.1-x86_64"]
   }
 }
 
 resource "aws_launch_template" "ecs-asg-lt" {
   image_id               = data.aws_ami.AMI_Data_Source_ecs-asg-lt.id
   name                   = "ecs-asg-lt"
-  instance_type          = "t4g.nano"
+  instance_type          = "t3.nano"
   update_default_version = true
   user_data = base64encode(<<-EOFUData
 #!/bin/bash
