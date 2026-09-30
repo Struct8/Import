@@ -617,6 +617,7 @@ data "aws_ami" "AMI_Data_Source_ecs-asg-lt" {
 resource "aws_launch_template" "ecs-asg-lt" {
   image_id               = data.aws_ami.AMI_Data_Source_ecs-asg-lt.id
   name                   = "ecs-asg-lt"
+  description            = "ECS-on-EC2 node (x86_64, t3.nano) for ecs-asg template"
   instance_type          = "t3.nano"
   update_default_version = true
   user_data = base64encode(<<-EOFUData
