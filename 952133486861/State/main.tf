@@ -23,47 +23,47 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
-resource "aws_iam_instance_profile" "lab2-ecs-asg_profile" {
-  name = "lab2-ecs-asg_profile"
-  role = aws_iam_role.lab2-ecs-asg_role.name
+resource "aws_iam_instance_profile" "ecs-asg-k6_profile" {
+  name = "ecs-asg-k6_profile"
+  role = aws_iam_role.ecs-asg-k6_role.name
   tags = {
-    Name           = "lab2-ecs-asg_profile"
+    Name           = "ecs-asg-k6_profile"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_instance_profile" "lab2-k6_profile" {
-  name = "lab2-k6_profile"
-  role = aws_iam_role.lab2-k6_role.name
+resource "aws_iam_instance_profile" "ecs-asg-nodes_profile" {
+  name = "ecs-asg-nodes_profile"
+  role = aws_iam_role.ecs-asg-nodes_role.name
   tags = {
-    Name           = "lab2-k6_profile"
+    Name           = "ecs-asg-nodes_profile"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-data "aws_iam_policy_document" "autoscaling_group_lab2-ecs-asg_st_State_doc" {
+data "aws_iam_policy_document" "autoscaling_group_ecs-asg-nodes_st_State_doc" {
   statement {
-    sid       = "AllowLab2ecscluster"
+    sid       = "AllowEcsasgcluster"
     effect    = "Allow"
     actions   = ["ecs:DeregisterContainerInstance", "ecs:DiscoverPollEndpoint", "ecs:Poll", "ecs:RegisterContainerInstance", "ecs:StartTelemetrySession", "ecs:Submit*"]
-    resources = [aws_ecs_cluster.lab2-ecs-cluster.arn]
+    resources = [aws_ecs_cluster.ecs-asg-cluster.arn]
   }
 }
 
-resource "aws_iam_policy" "autoscaling_group_lab2-ecs-asg_st_State" {
-  name        = "autoscaling_group_lab2-ecs-asg_st_State"
-  description = "Access Policy for lab2-ecs-asg"
-  policy      = data.aws_iam_policy_document.autoscaling_group_lab2-ecs-asg_st_State_doc.json
+resource "aws_iam_policy" "autoscaling_group_ecs-asg-nodes_st_State" {
+  name        = "autoscaling_group_ecs-asg-nodes_st_State"
+  description = "Access Policy for ecs-asg-nodes"
+  policy      = data.aws_iam_policy_document.autoscaling_group_ecs-asg-nodes_st_State_doc.json
 }
 
-data "aws_iam_policy_document" "ecs_task_definition_lab2-hub_execution_st_State_doc" {
+data "aws_iam_policy_document" "ecs_task_definition_ecs-asg-hub_execution_st_State_doc" {
   statement {
     sid       = "AllowPullFromRepo"
     effect    = "Allow"
     actions   = ["ecr:BatchCheckLayerAvailability", "ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"]
-    resources = [aws_ecr_repository.lab2-hub-ecr.arn]
+    resources = [aws_ecr_repository.ecs-asg-hub-ecr.arn]
   }
   statement {
     sid       = "AllowEcrAuth"
@@ -73,13 +73,13 @@ data "aws_iam_policy_document" "ecs_task_definition_lab2-hub_execution_st_State_
   }
 }
 
-resource "aws_iam_policy" "ecs_task_definition_lab2-hub_execution_st_State" {
-  name        = "ecs_task_definition_lab2-hub_execution_st_State"
-  description = "Access Policy for lab2-hub (Role: execution)"
-  policy      = data.aws_iam_policy_document.ecs_task_definition_lab2-hub_execution_st_State_doc.json
+resource "aws_iam_policy" "ecs_task_definition_ecs-asg-hub_execution_st_State" {
+  name        = "ecs_task_definition_ecs-asg-hub_execution_st_State"
+  description = "Access Policy for ecs-asg-hub (Role: execution)"
+  policy      = data.aws_iam_policy_document.ecs_task_definition_ecs-asg-hub_execution_st_State_doc.json
 }
 
-data "aws_iam_policy_document" "lab2-k6-debug_debug_permissions" {
+data "aws_iam_policy_document" "ecs-asg-k6-debug_debug_permissions" {
   statement {
     sid       = "SendToTaggedInstancesOnly"
     effect    = "Allow"
@@ -95,7 +95,7 @@ data "aws_iam_policy_document" "lab2-k6-debug_debug_permissions" {
     sid       = "PinnedDocumentOnly"
     effect    = "Allow"
     actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-f782657a-f005-4abb-aaea-eb2e8af8af58"]
   }
   statement {
     sid       = "ReadOwnResults"
@@ -114,15 +114,9 @@ data "aws_iam_policy_document" "lab2-k6-debug_debug_permissions" {
       variable = "aws:ResourceTag/Struct8Debug"
     }
   }
-  statement {
-    sid       = "RunShellScriptDocument"
-    effect    = "Allow"
-    actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
-  }
 }
 
-data "aws_iam_policy_document" "lab2-k6-debug_debug_trust" {
+data "aws_iam_policy_document" "ecs-asg-k6-debug_debug_trust" {
   statement {
     effect = "Allow"
     principals {
@@ -133,38 +127,14 @@ data "aws_iam_policy_document" "lab2-k6-debug_debug_trust" {
   }
 }
 
-resource "aws_iam_role" "Struct8Debug-lab2-k6-debug" {
+resource "aws_iam_role" "Struct8Debug-ecs-asg-k6-debug" {
   name                 = "Struct8Debug-f782657a-f005-4abb-aaea-eb2e8af8af58"
-  assume_role_policy   = data.aws_iam_policy_document.lab2-k6-debug_debug_trust.json
+  assume_role_policy   = data.aws_iam_policy_document.ecs-asg-k6-debug_debug_trust.json
   max_session_duration = 3600
 }
 
-resource "aws_iam_role" "execution_role_ecs_lab2-hub" {
-  name = "execution_role_ecs_lab2-hub"
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      }
-    }
-  ]
-})
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  tags = {
-    Name           = "execution_role_ecs_lab2-hub"
-    State          = "State"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_iam_role" "lab2-ecs-asg_role" {
-  name = "lab2-ecs-asg_role"
+resource "aws_iam_role" "ecs-asg-k6_role" {
+  name = "ecs-asg-k6_role"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -181,14 +151,14 @@ resource "aws_iam_role" "lab2-ecs-asg_role" {
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "lab2-ecs-asg_role"
+    Name           = "ecs-asg-k6_role"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_role" "lab2-k6_role" {
-  name = "lab2-k6_role"
+resource "aws_iam_role" "ecs-asg-nodes_role" {
+  name = "ecs-asg-nodes_role"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -205,14 +175,14 @@ resource "aws_iam_role" "lab2-k6_role" {
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "lab2-k6_role"
+    Name           = "ecs-asg-nodes_role"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_role" "task_role_ecs_lab2-hub" {
-  name = "task_role_ecs_lab2-hub"
+resource "aws_iam_role" "execution_role_ecs_ecs-asg-hub" {
+  name = "execution_role_ecs_ecs-asg-hub"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -229,36 +199,60 @@ resource "aws_iam_role" "task_role_ecs_lab2-hub" {
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "task_role_ecs_lab2-hub"
+    Name           = "execution_role_ecs_ecs-asg-hub"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_iam_role_policy" "Struct8Debug-lab2-k6-debug_policy" {
+resource "aws_iam_role" "task_role_ecs_ecs-asg-hub" {
+  name = "task_role_ecs_ecs-asg-hub"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "task_role_ecs_ecs-asg-hub"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role_policy" "Struct8Debug-ecs-asg-k6-debug_policy" {
   name   = "Struct8Debug-f782657a-f005-4abb-aaea-eb2e8af8af58-policy"
-  policy = data.aws_iam_policy_document.lab2-k6-debug_debug_permissions.json
-  role   = aws_iam_role.Struct8Debug-lab2-k6-debug.id
+  policy = data.aws_iam_policy_document.ecs-asg-k6-debug_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-ecs-asg-k6-debug.id
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_lab2-k6_attach" {
+resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_ecs-asg-k6_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.lab2-k6_role.name
+  role       = aws_iam_role.ecs-asg-k6_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "autoscaling_group_lab2-ecs-asg_st_State_attach" {
-  policy_arn = aws_iam_policy.autoscaling_group_lab2-ecs-asg_st_State.arn
-  role       = aws_iam_role.lab2-ecs-asg_role.name
+resource "aws_iam_role_policy_attachment" "autoscaling_group_ecs-asg-nodes_st_State_attach" {
+  policy_arn = aws_iam_policy.autoscaling_group_ecs-asg-nodes_st_State.arn
+  role       = aws_iam_role.ecs-asg-nodes_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_definition_lab2-hub_execution_st_State_attach" {
-  policy_arn = aws_iam_policy.ecs_task_definition_lab2-hub_execution_st_State.arn
-  role       = aws_iam_role.execution_role_ecs_lab2-hub.name
+resource "aws_iam_role_policy_attachment" "ecs_task_definition_ecs-asg-hub_execution_st_State_attach" {
+  policy_arn = aws_iam_policy.ecs_task_definition_ecs-asg-hub_execution_st_State.arn
+  role       = aws_iam_role.execution_role_ecs_ecs-asg-hub.name
 }
 
-resource "aws_iam_role_policy_attachment" "service_role_AmazonEC2ContainerServiceforEC2Role_to_lab2-ecs-asg_attach" {
+resource "aws_iam_role_policy_attachment" "service_role_AmazonEC2ContainerServiceforEC2Role_to_ecs-asg-nodes_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
-  role       = aws_iam_role.lab2-ecs-asg_role.name
+  role       = aws_iam_role.ecs-asg-nodes_role.name
 }
 
 
@@ -276,159 +270,159 @@ resource "aws_vpc" "VPC2" {
   }
 }
 
-resource "aws_subnet" "lab2-private-a" {
+resource "aws_subnet" "ecs-asg-private-a" {
   vpc_id                  = aws_vpc.VPC2.id
   availability_zone       = "us-west-2a"
   cidr_block              = "10.6.1.0/24"
   map_public_ip_on_launch = false
   tags = {
-    Name           = "lab2-private-a"
+    Name           = "ecs-asg-private-a"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_subnet" "lab2-private-b" {
+resource "aws_subnet" "ecs-asg-private-b" {
   vpc_id                  = aws_vpc.VPC2.id
   availability_zone       = "us-west-2b"
   cidr_block              = "10.6.3.0/24"
   map_public_ip_on_launch = false
   tags = {
-    Name           = "lab2-private-b"
+    Name           = "ecs-asg-private-b"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_subnet" "lab2-public-a" {
+resource "aws_subnet" "ecs-asg-public-a" {
   vpc_id                  = aws_vpc.VPC2.id
   availability_zone       = "us-west-2a"
   cidr_block              = "10.6.0.0/24"
   map_public_ip_on_launch = true
   tags = {
-    Name           = "lab2-public-a"
+    Name           = "ecs-asg-public-a"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_subnet" "lab2-public-b" {
+resource "aws_subnet" "ecs-asg-public-b" {
   vpc_id                  = aws_vpc.VPC2.id
   availability_zone       = "us-west-2b"
   cidr_block              = "10.6.2.0/24"
   map_public_ip_on_launch = true
   tags = {
-    Name           = "lab2-public-b"
+    Name           = "ecs-asg-public-b"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_internet_gateway" "lab2-igw" {
+resource "aws_internet_gateway" "ecs-asg-igw" {
   vpc_id = aws_vpc.VPC2.id
   tags = {
-    Name           = "lab2-igw"
+    Name           = "ecs-asg-igw"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_nat_gateway" "lab2-natgw" {
+resource "aws_nat_gateway" "ecs-asg-natgw" {
   vpc_id            = aws_vpc.VPC2.id
   availability_mode = "regional"
   connectivity_type = "public"
   tags = {
-    Name           = "lab2-natgw"
+    Name           = "ecs-asg-natgw"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_route" "route_lab2-rtb-private_to_lab2-natgw_ipv4" {
-  nat_gateway_id         = aws_nat_gateway.lab2-natgw.id
-  route_table_id         = aws_route_table.lab2-rtb-private.id
+resource "aws_route" "route_ecs-asg-rtb-private_to_ecs-asg-natgw_ipv4" {
+  nat_gateway_id         = aws_nat_gateway.ecs-asg-natgw.id
+  route_table_id         = aws_route_table.ecs-asg-rtb-private.id
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route" "route_lab2-rtb-public_to_lab2-igw_ipv4" {
-  gateway_id             = aws_internet_gateway.lab2-igw.id
-  route_table_id         = aws_route_table.lab2-rtb-public.id
+resource "aws_route" "route_ecs-asg-rtb-public_to_ecs-asg-igw_ipv4" {
+  gateway_id             = aws_internet_gateway.ecs-asg-igw.id
+  route_table_id         = aws_route_table.ecs-asg-rtb-public.id
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route_table" "lab2-rtb-private" {
+resource "aws_route_table" "ecs-asg-rtb-private" {
   vpc_id = aws_vpc.VPC2.id
   tags = {
-    Name           = "lab2-rtb-private"
+    Name           = "ecs-asg-rtb-private"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_route_table" "lab2-rtb-public" {
+resource "aws_route_table" "ecs-asg-rtb-public" {
   vpc_id = aws_vpc.VPC2.id
   tags = {
-    Name           = "lab2-rtb-public"
+    Name           = "ecs-asg-rtb-public"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_route_table_association" "aws_route_table_association_lab2_private_a_lab2_rtb_private" {
-  route_table_id = aws_route_table.lab2-rtb-private.id
-  subnet_id      = aws_subnet.lab2-private-a.id
+resource "aws_route_table_association" "aws_route_table_association_ecs_asg_private_a_ecs_asg_rtb_private" {
+  route_table_id = aws_route_table.ecs-asg-rtb-private.id
+  subnet_id      = aws_subnet.ecs-asg-private-a.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_lab2_private_b_lab2_rtb_private" {
-  route_table_id = aws_route_table.lab2-rtb-private.id
-  subnet_id      = aws_subnet.lab2-private-b.id
+resource "aws_route_table_association" "aws_route_table_association_ecs_asg_private_b_ecs_asg_rtb_private" {
+  route_table_id = aws_route_table.ecs-asg-rtb-private.id
+  subnet_id      = aws_subnet.ecs-asg-private-b.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_lab2_public_a_lab2_rtb_public" {
-  route_table_id = aws_route_table.lab2-rtb-public.id
-  subnet_id      = aws_subnet.lab2-public-a.id
+resource "aws_route_table_association" "aws_route_table_association_ecs_asg_public_a_ecs_asg_rtb_public" {
+  route_table_id = aws_route_table.ecs-asg-rtb-public.id
+  subnet_id      = aws_subnet.ecs-asg-public-a.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_lab2_public_b_lab2_rtb_public" {
-  route_table_id = aws_route_table.lab2-rtb-public.id
-  subnet_id      = aws_subnet.lab2-public-b.id
+resource "aws_route_table_association" "aws_route_table_association_ecs_asg_public_b_ecs_asg_rtb_public" {
+  route_table_id = aws_route_table.ecs-asg-rtb-public.id
+  subnet_id      = aws_subnet.ecs-asg-public-b.id
 }
 
-resource "aws_security_group" "autoscaling_group_lab2-ecs-asg_group" {
-  name                   = "autoscaling_group_lab2-ecs-asg_group"
+resource "aws_security_group" "autoscaling_group_ecs-asg-nodes_group" {
+  name                   = "autoscaling_group_ecs-asg-nodes_group"
   vpc_id                 = aws_vpc.VPC2.id
   revoke_rules_on_delete = false
   tags = {
-    Name           = "autoscaling_group_lab2-ecs-asg_group"
+    Name           = "autoscaling_group_ecs-asg-nodes_group"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_security_group" "instance_lab2-k6_group" {
-  name                   = "instance_lab2-k6_group"
+resource "aws_security_group" "instance_ecs-asg-k6_group" {
+  name                   = "instance_ecs-asg-k6_group"
   vpc_id                 = aws_vpc.VPC2.id
   revoke_rules_on_delete = false
   tags = {
-    Name           = "instance_lab2-k6_group"
+    Name           = "instance_ecs-asg-k6_group"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_security_group" "lb_lab2-alb_group" {
-  name                   = "lb_lab2-alb_group"
+resource "aws_security_group" "lb_ecs-asg-alb_group" {
+  name                   = "lb_ecs-asg-alb_group"
   vpc_id                 = aws_vpc.VPC2.id
   revoke_rules_on_delete = false
   tags = {
-    Name           = "lb_lab2-alb_group"
+    Name           = "lb_ecs-asg-alb_group"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_security_group_rule" "rule_autoscaling_group_lab2_ecs_asg_group_egress_all_protocols" {
-  security_group_id = aws_security_group.autoscaling_group_lab2-ecs-asg_group.id
+resource "aws_security_group_rule" "rule_autoscaling_group_ecs_asg_nodes_group_egress_all_protocols" {
+  security_group_id = aws_security_group.autoscaling_group_ecs-asg-nodes_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -436,8 +430,8 @@ resource "aws_security_group_rule" "rule_autoscaling_group_lab2_ecs_asg_group_eg
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_autoscaling_group_lab2_ecs_asg_group_ingress_tcp_80" {
-  security_group_id = aws_security_group.autoscaling_group_lab2-ecs-asg_group.id
+resource "aws_security_group_rule" "rule_autoscaling_group_ecs_asg_nodes_group_ingress_tcp_80" {
+  security_group_id = aws_security_group.autoscaling_group_ecs-asg-nodes_group.id
   cidr_blocks       = ["10.6.0.0/16"]
   description       = "HTTP interno da VPC (teste via NAT)"
   from_port         = 80
@@ -446,8 +440,8 @@ resource "aws_security_group_rule" "rule_autoscaling_group_lab2_ecs_asg_group_in
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_instance_lab2_k6_group_egress_all_protocols" {
-  security_group_id = aws_security_group.instance_lab2-k6_group.id
+resource "aws_security_group_rule" "rule_instance_ecs_asg_k6_group_egress_all_protocols" {
+  security_group_id = aws_security_group.instance_ecs-asg-k6_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -455,9 +449,9 @@ resource "aws_security_group_rule" "rule_instance_lab2_k6_group_egress_all_proto
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_instance_lab2_k6_group_to_lb_lab2_alb_group_tcp_80" {
-  security_group_id        = aws_security_group.lb_lab2-alb_group.id
-  source_security_group_id = aws_security_group.instance_lab2-k6_group.id
+resource "aws_security_group_rule" "rule_instance_ecs_asg_k6_group_to_lb_ecs_asg_alb_group_tcp_80" {
+  security_group_id        = aws_security_group.lb_ecs-asg-alb_group.id
+  source_security_group_id = aws_security_group.instance_ecs-asg-k6_group.id
   description              = "k6 acessa o ALB na porta 80"
   from_port                = 80
   protocol                 = "tcp"
@@ -465,8 +459,8 @@ resource "aws_security_group_rule" "rule_instance_lab2_k6_group_to_lb_lab2_alb_g
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_lb_lab2_alb_group_egress_all_protocols" {
-  security_group_id = aws_security_group.lb_lab2-alb_group.id
+resource "aws_security_group_rule" "rule_lb_ecs_asg_alb_group_egress_all_protocols" {
+  security_group_id = aws_security_group.lb_ecs-asg-alb_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -474,9 +468,9 @@ resource "aws_security_group_rule" "rule_lb_lab2_alb_group_egress_all_protocols"
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_lb_lab2_alb_group_to_autoscaling_group_lab2_ecs_asg_group_tcp_32768_65535" {
-  security_group_id        = aws_security_group.autoscaling_group_lab2-ecs-asg_group.id
-  source_security_group_id = aws_security_group.lb_lab2-alb_group.id
+resource "aws_security_group_rule" "rule_lb_ecs_asg_alb_group_to_autoscaling_group_ecs_asg_nodes_group_tcp_32768_65535" {
+  security_group_id        = aws_security_group.autoscaling_group_ecs-asg-nodes_group.id
+  source_security_group_id = aws_security_group.lb_ecs-asg-alb_group.id
   description              = "ALB para tasks ECS (bridge dynamic ports)"
   from_port                = 32768
   protocol                 = "tcp"
@@ -484,44 +478,44 @@ resource "aws_security_group_rule" "rule_lb_lab2_alb_group_to_autoscaling_group_
   type                     = "ingress"
 }
 
-resource "aws_lb" "lab2-alb" {
-  name               = "lab2-alb"
+resource "aws_lb" "ecs-asg-alb" {
+  name               = "ecs-asg-alb"
   enable_http2       = true
   idle_timeout       = 60
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.lb_lab2-alb_group.id]
-  subnets            = [aws_subnet.lab2-public-a.id, aws_subnet.lab2-public-b.id]
+  security_groups    = [aws_security_group.lb_ecs-asg-alb_group.id]
+  subnets            = [aws_subnet.ecs-asg-public-a.id, aws_subnet.ecs-asg-public-b.id]
   tags = {
-    Name           = "lab2-alb"
+    Name           = "ecs-asg-alb"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_lb_listener" "lab2-listener" {
-  load_balancer_arn                    = aws_lb.lab2-alb.arn
+resource "aws_lb_listener" "ecs-asg-listener" {
+  load_balancer_arn                    = aws_lb.ecs-asg-alb.arn
   port                                 = 80
   protocol                             = "HTTP"
   routing_http_response_server_enabled = true
   default_action {
     order            = 1
-    target_group_arn = aws_lb_target_group.lab2-tg-hub.arn
+    target_group_arn = aws_lb_target_group.ecs-asg-tg-hub.arn
     type             = "forward"
     forward {
       target_group {
-        arn = aws_lb_target_group.lab2-tg-hub.arn
+        arn = aws_lb_target_group.ecs-asg-tg-hub.arn
       }
     }
   }
   tags = {
-    Name           = "lab2-listener"
+    Name           = "ecs-asg-listener"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_lb_target_group" "lab2-tg-hub" {
-  name                          = "lab2-tg-hub"
+resource "aws_lb_target_group" "ecs-asg-tg-hub" {
+  name                          = "ecs-asg-tg-hub"
   vpc_id                        = aws_vpc.VPC2.id
   deregistration_delay          = "300"
   ip_address_type               = "ipv4"
@@ -542,7 +536,7 @@ resource "aws_lb_target_group" "lab2-tg-hub" {
     unhealthy_threshold = 3
   }
   tags = {
-    Name           = "lab2-tg-hub"
+    Name           = "ecs-asg-tg-hub"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
@@ -553,11 +547,11 @@ resource "aws_lb_target_group" "lab2-tg-hub" {
 
 ### CATEGORY: COMPUTE ###
 
-data "local_file" "UserData_lab2-k6" {
+data "local_file" "UserData_ecs-asg-k6" {
   filename = "${path.module}/.external_modules/struct8-templates/templates/vpc-k6-load-generator/v1/user_data/k6-bootstrap.sh"
 }
 
-data "aws_ami" "AMI_Data_Source_lab2-k6" {
+data "aws_ami" "AMI_Data_Source_ecs-asg-k6" {
   most_recent = true
   owners      = ["amazon"]
   filter {
@@ -566,21 +560,21 @@ data "aws_ami" "AMI_Data_Source_lab2-k6" {
   }
 }
 
-resource "aws_instance" "lab2-k6" {
-  subnet_id                   = aws_subnet.lab2-public-a.id
-  ami                         = data.aws_ami.AMI_Data_Source_lab2-k6.id
+resource "aws_instance" "ecs-asg-k6" {
+  subnet_id                   = aws_subnet.ecs-asg-public-a.id
+  ami                         = data.aws_ami.AMI_Data_Source_ecs-asg-k6.id
   associate_public_ip_address = true
-  iam_instance_profile        = aws_iam_instance_profile.lab2-k6_profile.name
+  iam_instance_profile        = aws_iam_instance_profile.ecs-asg-k6_profile.name
   instance_type               = "t4g.small"
   user_data_base64 = base64encode(<<-EOFUData
 #!/bin/bash
 
 # --- BEGIN STRUCT8 VARIABLES ---
 cat << 'EOFENV' > /etc/struct8_env
-NAME="lab2-k6"
+NAME="ecs-asg-k6"
 REGION="${data.aws_region.current.region}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
-AWS_LB_DNSNAME_0="${aws_lb.lab2-alb.dns_name}"
+AWS_LB_DNSNAME_0="${aws_lb.ecs-asg-alb.dns_name}"
 EOFENV
 cat /etc/struct8_env >> /etc/environment
 sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
@@ -588,10 +582,10 @@ chmod +x /etc/profile.d/struct8_vars.sh
 chmod 644 /etc/struct8_env
 # --- END STRUCT8 VARIABLES ---
 
-${data.local_file.UserData_lab2-k6.content}
+${data.local_file.UserData_ecs-asg-k6.content}
 EOFUData
 )
-  vpc_security_group_ids = [aws_security_group.instance_lab2-k6_group.id]
+  vpc_security_group_ids = [aws_security_group.instance_ecs-asg-k6_group.id]
   metadata_options {
     http_endpoint = "enabled"
     http_tokens   = "required"
@@ -605,13 +599,13 @@ EOFUData
   }
   tags = {
     Struct8Debug   = "f782657a-f005-4abb-aaea-eb2e8af8af58"
-    Name           = "lab2-k6"
+    Name           = "ecs-asg-k6"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-data "aws_ami" "AMI_Data_Source_lab2-ecs-lt" {
+data "aws_ami" "AMI_Data_Source_ecs-asg-lt" {
   most_recent = true
   owners      = ["amazon"]
   filter {
@@ -620,9 +614,9 @@ data "aws_ami" "AMI_Data_Source_lab2-ecs-lt" {
   }
 }
 
-resource "aws_launch_template" "lab2-ecs-lt" {
-  image_id               = data.aws_ami.AMI_Data_Source_lab2-ecs-lt.id
-  name                   = "lab2-ecs-lt"
+resource "aws_launch_template" "ecs-asg-lt" {
+  image_id               = data.aws_ami.AMI_Data_Source_ecs-asg-lt.id
+  name                   = "ecs-asg-lt"
   instance_type          = "t4g.nano"
   update_default_version = true
   user_data = base64encode(<<-EOFUData
@@ -630,7 +624,7 @@ resource "aws_launch_template" "lab2-ecs-lt" {
 
 # --- BEGIN STRUCT8 VARIABLES ---
 cat << 'EOFENV' > /etc/struct8_env
-NAME="lab2-ecs-asg"
+NAME="ecs-asg-nodes"
 REGION="${data.aws_region.current.region}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
 EOFENV
@@ -640,10 +634,10 @@ chmod +x /etc/profile.d/struct8_vars.sh
 chmod 644 /etc/struct8_env
 # --- END STRUCT8 VARIABLES ---
 
-echo "ECS_CLUSTER=lab2-ecs-cluster" >> /etc/ecs/ecs.config
+echo "ECS_CLUSTER=ecs-asg-cluster" >> /etc/ecs/ecs.config
 EOFUData
 )
-  vpc_security_group_ids = [aws_security_group.autoscaling_group_lab2-ecs-asg_group.id]
+  vpc_security_group_ids = [aws_security_group.autoscaling_group_ecs-asg-nodes_group.id]
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
@@ -656,7 +650,7 @@ EOFUData
     }
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.lab2-ecs-asg_profile.name
+    name = aws_iam_instance_profile.ecs-asg-nodes_profile.name
   }
   metadata_options {
     http_endpoint               = "enabled"
@@ -666,20 +660,20 @@ EOFUData
   tag_specifications {
     resource_type = "volume"
     tags = {
-    Name           = "lab2-ecs-asg"
+    Name           = "ecs-asg-nodes"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
   }
   tags = {
-    Name           = "lab2-ecs-lt"
+    Name           = "ecs-asg-lt"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_autoscaling_group" "lab2-ecs-asg" {
-  name                    = "lab2-ecs-asg"
+resource "aws_autoscaling_group" "ecs-asg-nodes" {
+  name                    = "ecs-asg-nodes"
   default_instance_warmup = 0
   desired_capacity        = 1
   health_check_type       = "EC2"
@@ -689,16 +683,16 @@ resource "aws_autoscaling_group" "lab2-ecs-asg" {
   min_elb_capacity        = 0
   min_size                = 1
   termination_policies    = ["Default"]
-  vpc_zone_identifier     = [aws_subnet.lab2-private-a.id]
+  vpc_zone_identifier     = [aws_subnet.ecs-asg-private-a.id]
   wait_for_elb_capacity   = 0
   launch_template {
-    version = aws_launch_template.lab2-ecs-lt.latest_version
-    id      = aws_launch_template.lab2-ecs-lt.id
+    version = aws_launch_template.ecs-asg-lt.latest_version
+    id      = aws_launch_template.ecs-asg-lt.id
   }
   tag {
     key                 = "Name"
     propagate_at_launch = true
-    value               = "lab2-ecs-asg"
+    value               = "ecs-asg-nodes"
   }
   tag {
     key                 = "State"
@@ -712,12 +706,12 @@ resource "aws_autoscaling_group" "lab2-ecs-asg" {
   }
 }
 
-resource "aws_appautoscaling_policy" "lab2-hub-cpu" {
-  name               = "lab2-hub-cpu"
-  resource_id        = aws_appautoscaling_target.lab2-hub-scale.resource_id
+resource "aws_appautoscaling_policy" "ecs-asg-hub-cpu" {
+  name               = "ecs-asg-hub-cpu"
+  resource_id        = aws_appautoscaling_target.ecs-asg-hub-scale.resource_id
   policy_type        = "TargetTrackingScaling"
-  scalable_dimension = aws_appautoscaling_target.lab2-hub-scale.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.lab2-hub-scale.service_namespace
+  scalable_dimension = aws_appautoscaling_target.ecs-asg-hub-scale.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs-asg-hub-scale.service_namespace
   target_tracking_scaling_policy_configuration {
     disable_scale_in   = false
     scale_in_cooldown  = 120
@@ -729,14 +723,14 @@ resource "aws_appautoscaling_policy" "lab2-hub-cpu" {
   }
 }
 
-resource "aws_appautoscaling_target" "lab2-hub-scale" {
-  resource_id        = "service/${aws_ecs_cluster.lab2-ecs-cluster.name}/${aws_ecs_service.lab2-hub_service.name}"
+resource "aws_appautoscaling_target" "ecs-asg-hub-scale" {
+  resource_id        = "service/${aws_ecs_cluster.ecs-asg-cluster.name}/${aws_ecs_service.ecs-asg-hub_service.name}"
   max_capacity       = 4
   min_capacity       = 1
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
   tags = {
-    Name           = "lab2-hub-scale"
+    Name           = "ecs-asg-hub-scale"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
@@ -747,21 +741,21 @@ resource "aws_appautoscaling_target" "lab2-hub-scale" {
 
 ### CATEGORY: CONTAINERS ###
 
-resource "aws_ecr_repository" "lab2-hub-ecr" {
-  name                 = "lab2-hub-ecr"
+resource "aws_ecr_repository" "ecs-asg-hub-ecr" {
+  name                 = "ecs-asg-hub-ecr"
   force_delete         = true
   image_tag_mutability = "MUTABLE"
   tags = {
-    Name           = "lab2-hub-ecr"
+    Name           = "ecs-asg-hub-ecr"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_ecs_capacity_provider" "lab2-ec2-cp" {
-  name = "lab2-ec2-cp"
+resource "aws_ecs_capacity_provider" "ecs-asg-cp" {
+  name = "ecs-asg-cp"
   auto_scaling_group_provider {
-    auto_scaling_group_arn         = aws_autoscaling_group.lab2-ecs-asg.arn
+    auto_scaling_group_arn         = aws_autoscaling_group.ecs-asg-nodes.arn
     managed_draining               = "ENABLED"
     managed_termination_protection = "DISABLED"
     managed_scaling {
@@ -773,37 +767,37 @@ resource "aws_ecs_capacity_provider" "lab2-ec2-cp" {
     }
   }
   tags = {
-    Name           = "lab2-ec2-cp"
+    Name           = "ecs-asg-cp"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_ecs_cluster" "lab2-ecs-cluster" {
-  name = "lab2-ecs-cluster"
+resource "aws_ecs_cluster" "ecs-asg-cluster" {
+  name = "ecs-asg-cluster"
   tags = {
-    Name           = "lab2-ecs-cluster"
+    Name           = "ecs-asg-cluster"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_ecs_cluster_capacity_providers" "assoc_cp_to_lab2-ecs-cluster" {
-  cluster_name       = aws_ecs_cluster.lab2-ecs-cluster.name
-  capacity_providers = [aws_ecs_capacity_provider.lab2-ec2-cp.name]
+resource "aws_ecs_cluster_capacity_providers" "assoc_cp_to_ecs-asg-cluster" {
+  cluster_name       = aws_ecs_cluster.ecs-asg-cluster.name
+  capacity_providers = [aws_ecs_capacity_provider.ecs-asg-cp.name]
 }
 
-resource "aws_ecs_service" "lab2-hub_service" {
-  name                    = "lab2-hub_service"
-  cluster                 = aws_ecs_cluster.lab2-ecs-cluster.id
+resource "aws_ecs_service" "ecs-asg-hub_service" {
+  name                    = "ecs-asg-hub_service"
+  cluster                 = aws_ecs_cluster.ecs-asg-cluster.id
   desired_count           = 1
   enable_ecs_managed_tags = true
   force_delete            = true
   scheduling_strategy     = "REPLICA"
-  task_definition         = "${aws_ecs_task_definition.lab2-hub.family}:${aws_ecs_task_definition.lab2-hub.revision}"
+  task_definition         = "${aws_ecs_task_definition.ecs-asg-hub.family}:${aws_ecs_task_definition.ecs-asg-hub.revision}"
   capacity_provider_strategy {
     base              = 0
-    capacity_provider = aws_ecs_capacity_provider.lab2-ec2-cp.name
+    capacity_provider = aws_ecs_capacity_provider.ecs-asg-cp.name
     weight            = 1
   }
   lifecycle {
@@ -812,20 +806,20 @@ resource "aws_ecs_service" "lab2-hub_service" {
   load_balancer {
     container_name   = "hub"
     container_port   = 8080
-    target_group_arn = aws_lb_target_group.lab2-tg-hub.arn
+    target_group_arn = aws_lb_target_group.ecs-asg-tg-hub.arn
   }
   tags = {
-    Name           = "lab2-hub_service"
+    Name           = "ecs-asg-hub_service"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [terraform_data.seed_lab2-hub-ecr]
+  depends_on = [terraform_data.seed_ecs-asg-hub-ecr]
 }
 
 locals {
-  container_def_lab2-hub_hub = {
+  container_def_ecs-asg-hub_hub = {
     name      = "hub"
-    image     = "${aws_ecr_repository.lab2-hub-ecr.repository_url}:latest"
+    image     = "${aws_ecr_repository.ecs-asg-hub-ecr.repository_url}:latest"
     essential = true
     cpu       = 128
     memory    = 200
@@ -838,7 +832,7 @@ locals {
     environment = [
       {
         name  = "NAME"
-        value = "lab2-hub"
+        value = "ecs-asg-hub"
       },
       {
         name  = "REGION"
@@ -850,7 +844,7 @@ locals {
       },
       {
         name  = "AWS_ECS_CAPACITY_PROVIDER_NAME_0"
-        value = "lab2-ec2-cp"
+        value = "ecs-asg-cp"
       }
     ]
     mountPoints            = []
@@ -861,21 +855,72 @@ locals {
   }
 }
 
-resource "aws_ecs_task_definition" "lab2-hub" {
-  container_definitions    = jsonencode([local.container_def_lab2-hub_hub])
+resource "aws_ecs_task_definition" "ecs-asg-hub" {
+  container_definitions    = jsonencode([local.container_def_ecs-asg-hub_hub])
   cpu                      = "128"
-  execution_role_arn       = aws_iam_role.execution_role_ecs_lab2-hub.arn
-  family                   = "lab2-nginx"
+  execution_role_arn       = aws_iam_role.execution_role_ecs_ecs-asg-hub.arn
+  family                   = "ecs-asg-hub"
   memory                   = "350"
   network_mode             = "bridge"
   requires_compatibilities = ["EC2"]
-  task_role_arn            = aws_iam_role.task_role_ecs_lab2-hub.arn
+  task_role_arn            = aws_iam_role.task_role_ecs_ecs-asg-hub.arn
   tags = {
-    Name           = "lab2-hub"
+    Name           = "ecs-asg-hub"
     State          = "State"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_lab2-hub_execution_st_State_attach]
+  depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_ecs-asg-hub_execution_st_State_attach]
+}
+
+
+
+
+### CATEGORY: CONFIG ###
+
+resource "aws_ssm_document" "Struct8Probe-ecs-asg-k6-debug" {
+  name = "Struct8Probe-f782657a-f005-4abb-aaea-eb2e8af8af58"
+  content = <<EOF
+{
+  "schemaVersion": "2.2",
+  "description": "Struct8 network probe. The command text is fixed here; the caller supplies only a target and a port.",
+  "parameters": {
+    "target": {
+      "type": "String",
+      "description": "Hostname or IP address to probe.",
+      "interpolationType": "ENV_VAR",
+      "allowedPattern": "^[A-Za-z0-9._-]{1,253}$"
+    },
+    "port": {
+      "type": "String",
+      "description": "TCP port to test.",
+      "default": "443",
+      "interpolationType": "ENV_VAR",
+      "allowedPattern": "^[0-9]{1,5}$"
+    }
+  },
+  "mainSteps": [
+    {
+      "action": "aws:runShellScript",
+      "name": "struct8Probe",
+      "inputs": {
+        "timeoutSeconds": "60",
+        "runCommand": [
+          "if [ -z \"$SSM_target\" ]; then export SSM_target=\"{{target}}\"; fi",
+          "if [ -z \"$SSM_port\" ]; then export SSM_port=\"{{port}}\"; fi",
+          "echo '--- resolve ---'",
+          "getent hosts \"$SSM_target\" || echo \"no DNS answer\"",
+          "echo '--- icmp ---'",
+          "ping -c 3 -W 2 \"$SSM_target\" || echo \"no ICMP reply (often filtered, not conclusive)\"",
+          "echo '--- tcp ---'",
+          "if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$SSM_target\" \"$SSM_port\" 2>/dev/null; then echo \"port $SSM_port open\"; else echo \"port $SSM_port closed or filtered\"; fi"
+        ]
+      }
+    }
+  ]
+}
+  EOF
+  document_format = "JSON"
+  document_type   = "Command"
 }
 
 
@@ -883,11 +928,11 @@ resource "aws_ecs_task_definition" "lab2-hub" {
 
 ### CATEGORY: MISC ###
 
-resource "null_resource" "cleanup_lab2-ecs-cluster" {
+resource "null_resource" "cleanup_ecs-asg-cluster" {
   triggers = {
-    cluster_name = aws_ecs_cluster.lab2-ecs-cluster.name
+    cluster_name = aws_ecs_cluster.ecs-asg-cluster.name
   }
-  depends_on = [aws_ecs_cluster.lab2-ecs-cluster, aws_autoscaling_group.lab2-ecs-asg, aws_ecs_capacity_provider.lab2-ec2-cp]
+  depends_on = [aws_ecs_cluster.ecs-asg-cluster, aws_autoscaling_group.ecs-asg-nodes, aws_ecs_capacity_provider.ecs-asg-cp]
   provisioner "local-exec" {
     command = <<EOF
 
@@ -909,7 +954,7 @@ resource "null_resource" "cleanup_lab2-ecs-cluster" {
         #
         # The second source covers the group the diagram cannot name as a literal
         # -- a name built by the provider, or one the account answers.
-        ASGS="lab2-ecs-asg"
+        ASGS="ecs-asg-nodes"
         CI_ARNS=$(aws ecs list-container-instances --cluster "$CLUSTER" --region "$REGION" --query "containerInstanceArns[]" --output text 2>/dev/null)
         if [ -n "$CI_ARNS" ] && [ "$CI_ARNS" != "None" ]; then
             EC2_IDS=$(echo "$CI_ARNS" | tr '\t' '\n' | xargs -r -n 100 aws ecs describe-container-instances --cluster "$CLUSTER" --region "$REGION" --query "containerInstances[].ec2InstanceId" --output text --container-instances 2>/dev/null)
@@ -1009,22 +1054,22 @@ resource "null_resource" "cleanup_lab2-ecs-cluster" {
         
   EOF
     interpreter = ["/bin/bash", "-c"]
-    when        = "destroy"
+    when        = destroy
   }
 }
 
-resource "terraform_data" "seed_lab2-hub-ecr" {
-  triggers_replace = ["${path.module}/.external_modules/struct8-templates/templates/ec2-hub-docker/v1/image", "latest"]
+resource "terraform_data" "seed_ecs-asg-hub-ecr" {
+  triggers_replace = ["${path.module}/.external_modules/struct8-hub/image", "latest"]
   lifecycle {
-    replace_triggered_by = [aws_ecr_repository.lab2-hub-ecr]
+    replace_triggered_by = [aws_ecr_repository.ecs-asg-hub-ecr]
   }
-  depends_on = [aws_ecr_repository.lab2-hub-ecr]
+  depends_on = [aws_ecr_repository.ecs-asg-hub-ecr]
   provisioner "local-exec" {
     command = <<EOF
 set -e
-aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${split("/", aws_ecr_repository.lab2-hub-ecr.repository_url)[0]}
-docker build -t ${aws_ecr_repository.lab2-hub-ecr.repository_url}:latest ${path.module}/.external_modules/struct8-templates/templates/ec2-hub-docker/v1/image
-docker push ${aws_ecr_repository.lab2-hub-ecr.repository_url}:latest
+aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${split("/", aws_ecr_repository.ecs-asg-hub-ecr.repository_url)[0]}
+docker build -t ${aws_ecr_repository.ecs-asg-hub-ecr.repository_url}:latest ${path.module}/.external_modules/struct8-hub/image
+docker push ${aws_ecr_repository.ecs-asg-hub-ecr.repository_url}:latest
   EOF
     interpreter = ["/bin/bash", "-c"]
   }
