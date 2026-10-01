@@ -854,6 +854,10 @@ locals {
     ]
     environment = [
       {
+        name  = "HUB_LOADTEST"
+        value = "on"
+      },
+      {
         name  = "NAME"
         value = "ecs-asg-hub"
       },
