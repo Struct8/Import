@@ -420,6 +420,11 @@ resource "aws_security_group" "lb_ecs-asg-alb_group" {
   name                   = "lb_ecs-asg-alb_group"
   vpc_id                 = aws_vpc.VPC2.id
   revoke_rules_on_delete = false
+  tags = {
+    Name           = "lb_ecs-asg-alb_group"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_security_group_rule" "rule_autoscaling_group_ecs_asg_nodes_group_egress_all_protocols" {
@@ -459,16 +464,6 @@ resource "aws_security_group_rule" "rule_instance_ecs_asg_k6_group_ingress_tcp_5
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_instance_ecs_asg_k6_group_to_lb_ecs_asg_alb_group_tcp_80" {
-  security_group_id        = aws_security_group.lb_ecs-asg-alb_group.id
-  source_security_group_id = aws_security_group.instance_ecs-asg-k6_group.id
-  description              = "k6 acessa o ALB na porta 80"
-  from_port                = 80
-  protocol                 = "tcp"
-  to_port                  = 80
-  type                     = "ingress"
-}
-
 resource "aws_security_group_rule" "rule_lb_ecs_asg_alb_group_egress_all_protocols" {
   security_group_id = aws_security_group.lb_ecs-asg-alb_group.id
   cidr_blocks       = ["0.0.0.0/0"]
@@ -480,7 +475,7 @@ resource "aws_security_group_rule" "rule_lb_ecs_asg_alb_group_egress_all_protoco
 
 resource "aws_security_group_rule" "rule_lb_ecs_asg_alb_group_ingress_tcp_80" {
   security_group_id = aws_security_group.lb_ecs-asg-alb_group.id
-  cidr_blocks       = ["10.6.0.0/16"]
+  cidr_blocks       = ["0.0.0.0/0"]
   description       = "HTTP from VPC (k6 load generator via public path)"
   from_port         = 80
   protocol          = "tcp"
@@ -594,7 +589,6 @@ cat << 'EOFENV' > /etc/struct8_env
 NAME="ecs-asg-k6"
 REGION="${data.aws_region.current.region}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
-AWS_LB_DNSNAME_0="${aws_lb.ecs-asg-alb.dns_name}"
 EOFENV
 cat /etc/struct8_env >> /etc/environment
 sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
