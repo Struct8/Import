@@ -114,4 +114,8 @@ resource "aws_iam_user_login_profile" "login_User" {
   user                    = aws_iam_user.User.name
 }
 
+resource "aws_iam_user_policy_attachment" "user_direct_access" {
+  user       = aws_iam_user.User.name
+  policy_arn = aws_iam_policy.User_role_access_0.arn
+}
 
