@@ -43,6 +43,60 @@ resource "aws_iam_instance_profile" "k6-panel-lab-k6_profile" {
   }
 }
 
+data "aws_iam_policy_document" "Debug_debug_permissions" {
+  statement {
+    sid       = "SendToTaggedInstancesOnly"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["KYsrC0bRmz41-VA-uqMQq"]
+      variable = "aws:ResourceTag/Struct8Debug"
+    }
+  }
+  statement {
+    sid       = "PinnedDocumentOnly"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+  }
+  statement {
+    sid       = "ReadOwnResults"
+    effect    = "Allow"
+    actions   = ["ssm:GetCommandInvocation", "ssm:DescribeInstanceInformation"]
+    resources = ["*"]
+  }
+  statement {
+    sid       = "CancelOnTaggedInstancesOnly"
+    effect    = "Allow"
+    actions   = ["ssm:CancelCommand"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["KYsrC0bRmz41-VA-uqMQq"]
+      variable = "aws:ResourceTag/Struct8Debug"
+    }
+  }
+  statement {
+    sid       = "RunShellScriptDocument"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug_debug_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
+      type        = "AWS"
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
 data "aws_iam_policy_document" "k6-panel-lab-debug_debug_permissions" {
   statement {
     sid       = "SendToTaggedInstancesOnly"
@@ -97,6 +151,12 @@ data "aws_iam_policy_document" "k6-panel-lab-debug_debug_trust" {
   }
 }
 
+resource "aws_iam_role" "Struct8Debug-Debug" {
+  name                 = "Struct8Debug-KYsrC0bRmz41-VA-uqMQq"
+  assume_role_policy   = data.aws_iam_policy_document.Debug_debug_trust.json
+  max_session_duration = 3600
+}
+
 resource "aws_iam_role" "Struct8Debug-k6-panel-lab-debug" {
   name                 = "Struct8Debug-d07f5910-819b-4296-ac0b-7176473864d5"
   assume_role_policy   = data.aws_iam_policy_document.k6-panel-lab-debug_debug_trust.json
@@ -149,6 +209,12 @@ resource "aws_iam_role" "k6-panel-lab-k6_role" {
     State          = "k6-panel-lab-state"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_iam_role_policy" "Struct8Debug-Debug_policy" {
+  name   = "Struct8Debug-KYsrC0bRmz41-VA-uqMQq-policy"
+  policy = data.aws_iam_policy_document.Debug_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-Debug.id
 }
 
 resource "aws_iam_role_policy" "Struct8Debug-k6-panel-lab-debug_policy" {
@@ -391,7 +457,7 @@ resource "aws_instance" "k6-panel-lab-k6" {
 # --- BEGIN STRUCT8 VARIABLES ---
 cat << 'EOFENV' > /etc/struct8_env
 K6_PANEL="on"
-K6_PANEL_REF="feat/k6-control-panel"
+K6_PANEL_REF="main"
 K6_PANEL_MAX_VUS="200"
 NAME="k6-panel-lab-k6"
 REGION="${data.aws_region.current.region}"
@@ -420,7 +486,7 @@ EOFUData
     volume_type = "gp3"
   }
   tags = {
-    Struct8Debug   = "d07f5910-819b-4296-ac0b-7176473864d5"
+    Struct8Debug   = "KYsrC0bRmz41-VA-uqMQq"
     Name           = "k6-panel-lab-k6"
     State          = "k6-panel-lab-state"
     Struct8Creator = "Contato Struct"
