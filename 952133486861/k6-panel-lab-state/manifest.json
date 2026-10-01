@@ -1,8 +1,19 @@
 {
-  "external_repositories": [],
+  "external_repositories": [
+    {
+      "repo_name": "struct8-templates",
+      "org": "Struct8",
+      "branch": "feat/k6-control-panel",
+      "target_dir": ".external_modules/struct8-templates",
+      "folders": [
+        "templates/ec2-hub-docker/v1/user_data",
+        "templates/vpc-k6-load-generator/v2/user_data"
+      ]
+    }
+  ],
   "action": "apply",
-  "trigger_id": "1790858880371",
-  "triggered_by": "Contato Struct",
+  "trigger_id": "1790859059386",
+  "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
