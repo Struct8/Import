@@ -173,8 +173,10 @@ resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_k6-pa
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "k6-panel-lab" {
-  cidr_block       = "10.8.0.0/16"
-  instance_tenancy = "default"
+  cidr_block           = "10.8.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  instance_tenancy     = "default"
   tags = {
     Name           = "k6-panel-lab"
     State          = "k6-panel-lab-state"
@@ -320,7 +322,7 @@ data "aws_ami" "AMI_Data_Source_k6-panel-lab-hub" {
 resource "aws_instance" "k6-panel-lab-hub" {
   subnet_id                   = aws_subnet.k6-panel-lab-public-a.id
   ami                         = data.aws_ami.AMI_Data_Source_k6-panel-lab-hub.id
-  associate_public_ip_address = true
+  associate_public_ip_address = false
   iam_instance_profile        = aws_iam_instance_profile.k6-panel-lab-hub_profile.name
   instance_type               = "t4g.nano"
   monitoring                  = true
