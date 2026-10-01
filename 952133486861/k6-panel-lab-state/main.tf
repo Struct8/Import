@@ -318,7 +318,7 @@ resource "aws_instance" "k6-panel-lab-hub" {
   iam_instance_profile        = aws_iam_instance_profile.k6-panel-lab-hub_profile.name
   instance_type               = "t4g.nano"
   monitoring                  = true
-  private_ip                  = "10.8.0.10"
+  private_ip                  = "10.8.1.10"
   user_data_base64 = base64encode(<<-EOFUData
 #!/bin/bash
 
