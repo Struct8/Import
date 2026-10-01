@@ -455,6 +455,15 @@ resource "aws_security_group_rule" "rule_instance_ecs_asg_k6_group_egress_all_pr
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "rule_instance_ecs_asg_k6_group_ingress_tcp_5665" {
+  security_group_id = aws_security_group.instance_ecs-asg-k6_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 5665
+  protocol          = "tcp"
+  to_port           = 5665
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "rule_instance_ecs_asg_k6_group_to_lb_ecs_asg_alb_group_tcp_80" {
   security_group_id        = aws_security_group.lb_ecs-asg-alb_group.id
   source_security_group_id = aws_security_group.instance_ecs-asg-k6_group.id
