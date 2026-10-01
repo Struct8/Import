@@ -420,11 +420,6 @@ resource "aws_security_group" "lb_ecs-asg-alb_group" {
   name                   = "lb_ecs-asg-alb_group"
   vpc_id                 = aws_vpc.VPC2.id
   revoke_rules_on_delete = false
-  tags = {
-    Name           = "lb_ecs-asg-alb_group"
-    State          = "State"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_security_group_rule" "rule_autoscaling_group_ecs_asg_nodes_group_egress_all_protocols" {
@@ -481,6 +476,16 @@ resource "aws_security_group_rule" "rule_lb_ecs_asg_alb_group_egress_all_protoco
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_lb_ecs_asg_alb_group_ingress_tcp_80" {
+  security_group_id = aws_security_group.lb_ecs-asg-alb_group.id
+  cidr_blocks       = ["10.6.0.0/16"]
+  description       = "HTTP from VPC (k6 load generator via public path)"
+  from_port         = 80
+  protocol          = "tcp"
+  to_port           = 80
+  type              = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_lb_ecs_asg_alb_group_to_autoscaling_group_ecs_asg_nodes_group_tcp_32768_65535" {
