@@ -1,18 +1,17 @@
 {
   "external_repositories": [
     {
-      "repo_name": "CloudManMainV2",
+      "repo_name": "CloudMan",
       "org": "Struct8",
       "branch": "main",
-      "target_dir": ".external_modules/CloudManMainV2",
+      "target_dir": ".external_modules/CloudMan",
       "folders": [
-        "LambdaFiles/Redirector",
         "LambdaFiles/LambdaHub2"
       ]
     }
   ],
   "action": "apply",
-  "trigger_id": "1790818724983",
+  "trigger_id": "1790818841965",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
