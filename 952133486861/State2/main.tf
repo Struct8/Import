@@ -129,6 +129,18 @@ resource "aws_s3_bucket" "my-bucket2" {
   }
 }
 
+resource "aws_s3_bucket" "my-bucket3" {
+  bucket              = "my-bucket3-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = false
+  object_lock_enabled = false
+  tags = {
+    Name           = "my-bucket3"
+    State          = "State2"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_s3_bucket_ownership_controls" "my-bucket1_controls" {
   bucket = aws_s3_bucket.my-bucket1.id
   rule {
@@ -138,6 +150,13 @@ resource "aws_s3_bucket_ownership_controls" "my-bucket1_controls" {
 
 resource "aws_s3_bucket_ownership_controls" "my-bucket2_controls" {
   bucket = aws_s3_bucket.my-bucket2.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "my-bucket3_controls" {
+  bucket = aws_s3_bucket.my-bucket3.id
   rule {
     object_ownership = "BucketOwnerEnforced"
   }
@@ -155,6 +174,14 @@ resource "aws_s3_bucket_public_access_block" "my-bucket2_block" {
   block_public_acls       = true
   block_public_policy     = true
   bucket                  = aws_s3_bucket.my-bucket2.id
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_public_access_block" "my-bucket3_block" {
+  block_public_acls       = true
+  block_public_policy     = true
+  bucket                  = aws_s3_bucket.my-bucket3.id
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
@@ -179,6 +206,16 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "my-bucket2_config
   }
 }
 
+resource "aws_s3_bucket_server_side_encryption_configuration" "my-bucket3_configuration" {
+  bucket = aws_s3_bucket.my-bucket3.id
+  rule {
+    bucket_key_enabled = true
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
 resource "aws_s3_bucket_versioning" "my-bucket1_versioning" {
   bucket = aws_s3_bucket.my-bucket1.id
   versioning_configuration {
@@ -189,6 +226,14 @@ resource "aws_s3_bucket_versioning" "my-bucket1_versioning" {
 
 resource "aws_s3_bucket_versioning" "my-bucket2_versioning" {
   bucket = aws_s3_bucket.my-bucket2.id
+  versioning_configuration {
+    mfa_delete = "Disabled"
+    status     = "Suspended"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "my-bucket3_versioning" {
+  bucket = aws_s3_bucket.my-bucket3.id
   versioning_configuration {
     mfa_delete = "Disabled"
     status     = "Suspended"
