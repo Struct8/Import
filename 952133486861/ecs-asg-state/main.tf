@@ -21,16 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
-
-moved {
-  from = aws_vpc.VPC2
-  to   = aws_vpc.ecs-asg-vpc
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "ecs-asg-k6_profile" {
@@ -816,7 +806,7 @@ data "aws_ami" "AMI_Data_Source_ecs-asg-lt" {
 resource "aws_launch_template" "ecs-asg-lt" {
   image_id               = data.aws_ami.AMI_Data_Source_ecs-asg-lt.id
   name                   = "ecs-asg-lt"
-  description            = "Launch template for the ASG's ECS container instances (t3.nano, x86_64). Its user_data sets ECS_CLUSTER=ecs-asg-cluster so a booting instance joins the right cluster. A change here triggers the ASG's Rolling instance_refresh. The instances it launches live in private subnets and depend on the NAT for ECR pulls and ECS registration."
+  description            = "ECS container instances for the ASG (t3.nano, x86_64 -- matches the x86_64 Hub image). user_data joins the ecs-asg-cluster. In private subnets, so they reach ECR/ECS via the NAT."
   instance_type          = "t3.nano"
   update_default_version = true
   user_data = base64encode(<<-EOFUData
@@ -874,6 +864,7 @@ EOFUData
 
 resource "aws_autoscaling_group" "ecs-asg-nodes" {
   name                    = "ecs-asg-nodes"
+  default_cooldown        = 30
   default_instance_warmup = 0
   desired_capacity        = 1
   enabled_metrics         = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
