@@ -773,7 +773,8 @@ resource "aws_instance" "ecs-asg-nat-instance" {
 ${data.local_file.UserData_ecs-asg-nat-instance.content}
 EOFUData
 )
-  vpc_security_group_ids = [aws_security_group.instance_ecs-asg-nat-instance_group.id]
+  user_data_replace_on_change = true
+  vpc_security_group_ids      = [aws_security_group.instance_ecs-asg-nat-instance_group.id]
   metadata_options {
     http_endpoint = "enabled"
     http_tokens   = "required"
