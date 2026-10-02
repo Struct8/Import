@@ -509,6 +509,11 @@ resource "aws_security_group" "instance_ecs-asg-nat-instance_group" {
   vpc_id                 = aws_vpc.ecs-asg-vpc.id
   description            = "NAT instance: allow all traffic from inside the VPC, egress anywhere"
   revoke_rules_on_delete = false
+  tags = {
+    Name           = "instance_ecs-asg-nat-instance_group"
+    State          = "ecs-asg-state"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_security_group" "lb_ecs-asg-alb_group" {
@@ -748,7 +753,7 @@ EOFUData
 }
 
 data "local_file" "UserData_ecs-asg-nat-instance" {
-  filename = "${path.module}/.external_modules/struct8-templates/templates/vpc-k6-load-generator/v2/user_data/nat-instance-bootstrap.sh"
+  filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-nat-private/v1/user_data/Nat.sh"
 }
 
 data "aws_ami" "AMI_Data_Source_ecs-asg-nat-instance" {
