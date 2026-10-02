@@ -6,7 +6,8 @@
       "branch": "main",
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
-        "templates/vpc-k6-load-generator/v2/user_data"
+        "templates/vpc-k6-load-generator/v2/user_data",
+        "templates/ec2-nat-private/v1/user_data"
       ]
     },
     {
@@ -19,8 +20,8 @@
       ]
     }
   ],
-  "action": "destroy",
-  "trigger_id": "1790949833456",
+  "action": "apply",
+  "trigger_id": "1790956287822",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
