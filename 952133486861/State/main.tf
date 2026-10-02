@@ -580,7 +580,7 @@ resource "aws_instance" "ecs-asg-k6" {
   ami                         = data.aws_ami.AMI_Data_Source_ecs-asg-k6.id
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ecs-asg-k6_profile.name
-  instance_type               = "t4g.small"
+  instance_type               = "t4g.nano"
   user_data_base64 = base64encode(<<-EOFUData
 #!/bin/bash
 
@@ -751,7 +751,7 @@ resource "aws_appautoscaling_policy" "ecs-asg-hub-cpu" {
 
 resource "aws_appautoscaling_target" "ecs-asg-hub-scale" {
   resource_id        = "service/${aws_ecs_cluster.ecs-asg-cluster.name}/${aws_ecs_service.ecs-asg-hub_service.name}"
-  max_capacity       = 4
+  max_capacity       = 12
   min_capacity       = 1
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -848,7 +848,7 @@ locals {
     image     = "${aws_ecr_repository.ecs-asg-hub-ecr.repository_url}:latest"
     essential = true
     cpu       = 128
-    memory    = 200
+    memory    = 85
     portMappings = [
       {
         protocol      = "tcp"
@@ -859,6 +859,10 @@ locals {
       {
         name  = "HUB_LOADTEST"
         value = "on"
+      },
+      {
+        name  = "HUB_WORKERS"
+        value = "1"
       },
       {
         name  = "NAME"
@@ -890,7 +894,7 @@ resource "aws_ecs_task_definition" "ecs-asg-hub" {
   cpu                      = "128"
   execution_role_arn       = aws_iam_role.execution_role_ecs_ecs-asg-hub.arn
   family                   = "ecs-asg-hub"
-  memory                   = "350"
+  memory                   = "100"
   network_mode             = "bridge"
   requires_compatibilities = ["EC2"]
   task_role_arn            = aws_iam_role.task_role_ecs_ecs-asg-hub.arn
