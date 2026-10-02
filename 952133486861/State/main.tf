@@ -95,7 +95,7 @@ data "aws_iam_policy_document" "ecs-asg-k6-debug_debug_permissions" {
     sid       = "PinnedDocumentOnly"
     effect    = "Allow"
     actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-f782657a-f005-4abb-aaea-eb2e8af8af58"]
   }
   statement {
     sid       = "ReadOwnResults"
@@ -113,12 +113,6 @@ data "aws_iam_policy_document" "ecs-asg-k6-debug_debug_permissions" {
       values   = ["f782657a-f005-4abb-aaea-eb2e8af8af58"]
       variable = "aws:ResourceTag/Struct8Debug"
     }
-  }
-  statement {
-    sid       = "RunShellScriptDocument"
-    effect    = "Allow"
-    actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
   }
 }
 
@@ -409,11 +403,6 @@ resource "aws_security_group" "instance_ecs-asg-k6_group" {
   name                   = "instance_ecs-asg-k6_group"
   vpc_id                 = aws_vpc.VPC2.id
   revoke_rules_on_delete = false
-  tags = {
-    Name           = "instance_ecs-asg-k6_group"
-    State          = "State"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_security_group" "lb_ecs-asg-alb_group" {
@@ -458,9 +447,20 @@ resource "aws_security_group_rule" "rule_instance_ecs_asg_k6_group_egress_all_pr
 resource "aws_security_group_rule" "rule_instance_ecs_asg_k6_group_ingress_tcp_5665" {
   security_group_id = aws_security_group.instance_ecs-asg-k6_group.id
   cidr_blocks       = ["0.0.0.0/0"]
+  description       = "k6 live dashboard (teaching lab)"
   from_port         = 5665
   protocol          = "tcp"
   to_port           = 5665
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_instance_ecs_asg_k6_group_ingress_tcp_80" {
+  security_group_id = aws_security_group.instance_ecs-asg-k6_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "k6 control panel (teaching lab)"
+  from_port         = 80
+  protocol          = "tcp"
+  to_port           = 80
   type              = "ingress"
 }
 
@@ -563,7 +563,7 @@ resource "aws_lb_target_group" "ecs-asg-tg-hub" {
 ### CATEGORY: COMPUTE ###
 
 data "local_file" "UserData_ecs-asg-k6" {
-  filename = "${path.module}/.external_modules/struct8-templates/templates/vpc-k6-load-generator/v1/user_data/k6-bootstrap.sh"
+  filename = "${path.module}/.external_modules/struct8-templates/templates/vpc-k6-load-generator/v2/user_data/k6-bootstrap.sh"
 }
 
 data "aws_ami" "AMI_Data_Source_ecs-asg-k6" {
@@ -586,6 +586,8 @@ resource "aws_instance" "ecs-asg-k6" {
 
 # --- BEGIN STRUCT8 VARIABLES ---
 cat << 'EOFENV' > /etc/struct8_env
+K6_PANEL="on"
+K6_PANEL_REF="main"
 NAME="ecs-asg-k6"
 REGION="${data.aws_region.current.region}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
@@ -897,6 +899,57 @@ resource "aws_ecs_task_definition" "ecs-asg-hub" {
     Struct8Creator = "Contato Struct"
   }
   depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_ecs-asg-hub_execution_st_State_attach]
+}
+
+
+
+
+### CATEGORY: CONFIG ###
+
+resource "aws_ssm_document" "Struct8Probe-ecs-asg-k6-debug" {
+  name = "Struct8Probe-f782657a-f005-4abb-aaea-eb2e8af8af58"
+  content = <<EOF
+{
+  "schemaVersion": "2.2",
+  "description": "Struct8 network probe. The command text is fixed here; the caller supplies only a target and a port.",
+  "parameters": {
+    "target": {
+      "type": "String",
+      "description": "Hostname or IP address to probe.",
+      "interpolationType": "ENV_VAR",
+      "allowedPattern": "^[A-Za-z0-9._-]{1,253}$"
+    },
+    "port": {
+      "type": "String",
+      "description": "TCP port to test.",
+      "default": "443",
+      "interpolationType": "ENV_VAR",
+      "allowedPattern": "^[0-9]{1,5}$"
+    }
+  },
+  "mainSteps": [
+    {
+      "action": "aws:runShellScript",
+      "name": "struct8Probe",
+      "inputs": {
+        "timeoutSeconds": "60",
+        "runCommand": [
+          "if [ -z \"$SSM_target\" ]; then export SSM_target=\"{{target}}\"; fi",
+          "if [ -z \"$SSM_port\" ]; then export SSM_port=\"{{port}}\"; fi",
+          "echo '--- resolve ---'",
+          "getent hosts \"$SSM_target\" || echo \"no DNS answer\"",
+          "echo '--- icmp ---'",
+          "ping -c 3 -W 2 \"$SSM_target\" || echo \"no ICMP reply (often filtered, not conclusive)\"",
+          "echo '--- tcp ---'",
+          "if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$SSM_target\" \"$SSM_port\" 2>/dev/null; then echo \"port $SSM_port open\"; else echo \"port $SSM_port closed or filtered\"; fi"
+        ]
+      }
+    }
+  ]
+}
+  EOF
+  document_format = "JSON"
+  document_type   = "Command"
 }
 
 
