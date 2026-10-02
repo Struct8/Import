@@ -693,6 +693,7 @@ resource "aws_autoscaling_group" "ecs-asg-nodes" {
   name                    = "ecs-asg-nodes"
   default_instance_warmup = 0
   desired_capacity        = 1
+  enabled_metrics         = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   health_check_type       = "EC2"
   max_instance_lifetime   = 0
   max_size                = 3
