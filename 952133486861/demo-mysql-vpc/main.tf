@@ -162,7 +162,7 @@ resource "aws_db_instance" "demo-mysql" {
   enabled_cloudwatch_logs_exports = ["general", "slowquery", "error", "audit"]
   engine                          = "mysql"
   engine_lifecycle_support        = "open-source-rds-extended-support-disabled"
-  engine_version                  = "8.0"
+  engine_version                  = "8.4"
   final_snapshot_identifier       = "demo-mysql-final"
   identifier                      = "demo-mysql"
   instance_class                  = "db.t4g.micro"
@@ -187,7 +187,7 @@ resource "aws_db_instance" "demo-mysql" {
 
 resource "aws_db_option_group" "demo-mysql-options" {
   engine_name              = "mysql"
-  major_engine_version     = "8.0"
+  major_engine_version     = "8.4"
   name_prefix              = "demo-mysql-options"
   option_group_description = "Option group MySQL 8.0 da demo com plugin de auditoria MariaDB."
   skip_destroy             = false
@@ -206,7 +206,7 @@ resource "aws_db_option_group" "demo-mysql-options" {
 
 resource "aws_db_parameter_group" "demo-mysql-params" {
   description  = "Parametros MySQL 8.0 para a demo: utf8mb4, limite de conexoes e slow query log habilitado."
-  family       = "mysql8.0"
+  family       = "mysql8.4"
   name_prefix  = "demo-mysql-params"
   skip_destroy = false
   lifecycle {
