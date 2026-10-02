@@ -163,15 +163,14 @@ resource "aws_db_instance" "demo-mysql" {
   engine                          = "mysql"
   engine_lifecycle_support        = "open-source-rds-extended-support-disabled"
   engine_version                  = "8.0"
-  final_snapshot_identifier       = aws_db_snapshot.DBSnapshot.db_snapshot_identifier
+  final_snapshot_identifier       = "demo-mysql-final"
   identifier                      = "demo-mysql"
-  instance_class                  = "db.t3.micro"
+  instance_class                  = "db.t4g.micro"
   maintenance_window              = "mon:04:30-mon:05:30"
   manage_master_user_password     = true
   max_allocated_storage           = 100
   monitoring_interval             = 60
   monitoring_role_arn             = aws_iam_role.role_monitoring_demo-mysql.arn
-  multi_az                        = true
   skip_final_snapshot             = false
   storage_encrypted               = true
   storage_type                    = "gp3"
@@ -241,6 +240,8 @@ resource "aws_db_parameter_group" "demo-mysql-params" {
 }
 
 resource "aws_db_snapshot" "DBSnapshot" {
+  db_instance_identifier = aws_db_instance.demo-mysql.identifier
+  db_snapshot_identifier = "dbsnapshot"
   tags = {
     Name           = "DBSnapshot"
     State          = "demo-mysql-vpc"
