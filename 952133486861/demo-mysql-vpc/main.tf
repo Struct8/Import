@@ -157,12 +157,10 @@ resource "aws_db_instance" "demo-mysql" {
   backup_retention_period         = 7
   backup_window                   = "03:00-04:00"
   copy_tags_to_snapshot           = true
-  delete_automated_backups        = false
   enabled_cloudwatch_logs_exports = ["general", "slowquery", "error", "audit"]
   engine                          = "mysql"
   engine_lifecycle_support        = "open-source-rds-extended-support-disabled"
   engine_version                  = "8.4"
-  final_snapshot_identifier       = "demo-mysql-final"
   identifier                      = "demo-mysql"
   instance_class                  = "db.t4g.micro"
   maintenance_window              = "mon:04:30-mon:05:30"
@@ -170,7 +168,7 @@ resource "aws_db_instance" "demo-mysql" {
   max_allocated_storage           = 100
   monitoring_interval             = 60
   monitoring_role_arn             = aws_iam_role.role_monitoring_demo-mysql.arn
-  skip_final_snapshot             = false
+  skip_final_snapshot             = true
   storage_encrypted               = true
   storage_type                    = "gp3"
   upgrade_storage_config          = false
@@ -189,9 +187,9 @@ resource "aws_db_option_group" "demo-mysql-options" {
   major_engine_version     = "8.4"
   name_prefix              = "demo-mysql-options"
   option_group_description = "Option group MySQL 8.0 da demo com plugin de auditoria MariaDB."
-  skip_destroy             = false
+  skip_destroy             = true
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
   option {
     option_name = "MARIADB_AUDIT_PLUGIN"
@@ -233,16 +231,6 @@ resource "aws_db_parameter_group" "demo-mysql-params" {
   }
   tags = {
     Name           = "demo-mysql-params"
-    State          = "demo-mysql-vpc"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_db_snapshot" "DBSnapshot" {
-  db_instance_identifier = aws_db_instance.demo-mysql.identifier
-  db_snapshot_identifier = "dbsnapshot"
-  tags = {
-    Name           = "DBSnapshot"
     State          = "demo-mysql-vpc"
     Struct8Creator = "Contato Struct"
   }
