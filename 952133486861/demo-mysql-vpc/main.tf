@@ -158,7 +158,6 @@ resource "aws_db_instance" "demo-mysql" {
   backup_window                   = "03:00-04:00"
   copy_tags_to_snapshot           = true
   delete_automated_backups        = false
-  deletion_protection             = true
   enabled_cloudwatch_logs_exports = ["general", "slowquery", "error", "audit"]
   engine                          = "mysql"
   engine_lifecycle_support        = "open-source-rds-extended-support-disabled"
