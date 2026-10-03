@@ -708,11 +708,6 @@ resource "aws_security_group" "ecs_task_definition_loki-mon_group" {
   vpc_id                 = data.aws_vpc.vpc-grafana-lgtm-mon.id
   description            = "SG for the loki ECS service (logs, listens on 3100). Ingress on 3100 is added by the Service Connect wires from grafana and alloy; egress open for S3 (chunks) and peers."
   revoke_rules_on_delete = false
-  tags = {
-    Name           = "ecs_task_definition_loki-mon_group"
-    State          = "Stateless-mon"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_security_group" "ecs_task_definition_tempo-mon_group" {
@@ -720,11 +715,6 @@ resource "aws_security_group" "ecs_task_definition_tempo-mon_group" {
   vpc_id                 = data.aws_vpc.vpc-grafana-lgtm-mon.id
   description            = "SG for the tempo ECS service (traces, listens on 3200). Ingress on 3200 is added by the Service Connect wires from grafana and alloy; egress open for S3 (blocks) and peers."
   revoke_rules_on_delete = false
-  tags = {
-    Name           = "ecs_task_definition_tempo-mon_group"
-    State          = "Stateless-mon"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_security_group_rule" "rule_autoscaling_group_lgtm_ecs_asg_mon_group_egress_all_protocols" {
@@ -772,6 +762,16 @@ resource "aws_security_group_rule" "rule_ecs_task_definition_alloy_mon_group_to_
   from_port                = 3200
   protocol                 = "tcp"
   to_port                  = 3200
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_ecs_task_definition_alloy_mon_group_to_ecs_task_definition_tempo_mon_group_tcp_4317_4318" {
+  security_group_id        = aws_security_group.ecs_task_definition_tempo-mon_group.id
+  source_security_group_id = aws_security_group.ecs_task_definition_alloy-mon_group.id
+  description              = "alloy to tempo OTLP grpc/http (Service Connect)"
+  from_port                = 4317
+  protocol                 = "tcp"
+  to_port                  = 4318
   type                     = "ingress"
 }
 
@@ -833,6 +833,26 @@ resource "aws_security_group_rule" "rule_ecs_task_definition_loki_mon_group_egre
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "rule_ecs_task_definition_loki_mon_group_ingress_tcp_7946" {
+  security_group_id = aws_security_group.ecs_task_definition_loki-mon_group.id
+  description       = "memberlist gossip between loki replicas"
+  from_port         = 7946
+  protocol          = "tcp"
+  self              = true
+  to_port           = 7946
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_ecs_task_definition_loki_mon_group_ingress_tcp_9095" {
+  security_group_id = aws_security_group.ecs_task_definition_loki-mon_group.id
+  description       = "grpc between loki replicas"
+  from_port         = 9095
+  protocol          = "tcp"
+  self              = true
+  to_port           = 9095
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "rule_ecs_task_definition_tempo_mon_group_egress_all_protocols" {
   security_group_id = aws_security_group.ecs_task_definition_tempo-mon_group.id
   cidr_blocks       = ["0.0.0.0/0"]
@@ -840,6 +860,26 @@ resource "aws_security_group_rule" "rule_ecs_task_definition_tempo_mon_group_egr
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_ecs_task_definition_tempo_mon_group_ingress_tcp_7946" {
+  security_group_id = aws_security_group.ecs_task_definition_tempo-mon_group.id
+  description       = "memberlist gossip between tempo replicas"
+  from_port         = 7946
+  protocol          = "tcp"
+  self              = true
+  to_port           = 7946
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_ecs_task_definition_tempo_mon_group_ingress_tcp_9095" {
+  security_group_id = aws_security_group.ecs_task_definition_tempo-mon_group.id
+  description       = "grpc between tempo replicas"
+  from_port         = 9095
+  protocol          = "tcp"
+  self              = true
+  to_port           = 9095
+  type              = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_to_ecs_task_definition_grafana_mon_group_tcp_3000" {
@@ -867,6 +907,59 @@ resource "aws_service_discovery_http_namespace" "lgtm-connect-mon" {
   description = "HTTP namespace for ECS Service Connect. Replaces the DNS-based service discovery: grafana and alloy reach mimir/loki/tempo by name over Service Connect, which load-balances client-side across each target's replicas."
   tags = {
     Name           = "lgtm-connect-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_service_discovery_private_dns_namespace" "lgtm-ring-mon" {
+  name        = "lgtm.internal-mon"
+  description = "Private DNS namespace for loki/tempo memberlist peer discovery (A multivalue). Service Connect traffic stays on the lgtm-connect HTTP namespace."
+  vpc         = data.aws_vpc.vpc-grafana-lgtm-mon.id
+  tags = {
+    Name           = "lgtm-ring-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_service_discovery_service" "loki-ring-mon" {
+  name        = "loki-ring-mon"
+  description = "A multivalue record with the IP of every loki task for memberlist join_members"
+  dns_config {
+    namespace_id   = aws_service_discovery_private_dns_namespace.lgtm-ring-mon.id
+    routing_policy = "MULTIVALUE"
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+  }
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+  tags = {
+    Name           = "loki-ring-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_service_discovery_service" "tempo-ring-mon" {
+  name        = "tempo-ring-mon"
+  description = "A multivalue record with the IP of every tempo task for memberlist join_members"
+  dns_config {
+    namespace_id   = aws_service_discovery_private_dns_namespace.lgtm-ring-mon.id
+    routing_policy = "MULTIVALUE"
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+  }
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+  tags = {
+    Name           = "tempo-ring-mon"
     State          = "Stateless-mon"
     Struct8Creator = "Contato Struct"
   }
@@ -1055,7 +1148,7 @@ resource "aws_autoscaling_group" "lgtm-ecs-asg-mon" {
   desired_capacity        = 1
   health_check_type       = "EC2"
   max_instance_lifetime   = 0
-  max_size                = 1
+  max_size                = 2
   metrics_granularity     = "1Minute"
   min_elb_capacity        = 0
   min_size                = 1
@@ -1297,13 +1390,15 @@ resource "aws_ecs_service" "alloy-mon_service" {
 }
 
 resource "aws_ecs_service" "grafana-mon_service" {
-  name                    = "grafana-mon_service"
-  cluster                 = aws_ecs_cluster.lgtm-cluster-mon.id
-  desired_count           = 1
-  enable_ecs_managed_tags = true
-  force_delete            = true
-  scheduling_strategy     = "REPLICA"
-  task_definition         = "${aws_ecs_task_definition.grafana-mon.family}:${aws_ecs_task_definition.grafana-mon.revision}"
+  name                               = "grafana-mon_service"
+  cluster                            = aws_ecs_cluster.lgtm-cluster-mon.id
+  deployment_maximum_percent         = 100
+  deployment_minimum_healthy_percent = 0
+  desired_count                      = 1
+  enable_ecs_managed_tags            = true
+  force_delete                       = true
+  scheduling_strategy                = "REPLICA"
+  task_definition                    = "${aws_ecs_task_definition.grafana-mon.family}:${aws_ecs_task_definition.grafana-mon.revision}"
   capacity_provider_strategy {
     base              = 0
     capacity_provider = aws_ecs_capacity_provider.lgtm-ec2-cp-mon.name
@@ -1328,11 +1423,6 @@ resource "aws_ecs_service" "grafana-mon_service" {
   }
   service_connect_configuration {
     enabled = true
-  }
-  tags = {
-    Name           = "grafana-mon_service"
-    State          = "Stateless-mon"
-    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -1371,6 +1461,9 @@ resource "aws_ecs_service" "loki-mon_service" {
         port     = 3100
       }
     }
+  }
+  service_registries {
+    registry_arn = aws_service_discovery_service.loki-ring-mon.arn
   }
   tags = {
     Name           = "loki-mon_service"
@@ -1414,20 +1507,36 @@ resource "aws_ecs_service" "tempo-mon_service" {
         port     = 3200
       }
     }
+    service {
+      discovery_name = "tempo-otlp-grpc"
+      port_name      = "tempo-otlp-grpc"
+      client_alias {
+        dns_name = "tempo-otlp-grpc"
+        port     = 4317
+      }
+    }
+    service {
+      discovery_name = "tempo-otlp-http"
+      port_name      = "tempo-otlp-http"
+      client_alias {
+        dns_name = "tempo-otlp-http"
+        port     = 4318
+      }
+    }
   }
-  tags = {
-    Name           = "tempo-mon_service"
-    State          = "Stateless-mon"
-    Struct8Creator = "Contato Struct"
+  service_registries {
+    registry_arn = aws_service_discovery_service.tempo-ring-mon.arn
   }
 }
 
 locals {
   container_def_alloy-mon_alloy = {
-    name      = "alloy"
-    image     = "grafana/alloy:v1.3.0"
-    essential = true
-    memory    = 512
+    name              = "alloy"
+    image             = "grafana/alloy:v1.3.0"
+    essential         = true
+    cpu               = 256
+    memory            = 640
+    memoryReservation = 256
     portMappings = [
       {
         protocol      = "tcp"
@@ -1503,12 +1612,14 @@ resource "aws_ecs_task_definition" "alloy-mon" {
 
 locals {
   container_def_grafana-mon_grafana = {
-    name         = "grafana"
-    image        = "grafana/grafana:11.2.0"
-    essential    = true
-    memory       = 512
-    startTimeout = 30
-    stopTimeout  = 30
+    name              = "grafana"
+    image             = "grafana/grafana:11.2.0"
+    essential         = true
+    cpu               = 256
+    memory            = 768
+    memoryReservation = 256
+    startTimeout      = 30
+    stopTimeout       = 30
     portMappings = [
       {
         protocol      = "tcp"
@@ -1526,20 +1637,12 @@ locals {
         value = "/var/lib/grafana"
       },
       {
-        name  = "GF_PATHS_LOGS"
-        value = "/var/log/grafana"
-      },
-      {
         name  = "GF_PATHS_PLUGINS"
         value = "/var/lib/grafana/plugins"
       },
       {
         name  = "GF_SECURITY_ADMIN_USER"
         value = "admin"
-      },
-      {
-        name  = "GF_INSTALL_PLUGINS"
-        value = "grafana-clock-panel,grafana-simple-json-datasource"
       },
       {
         name  = "NAME"
@@ -1591,7 +1694,6 @@ locals {
     ]
     systemControls         = []
     volumesFrom            = []
-    user                   = "472:472"
     privileged             = false
     readonlyRootFilesystem = false
     logConfiguration = {
@@ -1633,19 +1735,38 @@ resource "aws_ecs_task_definition" "grafana-mon" {
 
 locals {
   container_def_loki-mon_loki = {
-    name      = "loki"
-    image     = "grafana/loki:3.1.0"
-    essential = true
-    memory    = 768
+    name              = "loki"
+    image             = "grafana/loki:3.1.0"
+    essential         = true
+    cpu               = 256
+    memory            = 1024
+    memoryReservation = 384
+    stopTimeout       = 120
     portMappings = [
       {
         protocol      = "tcp"
         containerPort = 3100
         hostPort      = 3100
         name          = "loki-3100"
+      },
+      {
+        protocol      = "tcp"
+        containerPort = 9095
+        hostPort      = 9095
+        name          = "loki-grpc"
+      },
+      {
+        protocol      = "tcp"
+        containerPort = 7946
+        hostPort      = 7946
+        name          = "loki-gossip"
       }
     ]
     environment = [
+      {
+        name  = "RING_DNS"
+        value = "${aws_service_discovery_service.loki-ring-mon.name}.${aws_service_discovery_private_dns_namespace.lgtm-ring-mon.name}"
+      },
       {
         name  = "NAME"
         value = "loki-mon"
@@ -1665,12 +1786,17 @@ locals {
       {
         name  = "AWS_S3_BUCKET_NAME_0"
         value = "lgtm-loki-chunks-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+      },
+      {
+        name  = "AWS_SERVICE_DISCOVERY_SERVICE_NAME_0"
+        value = "loki-ring-mon"
       }
     ]
     mountPoints            = []
     systemControls         = []
     volumesFrom            = []
-    entryPoint             = ["-config.file=/etc/loki/config.yaml"]
+    command                = ["IP=$(wget -qO- \"$ECS_CONTAINER_METADATA_URI_V4\" | sed -n 's/.*\"IPv4Addresses\":\\[\"\\([0-9.]*\\)\".*/\\1/p'); [ -n \"$IP\" ] || IP=$(hostname -i | cut -d' ' -f1); echo \"loki advertise=$IP join=$RING_DNS\"; printf '%s\\n' 'auth_enabled: false' 'server:' '  http_listen_port: 3100' '  grpc_listen_port: 9095' 'common:' '  path_prefix: /tmp/loki' '  replication_factor: 1' \"  instance_addr: $IP\" '  ring:' '    kvstore:' '      store: memberlist' '  storage:' '    s3:' \"      bucketnames: $AWS_S3_BUCKET_NAME_0\" \"      region: $REGION\" 'memberlist:' \"  advertise_addr: $IP\" '  bind_port: 7946' '  join_members:' \"    - dns+$RING_DNS:7946\" '  rejoin_interval: 30s' '  abort_if_cluster_join_fails: false' 'ingester:' '  wal:' '    flush_on_shutdown: true' 'schema_config:' '  configs:' '    - from: 2024-01-01' '      store: tsdb' '      object_store: s3' '      schema: v13' '      index:' '        prefix: index_' '        period: 24h' 'compactor:' '  working_directory: /tmp/loki/compactor' > /tmp/loki.yaml && exec /usr/bin/loki -config.file=/tmp/loki.yaml"]
+    entryPoint             = ["/bin/sh", "-c"]
     privileged             = false
     readonlyRootFilesystem = false
     logConfiguration = {
@@ -1701,19 +1827,50 @@ resource "aws_ecs_task_definition" "loki-mon" {
 
 locals {
   container_def_tempo-mon_tempo = {
-    name      = "tempo"
-    image     = "grafana/tempo:2.5.0"
-    essential = true
-    memory    = 768
+    name              = "tempo"
+    image             = "grafana/tempo:2.5.0"
+    essential         = true
+    cpu               = 256
+    memory            = 1024
+    memoryReservation = 384
+    stopTimeout       = 120
     portMappings = [
       {
         protocol      = "tcp"
         containerPort = 3200
         hostPort      = 3200
         name          = "tempo-3200"
+      },
+      {
+        protocol      = "tcp"
+        containerPort = 4317
+        hostPort      = 4317
+        name          = "tempo-otlp-grpc"
+      },
+      {
+        protocol      = "tcp"
+        containerPort = 4318
+        hostPort      = 4318
+        name          = "tempo-otlp-http"
+      },
+      {
+        protocol      = "tcp"
+        containerPort = 9095
+        hostPort      = 9095
+        name          = "tempo-grpc"
+      },
+      {
+        protocol      = "tcp"
+        containerPort = 7946
+        hostPort      = 7946
+        name          = "tempo-gossip"
       }
     ]
     environment = [
+      {
+        name  = "RING_DNS"
+        value = "${aws_service_discovery_service.tempo-ring-mon.name}.${aws_service_discovery_private_dns_namespace.lgtm-ring-mon.name}"
+      },
       {
         name  = "NAME"
         value = "tempo-mon"
@@ -1733,12 +1890,17 @@ locals {
       {
         name  = "AWS_S3_BUCKET_NAME_0"
         value = "lgtm-tempo-blocks-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+      },
+      {
+        name  = "AWS_SERVICE_DISCOVERY_SERVICE_NAME_0"
+        value = "tempo-ring-mon"
       }
     ]
     mountPoints            = []
     systemControls         = []
     volumesFrom            = []
-    entryPoint             = ["-config.file=/etc/tempo/config.yaml"]
+    command                = ["IP=$(wget -qO- \"$ECS_CONTAINER_METADATA_URI_V4\" | sed -n 's/.*\"IPv4Addresses\":\\[\"\\([0-9.]*\\)\".*/\\1/p'); [ -n \"$IP\" ] || IP=$(hostname -i | cut -d' ' -f1); echo \"tempo advertise=$IP join=$RING_DNS\"; printf '%s\\n' 'server:' '  http_listen_port: 3200' '  grpc_listen_port: 9095' 'distributor:' '  ring:' '    kvstore:' '      store: memberlist' \"    instance_addr: $IP\" '  receivers:' '    otlp:' '      protocols:' '        grpc:' '          endpoint: 0.0.0.0:4317' '        http:' '          endpoint: 0.0.0.0:4318' 'ingester:' '  lifecycler:' \"    address: $IP\" '    ring:' '      kvstore:' '        store: memberlist' '      replication_factor: 1' '  flush_all_on_shutdown: true' 'compactor:' '  ring:' '    kvstore:' '      store: memberlist' \"    instance_addr: $IP\" 'metrics_generator:' '  ring:' '    kvstore:' '      store: memberlist' \"    instance_addr: $IP\" '  storage:' '    path: /var/tempo/generator/wal' 'memberlist:' \"  advertise_addr: $IP\" '  bind_port: 7946' '  join_members:' \"    - dns+$RING_DNS:7946\" '  rejoin_interval: 30s' '  abort_if_cluster_join_fails: false' 'querier:' '  frontend_worker:' '    frontend_address: 127.0.0.1:9095' 'storage:' '  trace:' '    backend: s3' '    s3:' \"      bucket: $AWS_S3_BUCKET_NAME_0\" \"      endpoint: s3.$REGION.amazonaws.com\" \"      region: $REGION\" '    wal:' '      path: /var/tempo/wal' '    local:' '      path: /var/tempo/blocks' > /tmp/tempo.yaml && exec /tempo -config.file=/tmp/tempo.yaml -target=scalable-single-binary"]
+    entryPoint             = ["/bin/sh", "-c"]
     privileged             = false
     readonlyRootFilesystem = false
     logConfiguration = {
