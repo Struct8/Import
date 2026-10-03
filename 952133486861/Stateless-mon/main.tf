@@ -1003,9 +1003,14 @@ chmod +x /etc/profile.d/struct8_vars.sh
 chmod 644 /etc/struct8_env
 # --- END STRUCT8 VARIABLES ---
 
+# --- BEGIN STRUCT8 ECS BOOTSTRAP ---
+mkdir -p /etc/ecs
 source /etc/struct8_env
 echo "ECS_CLUSTER=$ECS_CLUSTER" >> /etc/ecs/ecs.config
 echo "ECS_ENABLE_CONTAINER_METADATA=true" >> /etc/ecs/ecs.config
+# --- END STRUCT8 ECS BOOTSTRAP ---
+
+
 EOFUData
 )
   vpc_security_group_ids = [aws_security_group.autoscaling_group_lgtm-ecs-asg-mon_group.id]
