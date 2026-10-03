@@ -117,6 +117,11 @@ resource "aws_s3_bucket" "my-bucket1" {
   }
 }
 
+resource "aws_s3_bucket_metric" "EntireBucket" {
+  name   = "EntireBucket"
+  bucket = aws_s3_bucket.my-bucket1.id
+}
+
 resource "aws_s3_bucket_ownership_controls" "my-bucket1_controls" {
   bucket = aws_s3_bucket.my-bucket1.id
   rule {
@@ -216,6 +221,80 @@ resource "aws_lambda_function" "Function2" {
   }
   tags = {
     Name           = "Function2"
+    State          = "State2"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_metric_alarm" "Alarm" {
+  alarm_name          = "Alarm"
+  alarm_description   = "Total errors: the bucket's 4xx, both functions' errors and failed orders"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  threshold           = 5
+  treat_missing_data  = "notBreaching"
+  metric_query {
+    id          = "e1"
+    expression  = "a + b + c + FILL(failed, 0)"
+    return_data = true
+  }
+  metric_query {
+    id = "c"
+    metric {
+      metric_name = "Errors"
+      namespace   = "AWS/Lambda"
+      period      = 300
+      stat        = "Sum"
+      dimensions = {
+    FunctionName = aws_lambda_function.Function2.function_name
+  }
+    }
+  }
+  metric_query {
+    id = "b"
+    metric {
+      metric_name = "Errors"
+      namespace   = "AWS/Lambda"
+      period      = 300
+      stat        = "Sum"
+      dimensions = {
+    FunctionName = aws_lambda_function.Function.function_name
+  }
+    }
+  }
+  metric_query {
+    id = "a"
+    metric {
+      metric_name = "4xxErrors"
+      namespace   = "AWS/S3"
+      period      = 300
+      stat        = "Sum"
+      dimensions = {
+    BucketName = aws_s3_bucket.my-bucket1.id
+    FilterId   = aws_s3_bucket_metric.EntireBucket.name
+  }
+    }
+  }
+  metric_query {
+    id = "failed"
+    metric {
+      metric_name = "OrdersFailed"
+      namespace   = "MyApp/Checkout"
+      period      = 300
+      stat        = "Sum"
+      unit        = "Count"
+      dimensions = {
+    Environment = "prod"
+  }
+    }
+  }
+  tags = {
+    Name           = "Alarm"
     State          = "State2"
     Struct8Creator = "Contato Struct"
   }
