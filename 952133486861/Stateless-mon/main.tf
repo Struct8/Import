@@ -992,7 +992,7 @@ resource "aws_launch_template" "lgtm-ecs-lt-mon" {
 
 # --- BEGIN STRUCT8 VARIABLES ---
 cat << 'EOFENV' > /etc/struct8_env
-ECS_CLUSTER="ltfargate-target"
+ECS_CLUSTER="${aws_ecs_cluster.lgtm-cluster-mon.name}"
 NAME="lgtm-ecs-asg-mon"
 REGION="${data.aws_region.current.region}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
@@ -1003,7 +1003,8 @@ chmod +x /etc/profile.d/struct8_vars.sh
 chmod 644 /etc/struct8_env
 # --- END STRUCT8 VARIABLES ---
 
-echo "ECS_CLUSTER=ltfargate-target" >> /etc/ecs/ecs.config
+source /etc/struct8_env
+echo "ECS_CLUSTER=$ECS_CLUSTER" >> /etc/ecs/ecs.config
 echo "ECS_ENABLE_CONTAINER_METADATA=true" >> /etc/ecs/ecs.config
 EOFUData
 )
