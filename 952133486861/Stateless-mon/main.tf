@@ -1143,19 +1143,20 @@ EOFUData
 }
 
 resource "aws_autoscaling_group" "lgtm-ecs-asg-mon" {
-  name                    = "lgtm-ecs-asg-mon"
-  default_instance_warmup = 0
-  desired_capacity        = 1
-  health_check_type       = "EC2"
-  max_instance_lifetime   = 0
-  max_size                = 2
-  metrics_granularity     = "1Minute"
-  min_elb_capacity        = 0
-  min_size                = 1
-  protect_from_scale_in   = true
-  termination_policies    = ["Default"]
-  vpc_zone_identifier     = [aws_subnet.snet-app-1a-mon.id, aws_subnet.snet-app-1b-mon.id]
-  wait_for_elb_capacity   = 0
+  name                      = "lgtm-ecs-asg-mon"
+  default_instance_warmup   = 0
+  desired_capacity          = 1
+  enabled_metrics           = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  health_check_type         = "EC2"
+  max_instance_lifetime     = 0
+  max_size                  = 2
+  metrics_granularity       = "1Minute"
+  min_elb_capacity          = 0
+  min_size                  = 1
+  termination_policies      = ["Default"]
+  vpc_zone_identifier       = [aws_subnet.snet-app-1a-mon.id, aws_subnet.snet-app-1b-mon.id]
+  wait_for_capacity_timeout = "0"
+  wait_for_elb_capacity     = 0
   launch_template {
     version = aws_launch_template.lgtm-ecs-lt-mon.latest_version
     id      = aws_launch_template.lgtm-ecs-lt-mon.id
