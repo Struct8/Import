@@ -1634,11 +1634,11 @@ locals {
       },
       {
         name  = "GF_PATHS_DATA"
-        value = "/var/lib/grafana"
+        value = "/var/lib/grafana-efs"
       },
       {
         name  = "GF_PATHS_PLUGINS"
-        value = "/var/lib/grafana/plugins"
+        value = "/var/lib/grafana-efs/plugins"
       },
       {
         name  = "GF_SECURITY_ADMIN_USER"
@@ -1688,7 +1688,7 @@ locals {
     mountPoints = [
       {
         sourceVolume  = "efs-grafana-lgtm-mon"
-        containerPath = "/var/lib/grafana"
+        containerPath = "/var/lib/grafana-efs"
         readOnly      = false
       }
     ]
