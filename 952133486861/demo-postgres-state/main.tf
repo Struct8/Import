@@ -312,6 +312,27 @@ resource "aws_iam_role" "demo-postgres-direct_role" {
   }
 }
 
+resource "aws_iam_role" "role_monitoring_demo-postgres1" {
+  name = "role_monitoring_demo-postgres1"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "monitoring.rds.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags = {
+    Name           = "role_monitoring_demo-postgres1"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role" "role_rds_proxy_demo-postgres-proxy" {
   name = "role_rds_proxy_demo-postgres-proxy"
   assume_role_policy = jsonencode({
@@ -372,6 +393,11 @@ resource "aws_iam_role_policy_attachment" "scheduler_schedule_demo-direct-schedu
 resource "aws_iam_role_policy_attachment" "scheduler_schedule_demo-insert-schedule_st_demo-postgres-state_attach" {
   policy_arn = aws_iam_policy.scheduler_schedule_demo-insert-schedule_st_demo-postgres-state.arn
   role       = aws_iam_role.demo-insert-schedule_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "service_role_AmazonRDSEnhancedMonitoringRole_to_demo-postgres1_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+  role       = aws_iam_role.role_monitoring_demo-postgres1.name
 }
 
 
@@ -560,38 +586,38 @@ resource "aws_security_group_rule" "rule_instance_demo_cloudbeaver_group_to_db_i
 ### CATEGORY: DATABASE ###
 
 resource "aws_db_instance" "demo-postgres1" {
-  db_name                         = "appdb"
-  db_subnet_group_name            = aws_db_subnet_group.subnet_group_demo-postgres1.name
-  parameter_group_name            = aws_db_parameter_group.demo-postgres-params1.name
-  allocated_storage               = 20
-  availability_zone               = aws_subnet.demo-postgres-private-a.availability_zone
-  backup_retention_period         = 7
-  backup_window                   = "03:00-04:00"
-  copy_tags_to_snapshot           = true
-  delete_automated_backups        = false
-  deletion_protection             = true
-  enabled_cloudwatch_logs_exports = ["postgresql"]
-  engine                          = "postgres"
-  engine_lifecycle_support        = "open-source-rds-extended-support-disabled"
-  engine_version                  = "18"
-  identifier                      = "demo-postgres1"
-  instance_class                  = "db.t3.micro"
-  maintenance_window              = "mon:04:30-mon:05:30"
-  manage_master_user_password     = true
-  max_allocated_storage           = 100
-  port                            = 5432
-  skip_final_snapshot             = true
-  storage_encrypted               = true
-  storage_type                    = "gp3"
-  upgrade_storage_config          = false
-  username                        = "dbadmin"
-  vpc_security_group_ids          = [aws_security_group.db_instance_demo-postgres1_group.id]
+  db_name                     = "appdb"
+  db_subnet_group_name        = aws_db_subnet_group.subnet_group_demo-postgres1.name
+  parameter_group_name        = aws_db_parameter_group.demo-postgres-params1.name
+  allocated_storage           = 20
+  availability_zone           = aws_subnet.demo-postgres-private-a.availability_zone
+  backup_retention_period     = 7
+  backup_window               = "03:00-04:00"
+  copy_tags_to_snapshot       = true
+  delete_automated_backups    = false
+  engine                      = "postgres"
+  engine_lifecycle_support    = "open-source-rds-extended-support-disabled"
+  engine_version              = "18"
+  identifier                  = "demo-postgres1"
+  instance_class              = "db.t3.micro"
+  maintenance_window          = "mon:04:30-mon:05:30"
+  manage_master_user_password = true
+  max_allocated_storage       = 100
+  monitoring_interval         = 60
+  monitoring_role_arn         = aws_iam_role.role_monitoring_demo-postgres1.arn
+  port                        = 5432
+  skip_final_snapshot         = true
+  storage_encrypted           = true
+  storage_type                = "gp3"
+  upgrade_storage_config      = false
+  username                    = "dbadmin"
+  vpc_security_group_ids      = [aws_security_group.db_instance_demo-postgres1_group.id]
   tags = {
     Name           = "demo-postgres1"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_cloudwatch_log_group.demo-postgres-log1]
+  depends_on = [aws_cloudwatch_log_group.demo-postgres-log1, aws_iam_role_policy_attachment.service_role_AmazonRDSEnhancedMonitoringRole_to_demo-postgres1_attach]
 }
 
 resource "aws_db_parameter_group" "demo-postgres-params1" {
@@ -672,6 +698,22 @@ resource "aws_instance" "demo-cloudbeaver" {
   instance_type               = "t3.small"
   user_data_base64 = base64encode(<<-EOFUData
 #!/bin/bash
+
+# --- BEGIN STRUCT8 VARIABLES ---
+cat << 'EOFENV' > /etc/struct8_env
+NAME="demo-cloudbeaver"
+REGION="${data.aws_region.current.region}"
+ACCOUNT="${data.aws_caller_identity.current.account_id}"
+AWS_DB_INSTANCE_ENDPOINT_0="${aws_db_instance.demo-postgres1.endpoint}"
+AWS_DB_INSTANCE_DB_NAME_0="${aws_db_instance.demo-postgres1.db_name}"
+AWS_DB_INSTANCE_SECRET_ARN_0="${one(aws_db_instance.demo-postgres1.master_user_secret[*].secret_arn)}"
+AWS_DB_INSTANCE_USER_NAME_0="${one(aws_db_instance.demo-postgres1.master_user_secret[*].secret_arn)}:username::"
+EOFENV
+cat /etc/struct8_env >> /etc/environment
+sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
+chmod +x /etc/profile.d/struct8_vars.sh
+chmod 644 /etc/struct8_env
+# --- END STRUCT8 VARIABLES ---
 
 ${data.local_file.UserData_demo-cloudbeaver.content}
 EOFUData
@@ -811,7 +853,7 @@ resource "aws_scheduler_schedule" "demo-insert-schedule" {
 ### CATEGORY: MONITORING ###
 
 resource "aws_cloudwatch_log_group" "demo-postgres-log1" {
-  name              = "/aws/rds/instance/demo-postgres1/postgresql"
+  name              = "RDSOSMetrics"
   log_group_class   = "STANDARD"
   retention_in_days = 30
   skip_destroy      = false
