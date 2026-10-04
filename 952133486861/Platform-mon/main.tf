@@ -361,8 +361,6 @@ resource "aws_flow_log" "grafana-flowlogs-mon" {
 }
 
 resource "aws_lb" "alb-grafana-mon" {
-  # ajuste manual · access_logs.bucket — Generator bug: bare aws_lb -> aws_s3_bucket connection does not emit the access_logs block (type republished 2026-10-01 marks access_logs auto-filled from connections, but compiled HCL has none). Dotted path to force the nested block form access_logs { bucket = ... } that the AWS provider requires (attribute form access_logs = {} is rejected at plan).
-  # ajuste manual · access_logs.enabled — Generator bug companion: enable the access_logs block the generator fails to emit from the ALB->bucket wire.
   name                             = "alb-grafana-mon"
   enable_cross_zone_load_balancing = true
   enable_http2                     = true
@@ -379,6 +377,7 @@ resource "aws_lb" "alb-grafana-mon" {
     State          = "Platform-mon"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_s3_bucket_policy.aws_s3_bucket_policy_alb-access-logs-mon_st_Platform-mon]
 }
 
 resource "aws_lb_listener" "listener-http-redirect-mon" {
@@ -466,6 +465,29 @@ resource "aws_s3_bucket_ownership_controls" "bucket-source-promptail-mon_control
   rule {
     object_ownership = "BucketOwnerEnforced"
   }
+}
+
+data "aws_iam_policy_document" "aws_s3_bucket_policy_alb-access-logs-mon_st_Platform-mon_doc" {
+  statement {
+    sid    = "AllowElbAccessLogs"
+    effect = "Allow"
+    principals {
+      identifiers = ["logdelivery.elasticloadbalancing.amazonaws.com"]
+      type        = "Service"
+    }
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.alb-access-logs-mon.arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"]
+    condition {
+      test     = "ArnLike"
+      values   = ["arn:aws:elasticloadbalancing:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:loadbalancer/*"]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "aws_s3_bucket_policy_alb-access-logs-mon_st_Platform-mon" {
+  bucket = aws_s3_bucket.alb-access-logs-mon.id
+  policy = data.aws_iam_policy_document.aws_s3_bucket_policy_alb-access-logs-mon_st_Platform-mon_doc.json
 }
 
 resource "aws_s3_bucket_public_access_block" "alb-access-logs-mon_block" {
