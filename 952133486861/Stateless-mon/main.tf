@@ -1810,10 +1810,6 @@ locals {
     ]
     environment = [
       {
-        name  = "RING_PLACEHOLDER"
-        value = "unused"
-      },
-      {
         name  = "NAME"
         value = "alloy-mon"
       },
@@ -1851,52 +1847,7 @@ locals {
     volumesFrom    = []
     command = [
       <<EOF
-AMP_RW = "$${AWS_PROMETHEUS_WORKSPACE_ENDPOINT_0}api/v1/remote_write"; cat > /etc/alloy/config.alloy <<EOF
-logging {
-  level  = "info"
-  format = "logfmt"
-}
-otelcol.receiver.otlp "in" {
-  grpc { endpoint = "0.0.0.0:4317" }
-  http { endpoint = "0.0.0.0:4318" }
-  output {
-    metrics = [otelcol.processor.batch.default.input]
-    logs    = [otelcol.processor.batch.default.input]
-    traces  = [otelcol.processor.batch.default.input]
-  }
-}
-otelcol.processor.batch "default" {
-  output {
-    metrics = [otelcol.exporter.prometheus.toamp.input]
-    logs    = [otelcol.exporter.loki.tolokiconv.input]
-    traces  = [otelcol.exporter.otlp.totempo.input]
-  }
-}
-otelcol.exporter.otlp "totempo" {
-  client {
-    endpoint = "tempo:4317"
-    tls { insecure = true }
-  }
-}
-otelcol.exporter.loki "tolokiconv" {
-  forward_to = [loki.write.toloki.receiver]
-}
-loki.write "toloki" {
-  endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
-  }
-}
-otelcol.exporter.prometheus "toamp" {
-  forward_to = [prometheus.remote_write.toamp.receiver]
-}
-prometheus.remote_write "toamp" {
-  endpoint {
-    url = "$AMP_RW"
-    sigv4 { region = "$REGION" }
-  }
-}
-EOF
-exec /bin/alloy run /etc/alloy/config.alloy --server.http.listen-addr=0.0.0.0:12345 --storage.path=/tmp/alloy
+printf '%s\n' 'otelcol.receiver.otlp "in" {' '  grpc { endpoint = "0.0.0.0:4317" }' '  http { endpoint = "0.0.0.0:4318" }' '  output { metrics = [otelcol.processor.batch.d.input] logs = [otelcol.processor.batch.d.input] traces = [otelcol.processor.batch.d.input] }' '}' 'otelcol.processor.batch "d" {' '  output { metrics = [otelcol.exporter.prometheus.amp.input] logs = [otelcol.exporter.loki.lk.input] traces = [otelcol.exporter.otlp.tp.input] }' '}' 'otelcol.exporter.otlp "tp" {' '  client { endpoint = "tempo:4317" tls { insecure = true } }' '}' 'otelcol.exporter.loki "lk" { forward_to = [loki.write.lw.receiver] }' 'loki.write "lw" { endpoint { url = "http://loki:3100/loki/api/v1/push" } }' 'otelcol.exporter.prometheus "amp" { forward_to = [prometheus.remote_write.rw.receiver] }' 'prometheus.remote_write "rw" {' "  endpoint { url = \"$${AWS_PROMETHEUS_WORKSPACE_ENDPOINT_0}api/v1/remote_write\" sigv4 { region = \"$REGION\" } }" '}' > /etc/alloy/config.alloy && exec /bin/alloy run /etc/alloy/config.alloy --server.http.listen-addr=0.0.0.0:12345 --storage.path=/tmp/alloy
       EOF
     ]
     entryPoint             = ["/bin/sh", "-c"]
