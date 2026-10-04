@@ -268,6 +268,12 @@ resource "aws_iam_policy" "ecs_task_definition_tempo-mon_st_Stateless-mon" {
 
 data "aws_iam_policy_document" "lambda_function_lambda-promtail-mon_st_Stateless-mon_doc" {
   statement {
+    sid       = "AllowWriteLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.lambda-promtail-mon.arn}:*"]
+  }
+  statement {
     sid       = "AllowBucketLevelActions"
     effect    = "Allow"
     actions   = ["s3:GetBucketLocation", "s3:ListBucket"]
@@ -2237,6 +2243,18 @@ resource "aws_ecs_task_definition" "tempo-mon" {
 
 
 ### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_log_group" "lambda-promtail-mon" {
+  name              = "/aws/lambda/lambda-promtail-mon"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "lambda-promtail-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
 
 resource "aws_cloudwatch_log_group" "logs-alloy-mon" {
   name              = "/aws/ecs/alloy-mon"
