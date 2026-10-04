@@ -45,6 +45,10 @@ data "aws_s3_bucket" "bucket-source-promptail-mon" {
   bucket = "bucket-source-promptail-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
 }
 
+data "aws_s3_bucket" "alb-access-logs-mon" {
+  bucket = "alb-access-logs-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+}
+
 data "aws_instance" "ec2-nat-grafana-mon" {
   filter {
     name   = "tag:Name"
@@ -66,10 +70,6 @@ data "aws_s3_bucket" "lgtm-grafana-config-mon" {
 
 data "aws_s3_bucket" "lgtm-loki-chunks-mon" {
   bucket = "lgtm-loki-chunks-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
-}
-
-data "aws_s3_bucket" "alb-access-logs-mon" {
-  bucket = "alb-access-logs-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
 }
 
 data "aws_security_group" "lb_alb-grafana-mon_group" {
@@ -1212,6 +1212,15 @@ resource "aws_lb_target_group" "tg-grafana-mon" {
 
 ### CATEGORY: STORAGE ###
 
+resource "aws_s3_bucket_notification" "alb-logs-notify-mon" {
+  bucket = data.aws_s3_bucket.alb-access-logs-mon.id
+  lambda_function {
+    events              = ["s3:ObjectCreated:*"]
+    lambda_function_arn = aws_lambda_function.lambda-promtail-mon.arn
+  }
+  depends_on = [aws_lambda_permission.perm_aws_s3_bucket_alb-access-logs-mon_to_lambda-promtail-mon]
+}
+
 resource "aws_efs_access_point" "ap_grafana-mon_efs-grafana-lgtm-mon" {
   file_system_id = data.aws_efs_file_system.efs-grafana-lgtm-mon.id
   posix_user {
@@ -1389,6 +1398,14 @@ resource "aws_lambda_function" "lambda-promtail-mon" {
     subnet_ids         = [aws_subnet.snet-app-1a-mon.id, aws_subnet.snet-app-1b-mon.id]
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_lambda-promtail-mon_st_Stateless-mon_attach]
+}
+
+resource "aws_lambda_permission" "perm_aws_s3_bucket_alb-access-logs-mon_to_lambda-promtail-mon" {
+  function_name = aws_lambda_function.lambda-promtail-mon.function_name
+  statement_id  = "perm_aws_s3_bucket_alb-access-logs-mon_to_lambda-promtail-mon"
+  principal     = "s3.amazonaws.com"
+  action        = "lambda:InvokeFunction"
+  source_arn    = data.aws_s3_bucket.alb-access-logs-mon.arn
 }
 
 resource "aws_lambda_permission" "perm_aws_s3_bucket_bucket-source-promptail-mon_to_lambda-promtail-mon" {
