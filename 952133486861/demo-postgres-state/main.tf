@@ -41,7 +41,7 @@ data "aws_iam_policy_document" "db_proxy_demo-postgres-proxy_st_demo-postgres-st
     sid       = "ReadDatabaseCredentials"
     effect    = "Allow"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [one(aws_db_instance.demo-postgres1.master_user_secret[*].secret_arn)]
+    resources = [one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)]
   }
 }
 
@@ -53,10 +53,10 @@ resource "aws_iam_policy" "db_proxy_demo-postgres-proxy_st_demo-postgres-state" 
 
 data "aws_iam_policy_document" "instance_demo-cloudbeaver_st_demo-postgres-state_doc" {
   statement {
-    sid       = "AllowRDSSecretAccessdemopostgres1"
+    sid       = "AllowRDSSecretAccessdemopostgres"
     effect    = "Allow"
     actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
-    resources = [aws_db_instance.demo-postgres1.master_user_secret[0].secret_arn]
+    resources = [aws_db_instance.demo-postgres.master_user_secret[0].secret_arn]
   }
 }
 
@@ -66,19 +66,25 @@ resource "aws_iam_policy" "instance_demo-cloudbeaver_st_demo-postgres-state" {
   policy      = data.aws_iam_policy_document.instance_demo-cloudbeaver_st_demo-postgres-state_doc.json
 }
 
-data "aws_iam_policy_document" "lambda_function_demo-postgres-api1_st_demo-postgres-state_doc" {
+data "aws_iam_policy_document" "lambda_function_demo-postgres-api_st_demo-postgres-state_doc" {
   statement {
     sid       = "AllowWriteLogs"
     effect    = "Allow"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["${aws_cloudwatch_log_group.demo-postgres-log1.arn}:*"]
   }
+  statement {
+    sid       = "AllowAllResources"
+    effect    = "Allow"
+    actions   = ["ec2:AssignPrivateIpAddresses", "ec2:CreateNetworkInterface", "ec2:DeleteNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:UnassignPrivateIpAddresses"]
+    resources = ["*"]
+  }
 }
 
-resource "aws_iam_policy" "lambda_function_demo-postgres-api1_st_demo-postgres-state" {
-  name        = "lambda_function_demo-postgres-api1_st_demo-postgres-state"
-  description = "Access Policy for demo-postgres-api1"
-  policy      = data.aws_iam_policy_document.lambda_function_demo-postgres-api1_st_demo-postgres-state_doc.json
+resource "aws_iam_policy" "lambda_function_demo-postgres-api_st_demo-postgres-state" {
+  name        = "lambda_function_demo-postgres-api_st_demo-postgres-state"
+  description = "Access Policy for demo-postgres-api"
+  policy      = data.aws_iam_policy_document.lambda_function_demo-postgres-api_st_demo-postgres-state_doc.json
 }
 
 data "aws_iam_policy_document" "lambda_function_demo-postgres-direct_st_demo-postgres-state_doc" {
@@ -89,10 +95,16 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-direct_st_demo-pos
     resources = ["${aws_cloudwatch_log_group.demo-postgres-log1.arn}:*"]
   }
   statement {
-    sid       = "AllowRDSSecretAccessdemopostgres1"
+    sid       = "AllowRDSSecretAccessdemopostgres"
     effect    = "Allow"
     actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
-    resources = [aws_db_instance.demo-postgres1.master_user_secret[0].secret_arn]
+    resources = [aws_db_instance.demo-postgres.master_user_secret[0].secret_arn]
+  }
+  statement {
+    sid       = "AllowAllResources"
+    effect    = "Allow"
+    actions   = ["ec2:AssignPrivateIpAddresses", "ec2:CreateNetworkInterface", "ec2:DeleteNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:UnassignPrivateIpAddresses"]
+    resources = ["*"]
   }
 }
 
@@ -100,36 +112,6 @@ resource "aws_iam_policy" "lambda_function_demo-postgres-direct_st_demo-postgres
   name        = "lambda_function_demo-postgres-direct_st_demo-postgres-state"
   description = "Access Policy for demo-postgres-direct"
   policy      = data.aws_iam_policy_document.lambda_function_demo-postgres-direct_st_demo-postgres-state_doc.json
-}
-
-data "aws_iam_policy_document" "scheduler_schedule_demo-direct-schedule_st_demo-postgres-state_doc" {
-  statement {
-    sid       = "AllowSchedulerToInvokeFunction"
-    effect    = "Allow"
-    actions   = ["lambda:InvokeFunction"]
-    resources = [aws_lambda_function.demo-postgres-direct.arn]
-  }
-}
-
-resource "aws_iam_policy" "scheduler_schedule_demo-direct-schedule_st_demo-postgres-state" {
-  name        = "scheduler_schedule_demo-direct-schedule_st_demo-postgres-state"
-  description = "Access Policy for demo-direct-schedule"
-  policy      = data.aws_iam_policy_document.scheduler_schedule_demo-direct-schedule_st_demo-postgres-state_doc.json
-}
-
-data "aws_iam_policy_document" "scheduler_schedule_demo-insert-schedule_st_demo-postgres-state_doc" {
-  statement {
-    sid       = "AllowSchedulerToInvokeFunction"
-    effect    = "Allow"
-    actions   = ["lambda:InvokeFunction"]
-    resources = [aws_lambda_function.demo-postgres-api1.arn]
-  }
-}
-
-resource "aws_iam_policy" "scheduler_schedule_demo-insert-schedule_st_demo-postgres-state" {
-  name        = "scheduler_schedule_demo-insert-schedule_st_demo-postgres-state"
-  description = "Access Policy for demo-insert-schedule"
-  policy      = data.aws_iam_policy_document.scheduler_schedule_demo-insert-schedule_st_demo-postgres-state_doc.json
 }
 
 data "aws_iam_policy_document" "Debug_debug_permissions" {
@@ -216,56 +198,8 @@ resource "aws_iam_role" "demo-cloudbeaver_role" {
   }
 }
 
-resource "aws_iam_role" "demo-direct-schedule_role" {
-  name = "demo-direct-schedule_role"
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "scheduler.amazonaws.com"
-      }
-    }
-  ]
-})
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  tags = {
-    Name           = "demo-direct-schedule_role"
-    State          = "demo-postgres-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_iam_role" "demo-insert-schedule_role" {
-  name = "demo-insert-schedule_role"
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "scheduler.amazonaws.com"
-      }
-    }
-  ]
-})
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  tags = {
-    Name           = "demo-insert-schedule_role"
-    State          = "demo-postgres-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_iam_role" "demo-postgres-api1_role" {
-  name = "demo-postgres-api1_role"
+resource "aws_iam_role" "demo-postgres-api_role" {
+  name = "demo-postgres-api_role"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -282,7 +216,7 @@ resource "aws_iam_role" "demo-postgres-api1_role" {
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "demo-postgres-api1_role"
+    Name           = "demo-postgres-api_role"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
@@ -312,8 +246,8 @@ resource "aws_iam_role" "demo-postgres-direct_role" {
   }
 }
 
-resource "aws_iam_role" "role_monitoring_demo-postgres1" {
-  name = "role_monitoring_demo-postgres1"
+resource "aws_iam_role" "role_monitoring_demo-postgres" {
+  name = "role_monitoring_demo-postgres"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -327,7 +261,7 @@ resource "aws_iam_role" "role_monitoring_demo-postgres1" {
   ]
 })
   tags = {
-    Name           = "role_monitoring_demo-postgres1"
+    Name           = "role_monitoring_demo-postgres"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
@@ -347,6 +281,9 @@ resource "aws_iam_role" "role_rds_proxy_demo-postgres-proxy" {
     }
   ]
 })
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
   tags = {
     Name           = "role_rds_proxy_demo-postgres-proxy"
     State          = "demo-postgres-state"
@@ -375,9 +312,9 @@ resource "aws_iam_role_policy_attachment" "instance_demo-cloudbeaver_st_demo-pos
   role       = aws_iam_role.demo-cloudbeaver_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_function_demo-postgres-api1_st_demo-postgres-state_attach" {
-  policy_arn = aws_iam_policy.lambda_function_demo-postgres-api1_st_demo-postgres-state.arn
-  role       = aws_iam_role.demo-postgres-api1_role.name
+resource "aws_iam_role_policy_attachment" "lambda_function_demo-postgres-api_st_demo-postgres-state_attach" {
+  policy_arn = aws_iam_policy.lambda_function_demo-postgres-api_st_demo-postgres-state.arn
+  role       = aws_iam_role.demo-postgres-api_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_function_demo-postgres-direct_st_demo-postgres-state_attach" {
@@ -385,19 +322,9 @@ resource "aws_iam_role_policy_attachment" "lambda_function_demo-postgres-direct_
   role       = aws_iam_role.demo-postgres-direct_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "scheduler_schedule_demo-direct-schedule_st_demo-postgres-state_attach" {
-  policy_arn = aws_iam_policy.scheduler_schedule_demo-direct-schedule_st_demo-postgres-state.arn
-  role       = aws_iam_role.demo-direct-schedule_role.name
-}
-
-resource "aws_iam_role_policy_attachment" "scheduler_schedule_demo-insert-schedule_st_demo-postgres-state_attach" {
-  policy_arn = aws_iam_policy.scheduler_schedule_demo-insert-schedule_st_demo-postgres-state.arn
-  role       = aws_iam_role.demo-insert-schedule_role.name
-}
-
-resource "aws_iam_role_policy_attachment" "service_role_AmazonRDSEnhancedMonitoringRole_to_demo-postgres1_attach" {
+resource "aws_iam_role_policy_attachment" "service_role_AmazonRDSEnhancedMonitoringRole_to_demo-postgres_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
-  role       = aws_iam_role.role_monitoring_demo-postgres1.name
+  role       = aws_iam_role.role_monitoring_demo-postgres.name
 }
 
 
@@ -480,12 +407,12 @@ resource "aws_route_table_association" "aws_route_table_association_demo_public_
   subnet_id      = aws_subnet.demo-public-a.id
 }
 
-resource "aws_security_group" "db_instance_demo-postgres1_group" {
-  name                   = "db_instance_demo-postgres1_group"
+resource "aws_security_group" "db_instance_demo-postgres_group" {
+  name                   = "db_instance_demo-postgres_group"
   vpc_id                 = aws_vpc.VPC2.id
   revoke_rules_on_delete = false
   tags = {
-    Name           = "db_instance_demo-postgres1_group"
+    Name           = "db_instance_demo-postgres_group"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
@@ -497,6 +424,28 @@ resource "aws_security_group" "db_proxy_demo-postgres-proxy_group" {
   revoke_rules_on_delete = false
   tags = {
     Name           = "db_proxy_demo-postgres-proxy_group"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "demo-postgres-api" {
+  name                   = "demo-postgres-api"
+  vpc_id                 = aws_vpc.VPC2.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "demo-postgres-api"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "demo-postgres-direct" {
+  name                   = "demo-postgres-direct"
+  vpc_id                 = aws_vpc.VPC2.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "demo-postgres-direct"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
@@ -514,23 +463,13 @@ resource "aws_security_group" "instance_demo-cloudbeaver_group" {
   }
 }
 
-resource "aws_security_group_rule" "rule_db_instance_demo_postgres1_group_egress_all_protocols" {
-  security_group_id = aws_security_group.db_instance_demo-postgres1_group.id
+resource "aws_security_group_rule" "rule_db_instance_demo_postgres_group_egress_all_protocols" {
+  security_group_id = aws_security_group.db_instance_demo-postgres_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
-}
-
-resource "aws_security_group_rule" "rule_db_instance_demo_postgres1_group_to_db_proxy_demo_postgres_proxy_group_tcp_5432" {
-  security_group_id        = aws_security_group.db_proxy_demo-postgres-proxy_group.id
-  source_security_group_id = aws_security_group.db_instance_demo-postgres1_group.id
-  description              = "Allow from db_instance_demo-postgres1_group (tcp:5432-5432)"
-  from_port                = 5432
-  protocol                 = "tcp"
-  to_port                  = 5432
-  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_db_proxy_demo_postgres_proxy_group_egress_all_protocols" {
@@ -542,10 +481,48 @@ resource "aws_security_group_rule" "rule_db_proxy_demo_postgres_proxy_group_egre
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_db_proxy_demo_postgres_proxy_group_to_db_instance_demo_postgres1_group_tcp_5432" {
-  security_group_id        = aws_security_group.db_instance_demo-postgres1_group.id
+resource "aws_security_group_rule" "rule_db_proxy_demo_postgres_proxy_group_to_db_instance_demo_postgres_group_tcp_5432" {
+  security_group_id        = aws_security_group.db_instance_demo-postgres_group.id
   source_security_group_id = aws_security_group.db_proxy_demo-postgres-proxy_group.id
   description              = "Allow from RDS Proxy demo-postgres-proxy"
+  from_port                = 5432
+  protocol                 = "tcp"
+  to_port                  = 5432
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_demo_postgres_api_egress_all_protocols" {
+  security_group_id = aws_security_group.demo-postgres-api.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_demo_postgres_api_to_db_proxy_demo_postgres_proxy_group_tcp_5432" {
+  security_group_id        = aws_security_group.db_proxy_demo-postgres-proxy_group.id
+  source_security_group_id = aws_security_group.demo-postgres-api.id
+  description              = "Allow from demo-postgres-api (tcp:5432-5432)"
+  from_port                = 5432
+  protocol                 = "tcp"
+  to_port                  = 5432
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_demo_postgres_direct_egress_all_protocols" {
+  security_group_id = aws_security_group.demo-postgres-direct.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_demo_postgres_direct_to_db_instance_demo_postgres_group_tcp_5432" {
+  security_group_id        = aws_security_group.db_instance_demo-postgres_group.id
+  source_security_group_id = aws_security_group.demo-postgres-direct.id
+  description              = "Allow from demo-postgres-direct (tcp:5432-5432)"
   from_port                = 5432
   protocol                 = "tcp"
   to_port                  = 5432
@@ -570,8 +547,8 @@ resource "aws_security_group_rule" "rule_instance_demo_cloudbeaver_group_ingress
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_instance_demo_cloudbeaver_group_to_db_instance_demo_postgres1_group_tcp_5432" {
-  security_group_id        = aws_security_group.db_instance_demo-postgres1_group.id
+resource "aws_security_group_rule" "rule_instance_demo_cloudbeaver_group_to_db_instance_demo_postgres_group_tcp_5432" {
+  security_group_id        = aws_security_group.db_instance_demo-postgres_group.id
   source_security_group_id = aws_security_group.instance_demo-cloudbeaver_group.id
   description              = "Allow from instance_demo-cloudbeaver_group (tcp:5432-5432)"
   from_port                = 5432
@@ -585,9 +562,9 @@ resource "aws_security_group_rule" "rule_instance_demo_cloudbeaver_group_to_db_i
 
 ### CATEGORY: DATABASE ###
 
-resource "aws_db_instance" "demo-postgres1" {
+resource "aws_db_instance" "demo-postgres" {
   db_name                     = "appdb"
-  db_subnet_group_name        = aws_db_subnet_group.subnet_group_demo-postgres1.name
+  db_subnet_group_name        = aws_db_subnet_group.subnet_group_demo-postgres.name
   parameter_group_name        = aws_db_parameter_group.demo-postgres-params1.name
   allocated_storage           = 20
   availability_zone           = aws_subnet.demo-postgres-private-a.availability_zone
@@ -598,26 +575,26 @@ resource "aws_db_instance" "demo-postgres1" {
   engine                      = "postgres"
   engine_lifecycle_support    = "open-source-rds-extended-support-disabled"
   engine_version              = "18"
-  identifier                  = "demo-postgres1"
+  identifier                  = "demo-postgres"
   instance_class              = "db.t3.micro"
   maintenance_window          = "mon:04:30-mon:05:30"
   manage_master_user_password = true
   max_allocated_storage       = 100
   monitoring_interval         = 60
-  monitoring_role_arn         = aws_iam_role.role_monitoring_demo-postgres1.arn
+  monitoring_role_arn         = aws_iam_role.role_monitoring_demo-postgres.arn
   port                        = 5432
   skip_final_snapshot         = true
   storage_encrypted           = true
   storage_type                = "gp3"
   upgrade_storage_config      = false
   username                    = "dbadmin"
-  vpc_security_group_ids      = [aws_security_group.db_instance_demo-postgres1_group.id]
+  vpc_security_group_ids      = [aws_security_group.db_instance_demo-postgres_group.id]
   tags = {
-    Name           = "demo-postgres1"
+    Name           = "demo-postgres"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_cloudwatch_log_group.demo-postgres-log1, aws_iam_role_policy_attachment.service_role_AmazonRDSEnhancedMonitoringRole_to_demo-postgres1_attach]
+  depends_on = [aws_cloudwatch_log_group.demo-postgres-log1, aws_iam_role_policy_attachment.service_role_AmazonRDSEnhancedMonitoringRole_to_demo-postgres_attach]
 }
 
 resource "aws_db_parameter_group" "demo-postgres-params1" {
@@ -646,7 +623,7 @@ resource "aws_db_proxy" "demo-postgres-proxy" {
     auth_scheme               = "SECRETS"
     client_password_auth_type = "POSTGRES_SCRAM_SHA_256"
     iam_auth                  = "DISABLED"
-    secret_arn                = one(aws_db_instance.demo-postgres1.master_user_secret[*].secret_arn)
+    secret_arn                = one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)
   }
   tags = {
     Name           = "demo-postgres-proxy"
@@ -659,14 +636,14 @@ resource "aws_db_proxy" "demo-postgres-proxy" {
 resource "aws_db_proxy_target" "demo-postgres-proxy_target" {
   db_proxy_name          = aws_db_proxy.demo-postgres-proxy.name
   target_group_name      = "default"
-  db_instance_identifier = aws_db_instance.demo-postgres1.identifier
+  db_instance_identifier = aws_db_instance.demo-postgres.identifier
 }
 
-resource "aws_db_subnet_group" "subnet_group_demo-postgres1" {
-  name       = "demo-postgres1-subnet-group"
+resource "aws_db_subnet_group" "subnet_group_demo-postgres" {
+  name       = "demo-postgres-subnet-group"
   subnet_ids = [aws_subnet.demo-postgres-private-a.id, aws_subnet.demo-postgres-private-b.id]
   tags = {
-    Name           = "subnet_group_demo-postgres1"
+    Name           = "subnet_group_demo-postgres"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
@@ -704,10 +681,10 @@ cat << 'EOFENV' > /etc/struct8_env
 NAME="demo-cloudbeaver"
 REGION="${data.aws_region.current.region}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
-AWS_DB_INSTANCE_ENDPOINT_0="${aws_db_instance.demo-postgres1.endpoint}"
-AWS_DB_INSTANCE_DB_NAME_0="${aws_db_instance.demo-postgres1.db_name}"
-AWS_DB_INSTANCE_SECRET_ARN_0="${one(aws_db_instance.demo-postgres1.master_user_secret[*].secret_arn)}"
-AWS_DB_INSTANCE_USER_NAME_0="${one(aws_db_instance.demo-postgres1.master_user_secret[*].secret_arn)}:username::"
+AWS_DB_INSTANCE_ENDPOINT_0="${aws_db_instance.demo-postgres.endpoint}"
+AWS_DB_INSTANCE_DB_NAME_0="${aws_db_instance.demo-postgres.db_name}"
+AWS_DB_INSTANCE_SECRET_ARN_0="${one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)}"
+AWS_DB_INSTANCE_USER_NAME_0="${one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)}:username::"
 EOFENV
 cat /etc/struct8_env >> /etc/environment
 sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
@@ -738,28 +715,28 @@ EOFUData
   }
 }
 
-data "archive_file" "archive_struct8-hub_demo-postgres-api1" {
-  output_path = "${path.module}/struct8-hub_demo-postgres-api1.zip"
+data "archive_file" "archive_struct8-hub_demo-postgres-api" {
+  output_path = "${path.module}/struct8-hub_demo-postgres-api.zip"
   source_dir  = "${path.module}/.external_modules/struct8-hub/prebuilt"
   type        = "zip"
 }
 
-resource "aws_lambda_function" "demo-postgres-api1" {
-  function_name                  = "demo-postgres-api1"
+resource "aws_lambda_function" "demo-postgres-api" {
+  function_name                  = "demo-postgres-api"
   architectures                  = ["arm64"]
   description                    = "API Lambda que consome o banco demo-postgres"
-  filename                       = data.archive_file.archive_struct8-hub_demo-postgres-api1.output_path
+  filename                       = data.archive_file.archive_struct8-hub_demo-postgres-api.output_path
   handler                        = "index.handler"
   memory_size                    = 3008
   publish                        = false
   reserved_concurrent_executions = -1
-  role                           = aws_iam_role.demo-postgres-api1_role.arn
-  runtime                        = "python3.13"
-  source_code_hash               = data.archive_file.archive_struct8-hub_demo-postgres-api1.output_base64sha256
+  role                           = aws_iam_role.demo-postgres-api_role.arn
+  runtime                        = "nodejs22.x"
+  source_code_hash               = data.archive_file.archive_struct8-hub_demo-postgres-api.output_base64sha256
   timeout                        = 30
   environment {
     variables = {
-    NAME                    = "demo-postgres-api1"
+    NAME                    = "demo-postgres-api"
     REGION                  = data.aws_region.current.region
     ACCOUNT                 = data.aws_caller_identity.current.account_id
     AWS_DB_PROXY_ENDPOINT_0 = aws_db_proxy.demo-postgres-proxy.endpoint
@@ -767,11 +744,15 @@ resource "aws_lambda_function" "demo-postgres-api1" {
   }
   }
   tags = {
-    Name           = "demo-postgres-api1"
+    Name           = "demo-postgres-api"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_iam_role_policy_attachment.lambda_function_demo-postgres-api1_st_demo-postgres-state_attach]
+  vpc_config {
+    security_group_ids = [aws_security_group.demo-postgres-api.id]
+    subnet_ids         = [aws_subnet.demo-postgres-private-b.id]
+  }
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_demo-postgres-api_st_demo-postgres-state_attach]
 }
 
 data "archive_file" "archive_struct8-hub_demo-postgres-direct" {
@@ -798,10 +779,10 @@ resource "aws_lambda_function" "demo-postgres-direct" {
     NAME                         = "demo-postgres-direct"
     REGION                       = data.aws_region.current.region
     ACCOUNT                      = data.aws_caller_identity.current.account_id
-    AWS_DB_INSTANCE_ENDPOINT_0   = aws_db_instance.demo-postgres1.endpoint
-    AWS_DB_INSTANCE_DB_NAME_0    = aws_db_instance.demo-postgres1.db_name
-    AWS_DB_INSTANCE_SECRET_ARN_0 = one(aws_db_instance.demo-postgres1.master_user_secret[*].secret_arn)
-    AWS_DB_INSTANCE_USER_NAME_0  = "${one(aws_db_instance.demo-postgres1.master_user_secret[*].secret_arn)}:username::"
+    AWS_DB_INSTANCE_ENDPOINT_0   = aws_db_instance.demo-postgres.endpoint
+    AWS_DB_INSTANCE_DB_NAME_0    = aws_db_instance.demo-postgres.db_name
+    AWS_DB_INSTANCE_SECRET_ARN_0 = one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)
+    AWS_DB_INSTANCE_USER_NAME_0  = "${one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)}:username::"
   }
   }
   tags = {
@@ -809,7 +790,27 @@ resource "aws_lambda_function" "demo-postgres-direct" {
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
+  vpc_config {
+    security_group_ids = [aws_security_group.demo-postgres-direct.id]
+    subnet_ids         = [aws_subnet.demo-postgres-private-b.id]
+  }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_demo-postgres-direct_st_demo-postgres-state_attach]
+}
+
+resource "aws_lambda_permission" "perm_aws_cloudwatch_event_rule_every-1-minute_to_demo-postgres-api" {
+  function_name = aws_lambda_function.demo-postgres-api.function_name
+  statement_id  = "perm_aws_cloudwatch_event_rule_every-1-minute_to_demo-postgres-api"
+  principal     = "events.amazonaws.com"
+  action        = "lambda:InvokeFunction"
+  source_arn    = aws_cloudwatch_event_rule.every-1-minute.arn
+}
+
+resource "aws_lambda_permission" "perm_aws_cloudwatch_event_rule_every-1-minute_to_demo-postgres-direct" {
+  function_name = aws_lambda_function.demo-postgres-direct.function_name
+  statement_id  = "perm_aws_cloudwatch_event_rule_every-1-minute_to_demo-postgres-direct"
+  principal     = "events.amazonaws.com"
+  action        = "lambda:InvokeFunction"
+  source_arn    = aws_cloudwatch_event_rule.every-1-minute.arn
 }
 
 
@@ -817,34 +818,27 @@ resource "aws_lambda_function" "demo-postgres-direct" {
 
 ### CATEGORY: INTEGRATION ###
 
-resource "aws_scheduler_schedule" "demo-direct-schedule" {
-  name                = "demo-direct-schedule"
-  description         = "Dispara a Lambda direta (Hub) a cada 1 minuto"
+resource "aws_cloudwatch_event_rule" "every-1-minute" {
+  name                = "every-1-minute"
   schedule_expression = "rate(1 minute)"
-  flexible_time_window {
-    mode = "OFF"
+  state               = "ENABLED"
+  tags = {
+    Name           = "every-1-minute"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
   }
-  target {
-    arn      = aws_lambda_function.demo-postgres-direct.arn
-    input    = "{\"action\":\"insert-direct\",\"source\":\"eventbridge-scheduler\",\"table\":\"demo_items\"}"
-    role_arn = aws_iam_role.demo-direct-schedule_role.arn
-  }
-  depends_on = [aws_iam_role_policy_attachment.scheduler_schedule_demo-direct-schedule_st_demo-postgres-state_attach]
 }
 
-resource "aws_scheduler_schedule" "demo-insert-schedule" {
-  name                = "demo-insert-schedule"
-  description         = "Dispara a Lambda a cada 1 minuto para inserir itens no RDS"
-  schedule_expression = "rate(1 minute)"
-  flexible_time_window {
-    mode = "OFF"
-  }
-  target {
-    arn      = aws_lambda_function.demo-postgres-api1.arn
-    input    = "{\"action\":\"insert\",\"source\":\"eventbridge-scheduler\",\"table\":\"demo_items\"}"
-    role_arn = aws_iam_role.demo-insert-schedule_role.arn
-  }
-  depends_on = [aws_iam_role_policy_attachment.scheduler_schedule_demo-insert-schedule_st_demo-postgres-state_attach]
+resource "aws_cloudwatch_event_target" "Target" {
+  arn        = aws_lambda_function.demo-postgres-direct.arn
+  rule       = aws_cloudwatch_event_rule.every-1-minute.name
+  depends_on = [aws_lambda_permission.perm_aws_cloudwatch_event_rule_every-1-minute_to_demo-postgres-direct]
+}
+
+resource "aws_cloudwatch_event_target" "Target1" {
+  arn        = aws_lambda_function.demo-postgres-api.arn
+  rule       = aws_cloudwatch_event_rule.every-1-minute.name
+  depends_on = [aws_lambda_permission.perm_aws_cloudwatch_event_rule_every-1-minute_to_demo-postgres-api]
 }
 
 
