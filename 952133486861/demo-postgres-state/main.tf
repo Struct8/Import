@@ -74,6 +74,12 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-api_st_demo-postgr
     resources = ["${aws_cloudwatch_log_group.demo-postgres-api-logs.arn}:*"]
   }
   statement {
+    sid       = "ReadDatabaseCredentials"
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = [one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)]
+  }
+  statement {
     sid       = "AllowAllResources"
     effect    = "Allow"
     actions   = ["ec2:AssignPrivateIpAddresses", "ec2:CreateNetworkInterface", "ec2:DeleteNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:UnassignPrivateIpAddresses"]
@@ -827,7 +833,7 @@ resource "aws_lambda_function" "demo-postgres-api" {
   description                    = "API Lambda que consome o banco demo-postgres"
   filename                       = data.archive_file.archive_struct8-hub_demo-postgres-api.output_path
   handler                        = "index.handler"
-  memory_size                    = 3008
+  memory_size                    = 2000
   publish                        = false
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.demo-postgres-api_role.arn
@@ -867,7 +873,7 @@ resource "aws_lambda_function" "demo-postgres-direct" {
   description                    = "Lambda que acessa o RDS DIRETO (sem proxy), rodando o Struct8 Hub"
   filename                       = data.archive_file.archive_struct8-hub_demo-postgres-direct.output_path
   handler                        = "index.handler"
-  memory_size                    = 3008
+  memory_size                    = 2000
   publish                        = false
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.demo-postgres-direct_role.arn
