@@ -21,16 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### ALTERNATE REGION PROVIDERS ###
-
-provider "aws" {
-  alias  = "us_east_2"
-  region = "us-east-2"
-}
-
-
-
-
 ### EXTERNAL REFERENCES ###
 
 data "aws_vpc" "vpc-grafana-lgtm-mon" {
@@ -51,9 +41,8 @@ data "aws_efs_file_system" "efs-grafana-lgtm-mon" {
   }
 }
 
-data "aws_s3_bucket" "grafanalabs-cf-templates" {
-  bucket   = "grafanalabs-cf-templates"
-  provider = aws.us_east_2
+data "aws_s3_bucket" "bucket-source-promptail-mon" {
+  bucket = "bucket-source-promptail-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
 }
 
 data "aws_instance" "ec2-nat-grafana-mon" {
@@ -294,13 +283,13 @@ data "aws_iam_policy_document" "lambda_function_lambda-promtail-mon_st_Stateless
     sid       = "AllowBucketLevelActions1"
     effect    = "Allow"
     actions   = ["s3:GetBucketLocation", "s3:ListBucket"]
-    resources = [data.aws_s3_bucket.grafanalabs-cf-templates.arn]
+    resources = [data.aws_s3_bucket.bucket-source-promptail-mon.arn]
   }
   statement {
     sid       = "AllowObjectReadOnly"
     effect    = "Allow"
     actions   = ["s3:GetObject"]
-    resources = ["${data.aws_s3_bucket.grafanalabs-cf-templates.arn}/*"]
+    resources = ["${data.aws_s3_bucket.bucket-source-promptail-mon.arn}/*"]
   }
   statement {
     sid       = "AllowAllResources"
@@ -1419,7 +1408,7 @@ resource "aws_lambda_function" "lambda-promtail-mon" {
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.lambda-promtail-mon_role.arn
   runtime                        = "provided.al2023"
-  s3_bucket                      = data.aws_s3_bucket.grafanalabs-cf-templates.bucket
+  s3_bucket                      = data.aws_s3_bucket.bucket-source-promptail-mon.bucket
   s3_key                         = "lambda-promtail/lambda-promtail-v1.0.1.zip"
   timeout                        = 60
   environment {
@@ -1454,12 +1443,12 @@ resource "aws_lambda_permission" "perm_aws_s3_bucket_alb-access-logs-mon_to_lamb
   source_arn    = aws_s3_bucket.alb-access-logs-mon.arn
 }
 
-resource "aws_lambda_permission" "perm_aws_s3_bucket_grafanalabs-cf-templates_to_lambda-promtail-mon" {
+resource "aws_lambda_permission" "perm_aws_s3_bucket_bucket-source-promptail-mon_to_lambda-promtail-mon" {
   function_name = aws_lambda_function.lambda-promtail-mon.function_name
-  statement_id  = "perm_aws_s3_bucket_grafanalabs-cf-templates_to_lambda-promtail-mon"
+  statement_id  = "perm_aws_s3_bucket_bucket-source-promptail-mon_to_lambda-promtail-mon"
   principal     = "s3.amazonaws.com"
   action        = "lambda:InvokeFunction"
-  source_arn    = data.aws_s3_bucket.grafanalabs-cf-templates.arn
+  source_arn    = data.aws_s3_bucket.bucket-source-promptail-mon.arn
 }
 
 resource "aws_appautoscaling_policy" "alloy-scale-cpu" {
