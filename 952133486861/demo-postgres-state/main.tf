@@ -71,7 +71,7 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-api_st_demo-postgr
     sid       = "AllowWriteLogs"
     effect    = "Allow"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["${aws_cloudwatch_log_group.demo-postgres-log1.arn}:*"]
+    resources = ["${aws_cloudwatch_log_group.demo-postgres-api-logs.arn}:*"]
   }
   statement {
     sid       = "AllowAllResources"
@@ -92,7 +92,7 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-direct_st_demo-pos
     sid       = "AllowWriteLogs"
     effect    = "Allow"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["${aws_cloudwatch_log_group.demo-postgres-log1.arn}:*"]
+    resources = ["${aws_cloudwatch_log_group.demo-postgres-direct-logs.arn}:*"]
   }
   statement {
     sid       = "AllowRDSSecretAccessdemopostgres"
@@ -779,6 +779,8 @@ cat << 'EOFENV' > /etc/struct8_env
 NAME="demo-cloudbeaver"
 REGION="${data.aws_region.current.region}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
+AWS_DB_INSTANCE_NAME_0="${aws_db_instance.demo-postgres.identifier}"
+AWS_DB_INSTANCE_ENGINE_0="${aws_db_instance.demo-postgres.engine}"
 AWS_DB_INSTANCE_ENDPOINT_0="${aws_db_instance.demo-postgres.endpoint}"
 AWS_DB_INSTANCE_DB_NAME_0="${aws_db_instance.demo-postgres.db_name}"
 AWS_DB_INSTANCE_SECRET_ARN_0="${one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)}"
@@ -877,6 +879,8 @@ resource "aws_lambda_function" "demo-postgres-direct" {
     NAME                         = "demo-postgres-direct"
     REGION                       = data.aws_region.current.region
     ACCOUNT                      = data.aws_caller_identity.current.account_id
+    AWS_DB_INSTANCE_NAME_0       = aws_db_instance.demo-postgres.identifier
+    AWS_DB_INSTANCE_ENGINE_0     = aws_db_instance.demo-postgres.engine
     AWS_DB_INSTANCE_ENDPOINT_0   = aws_db_instance.demo-postgres.endpoint
     AWS_DB_INSTANCE_DB_NAME_0    = aws_db_instance.demo-postgres.db_name
     AWS_DB_INSTANCE_SECRET_ARN_0 = one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)
@@ -951,6 +955,30 @@ resource "aws_cloudwatch_log_group" "LogGroup" {
   skip_destroy      = false
   tags = {
     Name           = "LogGroup"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "demo-postgres-api-logs" {
+  name              = "/aws/lambda/demo-postgres-api"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "demo-postgres-api-logs"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "demo-postgres-direct-logs" {
+  name              = "/aws/lambda/demo-postgres-direct"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "demo-postgres-direct-logs"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
