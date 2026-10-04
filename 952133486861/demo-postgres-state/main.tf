@@ -842,11 +842,15 @@ resource "aws_lambda_function" "demo-postgres-api" {
   timeout                        = 30
   environment {
     variables = {
-    NAME                    = "demo-postgres-api"
-    REGION                  = data.aws_region.current.region
-    ACCOUNT                 = data.aws_caller_identity.current.account_id
-    AWS_DB_PROXY_ENDPOINT_0 = aws_db_proxy.demo-postgres-proxy.endpoint
-    AWS_DB_PROXY_PORT_0     = "5432"
+    NAME                         = "demo-postgres-api"
+    REGION                       = data.aws_region.current.region
+    ACCOUNT                      = data.aws_caller_identity.current.account_id
+    AWS_DB_PROXY_NAME_0          = aws_db_proxy.demo-postgres-proxy.name
+    AWS_DB_PROXY_ENDPOINT_0      = aws_db_proxy.demo-postgres-proxy.endpoint
+    AWS_DB_PROXY_PORT_0          = "5432"
+    AWS_DB_PROXY_ENGINE_FAMILY_0 = "POSTGRESQL"
+    AWS_DB_PROXY_SECRET_ARN_0    = tolist(aws_db_proxy.demo-postgres-proxy.auth)[0].secret_arn
+    AWS_DB_PROXY_DB_NAME_0       = "appdb"
   }
   }
   tags = {
