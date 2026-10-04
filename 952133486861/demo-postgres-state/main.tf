@@ -499,7 +499,7 @@ resource "aws_db_instance" "demo-postgres1" {
   copy_tags_to_snapshot           = true
   delete_automated_backups        = false
   deletion_protection             = true
-  enabled_cloudwatch_logs_exports = ["error"]
+  enabled_cloudwatch_logs_exports = ["postgresql"]
   engine                          = "postgres"
   engine_lifecycle_support        = "open-source-rds-extended-support-disabled"
   engine_version                  = "18"
@@ -739,7 +739,7 @@ resource "aws_scheduler_schedule" "demo-insert-schedule" {
 ### CATEGORY: MONITORING ###
 
 resource "aws_cloudwatch_log_group" "demo-postgres-log1" {
-  name              = "/aws/rds/instance/demo-postgres1/error"
+  name              = "/aws/rds/instance/demo-postgres1/postgresql"
   log_group_class   = "STANDARD"
   retention_in_days = 30
   skip_destroy      = false
