@@ -132,6 +132,66 @@ resource "aws_iam_policy" "scheduler_schedule_demo-insert-schedule_st_demo-postg
   policy      = data.aws_iam_policy_document.scheduler_schedule_demo-insert-schedule_st_demo-postgres-state_doc.json
 }
 
+data "aws_iam_policy_document" "Debug_debug_permissions" {
+  statement {
+    sid       = "SendToTaggedInstancesOnly"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["n2L5m9CkjzH7IUewAgbOZ"]
+      variable = "aws:ResourceTag/Struct8Debug"
+    }
+  }
+  statement {
+    sid       = "PinnedDocumentOnly"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+  }
+  statement {
+    sid       = "ReadOwnResults"
+    effect    = "Allow"
+    actions   = ["ssm:GetCommandInvocation", "ssm:DescribeInstanceInformation"]
+    resources = ["*"]
+  }
+  statement {
+    sid       = "CancelOnTaggedInstancesOnly"
+    effect    = "Allow"
+    actions   = ["ssm:CancelCommand"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["n2L5m9CkjzH7IUewAgbOZ"]
+      variable = "aws:ResourceTag/Struct8Debug"
+    }
+  }
+  statement {
+    sid       = "RunShellScriptDocument"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug_debug_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
+      type        = "AWS"
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "Struct8Debug-Debug" {
+  name                 = "Struct8Debug-n2L5m9CkjzH7IUewAgbOZ"
+  assume_role_policy   = data.aws_iam_policy_document.Debug_debug_trust.json
+  max_session_duration = 3600
+}
+
 resource "aws_iam_role" "demo-cloudbeaver_role" {
   name = "demo-cloudbeaver_role"
   assume_role_policy = jsonencode({
@@ -271,6 +331,17 @@ resource "aws_iam_role" "role_rds_proxy_demo-postgres-proxy" {
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_iam_role_policy" "Struct8Debug-Debug_policy" {
+  name   = "Struct8Debug-n2L5m9CkjzH7IUewAgbOZ-policy"
+  policy = data.aws_iam_policy_document.Debug_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-Debug.id
+}
+
+resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_demo-cloudbeaver_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.demo-cloudbeaver_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "db_proxy_demo-postgres-proxy_st_demo-postgres-state_attach" {
@@ -618,6 +689,7 @@ EOFUData
     volume_type = "gp3"
   }
   tags = {
+    Struct8Debug   = "n2L5m9CkjzH7IUewAgbOZ"
     Name           = "demo-cloudbeaver"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
