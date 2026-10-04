@@ -21,10 +21,30 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### ALTERNATE REGION PROVIDERS ###
+
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
+
+
+
 ### SYSTEM DATA SOURCES ###
 
 data "aws_route53_zone" "Cloudman" {
   name = "cloudman.pro"
+}
+
+
+
+
+### EXTERNAL REFERENCES ###
+
+data "aws_s3_bucket" "flowlogs-bucket" {
+  bucket   = "flowlogs-bucket-${data.aws_caller_identity.current.account_id}-us-east-1-an"
+  provider = aws.us_east_1
 }
 
 
@@ -315,6 +335,18 @@ resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_ingress_tcp_80
   protocol          = "tcp"
   to_port           = 80
   type              = "ingress"
+}
+
+resource "aws_flow_log" "FlowLog-mon" {
+  vpc_id               = aws_vpc.vpc-grafana-lgtm-mon.id
+  log_destination      = data.aws_s3_bucket.flowlogs-bucket.arn
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+  tags = {
+    Name           = "FlowLog-mon"
+    State          = "Platform-mon"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_lb" "alb-grafana-mon" {
