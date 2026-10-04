@@ -21,13 +21,17 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### EXTERNAL REFERENCES ###
+### ALTERNATE REGION PROVIDERS ###
 
-data "aws_efs_file_system" "efs-grafana-lgtm-mon" {
-  tags = {
-    Name = "efs-grafana-lgtm-mon"
-  }
+provider "aws" {
+  alias  = "us_east_2"
+  region = "us-east-2"
 }
+
+
+
+
+### EXTERNAL REFERENCES ###
 
 data "aws_vpc" "vpc-grafana-lgtm-mon" {
   filter {
@@ -39,6 +43,17 @@ data "aws_vpc" "vpc-grafana-lgtm-mon" {
 data "aws_lb_listener" "listener-https1-mon" {
   load_balancer_arn = data.aws_lb.alb-grafana-mon.arn
   port              = 443
+}
+
+data "aws_efs_file_system" "efs-grafana-lgtm-mon" {
+  tags = {
+    Name = "efs-grafana-lgtm-mon"
+  }
+}
+
+data "aws_s3_bucket" "grafanalabs-cf-templates" {
+  bucket   = "grafanalabs-cf-templates"
+  provider = aws.us_east_2
 }
 
 data "aws_instance" "ec2-nat-grafana-mon" {
@@ -262,6 +277,45 @@ resource "aws_iam_policy" "ecs_task_definition_tempo-mon_st_Stateless-mon" {
   policy      = data.aws_iam_policy_document.ecs_task_definition_tempo-mon_st_Stateless-mon_doc.json
 }
 
+data "aws_iam_policy_document" "lambda_function_lambda-promtail-mon_st_Stateless-mon_doc" {
+  statement {
+    sid       = "AllowBucketLevelActions"
+    effect    = "Allow"
+    actions   = ["s3:GetBucketLocation", "s3:ListBucket"]
+    resources = [aws_s3_bucket.alb-access-logs-mon.arn]
+  }
+  statement {
+    sid       = "AllowObjectCRUD"
+    effect    = "Allow"
+    actions   = ["s3:DeleteObject", "s3:GetObject", "s3:PutObject"]
+    resources = ["${aws_s3_bucket.alb-access-logs-mon.arn}/*"]
+  }
+  statement {
+    sid       = "AllowBucketLevelActions1"
+    effect    = "Allow"
+    actions   = ["s3:GetBucketLocation", "s3:ListBucket"]
+    resources = [data.aws_s3_bucket.grafanalabs-cf-templates.arn]
+  }
+  statement {
+    sid       = "AllowObjectReadOnly"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${data.aws_s3_bucket.grafanalabs-cf-templates.arn}/*"]
+  }
+  statement {
+    sid       = "AllowAllResources"
+    effect    = "Allow"
+    actions   = ["ec2:AssignPrivateIpAddresses", "ec2:CreateNetworkInterface", "ec2:DeleteNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:UnassignPrivateIpAddresses"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_lambda-promtail-mon_st_Stateless-mon" {
+  name        = "lambda_function_lambda-promtail-mon_st_Stateless-mon"
+  description = "Access Policy for lambda-promtail-mon"
+  policy      = data.aws_iam_policy_document.lambda_function_lambda-promtail-mon_st_Stateless-mon_doc.json
+}
+
 data "aws_iam_policy_document" "Debug-asg-mon_debug_permissions" {
   statement {
     sid       = "SendToTaggedInstancesOnly"
@@ -413,6 +467,30 @@ resource "aws_iam_role" "execution_role_ecs_tempo-mon" {
   path                  = "/"
   tags = {
     Name           = "execution_role_ecs_tempo-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role" "lambda-promtail-mon_role" {
+  name = "lambda-promtail-mon_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "lambda-promtail-mon_role"
     State          = "Stateless-mon"
     Struct8Creator = "Contato Struct"
   }
@@ -594,6 +672,11 @@ resource "aws_iam_role_policy_attachment" "ecs_task_definition_tempo-mon_st_Stat
   role       = aws_iam_role.task_role_ecs_tempo-mon.name
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_function_lambda-promtail-mon_st_Stateless-mon_attach" {
+  policy_arn = aws_iam_policy.lambda_function_lambda-promtail-mon_st_Stateless-mon.arn
+  role       = aws_iam_role.lambda-promtail-mon_role.name
+}
+
 resource "aws_iam_role_policy_attachment" "service_role_AmazonEC2ContainerServiceforEC2Role_to_lgtm-ecs-asg-mon_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
   role       = aws_iam_role.lgtm-ecs-asg-mon_role.name
@@ -668,6 +751,17 @@ resource "aws_route_table_association" "aws_route_table_association_snet_app_1b_
   subnet_id      = aws_subnet.snet-app-1b-mon.id
 }
 
+resource "aws_security_group" "SG-mon" {
+  name                   = "SG-mon"
+  vpc_id                 = data.aws_vpc.vpc-grafana-lgtm-mon.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "SG-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_security_group" "autoscaling_group_lgtm-ecs-asg-mon_group" {
   name                   = "autoscaling_group_lgtm-ecs-asg-mon_group"
   vpc_id                 = data.aws_vpc.vpc-grafana-lgtm-mon.id
@@ -717,6 +811,25 @@ resource "aws_security_group" "ecs_task_definition_tempo-mon_group" {
   revoke_rules_on_delete = false
 }
 
+resource "aws_security_group_rule" "rule_SG_mon_egress_all_protocols" {
+  security_group_id = aws_security_group.SG-mon.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_SG_mon_to_ecs_task_definition_loki_mon_group_tcp_3100" {
+  security_group_id        = aws_security_group.ecs_task_definition_loki-mon_group.id
+  source_security_group_id = aws_security_group.SG-mon.id
+  description              = "lambda-promtail to loki push-api"
+  from_port                = 3100
+  protocol                 = "tcp"
+  to_port                  = 3100
+  type                     = "ingress"
+}
+
 resource "aws_security_group_rule" "rule_autoscaling_group_lgtm_ecs_asg_mon_group_egress_all_protocols" {
   security_group_id = aws_security_group.autoscaling_group_lgtm-ecs-asg-mon_group.id
   cidr_blocks       = ["0.0.0.0/0"]
@@ -737,16 +850,6 @@ resource "aws_security_group_rule" "rule_ecs_task_definition_alloy_mon_group_egr
 
 resource "aws_security_group_rule" "rule_ecs_task_definition_alloy_mon_group_to_ecs_task_definition_loki_mon_group_tcp_3100" {
   security_group_id        = aws_security_group.ecs_task_definition_loki-mon_group.id
-  source_security_group_id = aws_security_group.ecs_task_definition_alloy-mon_group.id
-  description              = "alloy to loki (logs push, Service Connect) on 3100"
-  from_port                = 3100
-  protocol                 = "tcp"
-  to_port                  = 3100
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_ecs_task_definition_alloy_mon_group_to_ecs_task_definition_tempo_mon_group_tcp_3100" {
-  security_group_id        = aws_security_group.ecs_task_definition_tempo-mon_group.id
   source_security_group_id = aws_security_group.ecs_task_definition_alloy-mon_group.id
   description              = "alloy to loki (logs push, Service Connect) on 3100"
   from_port                = 3100
@@ -786,16 +889,6 @@ resource "aws_security_group_rule" "rule_ecs_task_definition_grafana_mon_group_e
 
 resource "aws_security_group_rule" "rule_ecs_task_definition_grafana_mon_group_to_ecs_task_definition_loki_mon_group_tcp_3100" {
   security_group_id        = aws_security_group.ecs_task_definition_loki-mon_group.id
-  source_security_group_id = aws_security_group.ecs_task_definition_grafana-mon_group.id
-  description              = "grafana to loki (logs query, Service Connect) on 3100"
-  from_port                = 3100
-  protocol                 = "tcp"
-  to_port                  = 3100
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_ecs_task_definition_grafana_mon_group_to_ecs_task_definition_tempo_mon_group_tcp_3100" {
-  security_group_id        = aws_security_group.ecs_task_definition_tempo-mon_group.id
   source_security_group_id = aws_security_group.ecs_task_definition_grafana-mon_group.id
   description              = "grafana to loki (logs query, Service Connect) on 3100"
   from_port                = 3100
@@ -882,18 +975,28 @@ resource "aws_security_group_rule" "rule_ecs_task_definition_tempo_mon_group_ing
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_to_ecs_task_definition_grafana_mon_group_tcp_3000" {
-  security_group_id        = aws_security_group.ecs_task_definition_grafana-mon_group.id
+resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_to_ecs_task_definition_alloy_mon_group_tcp_12345" {
+  security_group_id        = aws_security_group.ecs_task_definition_alloy-mon_group.id
   source_security_group_id = data.aws_security_group.lb_alb-grafana-mon_group.id
-  description              = "Allow from lb_alb-grafana-mon_group (tcp:3000-3000)"
-  from_port                = 3000
+  description              = "ALB health check to Alloy UI /-/ready"
+  from_port                = 12345
   protocol                 = "tcp"
-  to_port                  = 3000
+  to_port                  = 12345
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_to_ecs_task_definition_tempo_mon_group_tcp_3000" {
-  security_group_id        = aws_security_group.ecs_task_definition_tempo-mon_group.id
+resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_to_ecs_task_definition_alloy_mon_group_tcp_4318" {
+  security_group_id        = aws_security_group.ecs_task_definition_alloy-mon_group.id
+  source_security_group_id = data.aws_security_group.lb_alb-grafana-mon_group.id
+  description              = "ALB to Alloy gateway OTLP/HTTP"
+  from_port                = 4318
+  protocol                 = "tcp"
+  to_port                  = 4318
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_to_ecs_task_definition_grafana_mon_group_tcp_3000" {
+  security_group_id        = aws_security_group.ecs_task_definition_grafana-mon_group.id
   source_security_group_id = data.aws_security_group.lb_alb-grafana-mon_group.id
   description              = "Allow from lb_alb-grafana-mon_group (tcp:3000-3000)"
   from_port                = 3000
@@ -965,6 +1068,30 @@ resource "aws_service_discovery_service" "tempo-ring-mon" {
   }
 }
 
+resource "aws_lb_listener_rule" "rule-alloy-otlp-host-mon" {
+  action {
+    order = 1
+    type  = "forward"
+    forward {
+      target_group {
+        arn = aws_lb_target_group.tg-alloy-otlp-mon.arn
+      }
+    }
+  }
+  condition {
+    host_header {
+      values = ["otel.cloudman.pro"]
+    }
+  }
+  listener_arn = data.aws_lb_listener.listener-https1-mon.arn
+  priority     = 20
+  tags = {
+    Name           = "rule-alloy-otlp-host-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_lb_listener_rule" "rule-grafana-host-mon" {
   action {
     order = 1
@@ -986,6 +1113,52 @@ resource "aws_lb_listener_rule" "rule-grafana-host-mon" {
     Name           = "rule-grafana-host-mon"
     State          = "Stateless-mon"
     Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_lb_target_group" "tg-alloy-otlp-mon" {
+  name                              = "tg-alloy-otlp-mon"
+  vpc_id                            = data.aws_vpc.vpc-grafana-lgtm-mon.id
+  deregistration_delay              = "30"
+  ip_address_type                   = "ipv4"
+  load_balancing_algorithm_type     = "round_robin"
+  load_balancing_anomaly_mitigation = "off"
+  load_balancing_cross_zone_enabled = "use_load_balancer_configuration"
+  port                              = 4318
+  protocol                          = "HTTP"
+  protocol_version                  = "HTTP1"
+  slow_start                        = 0
+  target_type                       = "ip"
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    interval            = 30
+    matcher             = "200"
+    path                = "/-/ready"
+    port                = "12345"
+    protocol            = "HTTP"
+    timeout             = 5
+    unhealthy_threshold = 3
+  }
+  stickiness {
+    cookie_duration = 86400
+    enabled         = false
+    type            = "lb_cookie"
+  }
+  tags = {
+    Name           = "tg-alloy-otlp-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
+  target_group_health {
+    dns_failover {
+      minimum_healthy_targets_count      = "1"
+      minimum_healthy_targets_percentage = "off"
+    }
+    unhealthy_state_routing {
+      minimum_healthy_targets_count      = 1
+      minimum_healthy_targets_percentage = "off"
+    }
   }
 }
 
@@ -1039,6 +1212,60 @@ resource "aws_lb_target_group" "tg-grafana-mon" {
 
 
 ### CATEGORY: STORAGE ###
+
+resource "aws_s3_bucket" "alb-access-logs-mon" {
+  bucket              = "alb-access-logs-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = true
+  object_lock_enabled = false
+  tags = {
+    Name           = "alb-access-logs-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_s3_bucket_notification" "alb-logs-notify-mon" {
+  bucket = aws_s3_bucket.alb-access-logs-mon.id
+  lambda_function {
+    events              = ["s3:ObjectCreated:*"]
+    lambda_function_arn = aws_lambda_function.lambda-promtail-mon.arn
+  }
+  depends_on = [aws_lambda_permission.perm_aws_s3_bucket_alb-access-logs-mon_to_lambda-promtail-mon]
+}
+
+resource "aws_s3_bucket_ownership_controls" "alb-access-logs-mon_controls" {
+  bucket = aws_s3_bucket.alb-access-logs-mon.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "alb-access-logs-mon_block" {
+  block_public_acls       = true
+  block_public_policy     = true
+  bucket                  = aws_s3_bucket.alb-access-logs-mon.id
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "alb-access-logs-mon_configuration" {
+  bucket = aws_s3_bucket.alb-access-logs-mon.id
+  rule {
+    bucket_key_enabled = true
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "alb-access-logs-mon_versioning" {
+  bucket = aws_s3_bucket.alb-access-logs-mon.id
+  versioning_configuration {
+    mfa_delete = "Disabled"
+    status     = "Suspended"
+  }
+}
 
 resource "aws_efs_access_point" "ap_grafana-mon_efs-grafana-lgtm-mon" {
   file_system_id = data.aws_efs_file_system.efs-grafana-lgtm-mon.id
@@ -1181,6 +1408,58 @@ resource "aws_autoscaling_group" "lgtm-ecs-asg-mon" {
     propagate_at_launch = true
     value               = "Contato Struct"
   }
+}
+
+resource "aws_lambda_function" "lambda-promtail-mon" {
+  function_name                  = "lambda-promtail-mon"
+  architectures                  = ["x86_64"]
+  handler                        = "bootstrap"
+  memory_size                    = 256
+  publish                        = false
+  reserved_concurrent_executions = -1
+  role                           = aws_iam_role.lambda-promtail-mon_role.arn
+  runtime                        = "provided.al2023"
+  s3_bucket                      = data.aws_s3_bucket.grafanalabs-cf-templates.bucket
+  s3_key                         = "lambda-promtail/lambda-promtail-v1.0.1.zip"
+  timeout                        = 60
+  environment {
+    variables = {
+    WRITE_ADDRESS                  = "http://${aws_service_discovery_service.loki-ring-mon.name}.${aws_service_discovery_private_dns_namespace.lgtm-ring-mon.name}:3100/loki/api/v1/push"
+    KEEP_STREAM                    = true
+    BATCH_SIZE                     = "131072"
+    NAME                           = "lambda-promtail-mon"
+    REGION                         = data.aws_region.current.region
+    ACCOUNT                        = data.aws_caller_identity.current.account_id
+    AWS_S3_BUCKET_NAME_0           = "alb-access-logs-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+    AWS_ECS_TASK_DEFINITION_NAME_0 = "loki-mon"
+  }
+  }
+  tags = {
+    Name           = "lambda-promtail-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
+  vpc_config {
+    security_group_ids = [aws_security_group.SG-mon.id]
+    subnet_ids         = [aws_subnet.snet-app-1a-mon.id, aws_subnet.snet-app-1b-mon.id]
+  }
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_lambda-promtail-mon_st_Stateless-mon_attach]
+}
+
+resource "aws_lambda_permission" "perm_aws_s3_bucket_alb-access-logs-mon_to_lambda-promtail-mon" {
+  function_name = aws_lambda_function.lambda-promtail-mon.function_name
+  statement_id  = "perm_aws_s3_bucket_alb-access-logs-mon_to_lambda-promtail-mon"
+  principal     = "s3.amazonaws.com"
+  action        = "lambda:InvokeFunction"
+  source_arn    = aws_s3_bucket.alb-access-logs-mon.arn
+}
+
+resource "aws_lambda_permission" "perm_aws_s3_bucket_grafanalabs-cf-templates_to_lambda-promtail-mon" {
+  function_name = aws_lambda_function.lambda-promtail-mon.function_name
+  statement_id  = "perm_aws_s3_bucket_grafanalabs-cf-templates_to_lambda-promtail-mon"
+  principal     = "s3.amazonaws.com"
+  action        = "lambda:InvokeFunction"
+  source_arn    = data.aws_s3_bucket.grafanalabs-cf-templates.arn
 }
 
 resource "aws_appautoscaling_policy" "alloy-scale-cpu" {
@@ -1371,17 +1650,34 @@ resource "aws_ecs_service" "alloy-mon_service" {
   lifecycle {
     ignore_changes = [desired_count]
   }
+  load_balancer {
+    container_name   = "alloy"
+    container_port   = 4318
+    target_group_arn = aws_lb_target_group.tg-alloy-otlp-mon.arn
+  }
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.autoscaling_group_lgtm-ecs-asg-mon_group.id, aws_security_group.ecs_task_definition_alloy-mon_group.id]
     subnets          = [aws_subnet.snet-app-1a-mon.id, aws_subnet.snet-app-1b-mon.id]
   }
-  ordered_placement_strategy {
-    field = "cpu"
-    type  = "binpack"
-  }
   service_connect_configuration {
     enabled = true
+    service {
+      discovery_name = "alloy"
+      port_name      = "alloy-otlp-grpc"
+      client_alias {
+        dns_name = "alloy"
+        port     = 4317
+      }
+    }
+    service {
+      discovery_name = "alloy-http"
+      port_name      = "alloy-otlp-http"
+      client_alias {
+        dns_name = "alloy-http"
+        port     = 4318
+      }
+    }
   }
   tags = {
     Name           = "alloy-mon_service"
@@ -1543,6 +1839,19 @@ locals {
         protocol      = "tcp"
         containerPort = 12345
         hostPort      = 12345
+        name          = "alloy-ui"
+      },
+      {
+        protocol      = "tcp"
+        containerPort = 4317
+        hostPort      = 4317
+        name          = "alloy-otlp-grpc"
+      },
+      {
+        protocol      = "tcp"
+        containerPort = 4318
+        hostPort      = 4318
+        name          = "alloy-otlp-http"
       }
     ]
     environment = [
@@ -1579,10 +1888,15 @@ locals {
         value = aws_prometheus_workspace.lgtm-amp-mon.id
       }
     ]
-    mountPoints            = []
-    systemControls         = []
-    volumesFrom            = []
-    command                = ["run", "/etc/alloy/config.alloy"]
+    mountPoints    = []
+    systemControls = []
+    volumesFrom    = []
+    command = [
+      <<EOF
+AMP_RW = "$${AWS_PROMETHEUS_WORKSPACE_ENDPOINT_0}api/v1/remote_write"; printf '%s\n' 'logging { level = "info" format = "logfmt" }' 'otelcol.receiver.otlp "in" {' '  grpc { endpoint = "0.0.0.0:4317" }' '  http { endpoint = "0.0.0.0:4318" }' '  output {' '    metrics = [otelcol.processor.batch.default.input]' '    logs    = [otelcol.processor.batch.default.input]' '    traces  = [otelcol.processor.batch.default.input]' '  }' '}' 'otelcol.processor.batch "default" {' '  output {' '    metrics = [otelcol.exporter.prometheus.toamp.input]' '    logs    = [otelcol.exporter.loki.tolokicvt.input]' '    traces  = [otelcol.exporter.otlp.totempo.input]' '  }' '}' 'otelcol.exporter.otlp "totempo" {' '  client { endpoint = "tempo:4317" tls { insecure = true } }' '}' 'otelcol.exporter.loki "tolokicvt" {' '  forward_to = [loki.write.toloki.receiver]' '}' 'loki.write "toloki" {' '  endpoint { url = "http://loki:3100/loki/api/v1/push" }' '}' 'otelcol.exporter.prometheus "toamp" {' '  forward_to = [prometheus.remote_write.toamp.receiver]' '}' "prometheus.remote_write \"toamp\" {" "  endpoint {" "    url = \"$AMP_RW\"" "    sigv4 { region = \"$REGION\" }" "  }" "}" > /etc/alloy/config.alloy && exec /bin/alloy run /etc/alloy/config.alloy --server.http.listen-addr=0.0.0.0:12345 --storage.path=/tmp/alloy
+      EOF
+    ]
+    entryPoint             = ["/bin/sh", "-c"]
     privileged             = false
     readonlyRootFilesystem = false
     logConfiguration = {
@@ -1796,7 +2110,7 @@ locals {
     mountPoints            = []
     systemControls         = []
     volumesFrom            = []
-    command                = ["IP=$(wget -qO- \"$ECS_CONTAINER_METADATA_URI_V4\" | sed -n 's/.*\"IPv4Addresses\":\\[\"\\([0-9.]*\\)\".*/\\1/p'); [ -n \"$IP\" ] || IP=$(hostname -i | cut -d' ' -f1); echo \"loki advertise=$IP join=$RING_DNS\"; printf '%s\\n' 'auth_enabled: false' 'server:' '  http_listen_port: 3100' '  grpc_listen_port: 9095' 'common:' '  path_prefix: /tmp/loki' '  replication_factor: 1' \"  instance_addr: $IP\" '  ring:' '    kvstore:' '      store: memberlist' '  storage:' '    s3:' \"      bucketnames: $AWS_S3_BUCKET_NAME_0\" \"      region: $REGION\" 'memberlist:' \"  advertise_addr: $IP\" '  bind_port: 7946' '  join_members:' \"    - dns+$RING_DNS:7946\" '  rejoin_interval: 30s' '  abort_if_cluster_join_fails: false' 'ingester:' '  wal:' '    flush_on_shutdown: true' 'schema_config:' '  configs:' '    - from: 2024-01-01' '      store: tsdb' '      object_store: s3' '      schema: v13' '      index:' '        prefix: index_' '        period: 24h' 'compactor:' '  working_directory: /tmp/loki/compactor' > /tmp/loki.yaml && exec /usr/bin/loki -config.file=/tmp/loki.yaml"]
+    command                = ["IP=$(wget -qO- \"$ECS_CONTAINER_METADATA_URI_V4\" | sed -n 's/.*\"IPv4Addresses\":\\[\"\\([0-9.]*\\)\".*/\\1/p'); [ -n \"$IP\" ] || IP=$(hostname -i | cut -d' ' -f1); echo \"loki advertise=$IP join=$RING_DNS\"; printf '%s\\n' 'auth_enabled: false' 'server:' '  http_listen_port: 3100' '  grpc_listen_port: 9095' 'common:' '  path_prefix: /tmp/loki' '  replication_factor: 1' \"  instance_addr: $IP\" '  ring:' '    kvstore:' '      store: memberlist' '  storage:' '    s3:' \"      bucketnames: $AWS_S3_BUCKET_NAME_0\" \"      region: $REGION\" 'memberlist:' \"  advertise_addr: $IP\" '  bind_port: 7946' '  join_members:' \"    - dns+$RING_DNS:7946\" '  rejoin_interval: 30s' '  abort_if_cluster_join_fails: false' 'ingester:' '  wal:' '    flush_on_shutdown: true' 'schema_config:' '  configs:' '    - from: 2024-01-01' '      store: tsdb' '      object_store: s3' '      schema: v13' '      index:' '        prefix: index_' '        period: 24h' 'limits_config:' '  retention_period: 2160h' 'compactor:' '  working_directory: /tmp/loki/compactor' '  retention_enabled: true' '  delete_request_store: s3' '  retention_delete_delay: 2h' > /tmp/loki.yaml && exec /usr/bin/loki -config.file=/tmp/loki.yaml"]
     entryPoint             = ["/bin/sh", "-c"]
     privileged             = false
     readonlyRootFilesystem = false
@@ -1900,7 +2214,7 @@ locals {
     mountPoints            = []
     systemControls         = []
     volumesFrom            = []
-    command                = ["IP=$(wget -qO- \"$ECS_CONTAINER_METADATA_URI_V4\" | sed -n 's/.*\"IPv4Addresses\":\\[\"\\([0-9.]*\\)\".*/\\1/p'); [ -n \"$IP\" ] || IP=$(hostname -i | cut -d' ' -f1); echo \"tempo advertise=$IP join=$RING_DNS\"; printf '%s\\n' 'server:' '  http_listen_port: 3200' '  grpc_listen_port: 9095' 'distributor:' '  ring:' '    kvstore:' '      store: memberlist' \"    instance_addr: $IP\" '  receivers:' '    otlp:' '      protocols:' '        grpc:' '          endpoint: 0.0.0.0:4317' '        http:' '          endpoint: 0.0.0.0:4318' 'ingester:' '  lifecycler:' \"    address: $IP\" '    ring:' '      kvstore:' '        store: memberlist' '      replication_factor: 1' '  flush_all_on_shutdown: true' 'compactor:' '  ring:' '    kvstore:' '      store: memberlist' \"    instance_addr: $IP\" 'metrics_generator:' '  ring:' '    kvstore:' '      store: memberlist' \"    instance_addr: $IP\" '  storage:' '    path: /var/tempo/generator/wal' 'memberlist:' \"  advertise_addr: $IP\" '  bind_port: 7946' '  join_members:' \"    - dns+$RING_DNS:7946\" '  rejoin_interval: 30s' '  abort_if_cluster_join_fails: false' 'querier:' '  frontend_worker:' '    frontend_address: 127.0.0.1:9095' 'storage:' '  trace:' '    backend: s3' '    s3:' \"      bucket: $AWS_S3_BUCKET_NAME_0\" \"      endpoint: s3.$REGION.amazonaws.com\" \"      region: $REGION\" '    wal:' '      path: /var/tempo/wal' '    local:' '      path: /var/tempo/blocks' > /tmp/tempo.yaml && exec /tempo -config.file=/tmp/tempo.yaml -target=scalable-single-binary"]
+    command                = ["IP=$(wget -qO- \"$ECS_CONTAINER_METADATA_URI_V4\" | sed -n 's/.*\"IPv4Addresses\":\\[\"\\([0-9.]*\\)\".*/\\1/p'); [ -n \"$IP\" ] || IP=$(hostname -i | cut -d' ' -f1); echo \"tempo advertise=$IP join=$RING_DNS\"; printf '%s\\n' 'server:' '  http_listen_port: 3200' '  grpc_listen_port: 9095' 'distributor:' '  ring:' '    kvstore:' '      store: memberlist' \"    instance_addr: $IP\" '  receivers:' '    otlp:' '      protocols:' '        grpc:' '          endpoint: 0.0.0.0:4317' '        http:' '          endpoint: 0.0.0.0:4318' 'ingester:' '  lifecycler:' \"    address: $IP\" '    ring:' '      kvstore:' '        store: memberlist' '      replication_factor: 1' '  flush_all_on_shutdown: true' 'compactor:' '  ring:' '    kvstore:' '      store: memberlist' \"    instance_addr: $IP\" '  compaction:' '    block_retention: 2160h' 'metrics_generator:' '  ring:' '    kvstore:' '      store: memberlist' \"    instance_addr: $IP\" '  storage:' '    path: /var/tempo/generator/wal' 'memberlist:' \"  advertise_addr: $IP\" '  bind_port: 7946' '  join_members:' \"    - dns+$RING_DNS:7946\" '  rejoin_interval: 30s' '  abort_if_cluster_join_fails: false' 'querier:' '  frontend_worker:' '    frontend_address: 127.0.0.1:9095' 'storage:' '  trace:' '    backend: s3' '    s3:' \"      bucket: $AWS_S3_BUCKET_NAME_0\" \"      endpoint: s3.$REGION.amazonaws.com\" \"      region: $REGION\" '    wal:' '      path: /var/tempo/wal' '    local:' '      path: /var/tempo/blocks' > /tmp/tempo.yaml && exec /tempo -config.file=/tmp/tempo.yaml -target=scalable-single-binary"]
     entryPoint             = ["/bin/sh", "-c"]
     privileged             = false
     readonlyRootFilesystem = false
