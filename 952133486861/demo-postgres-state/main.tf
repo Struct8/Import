@@ -333,10 +333,44 @@ resource "aws_iam_role_policy_attachment" "service_role_AmazonRDSEnhancedMonitor
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "VPC2" {
-  cidr_block       = "10.8.0.0/16"
-  instance_tenancy = "default"
+  cidr_block           = "10.8.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  instance_tenancy     = "default"
   tags = {
     Name           = "VPC2"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_vpc_endpoint" "ep-cloudwatch_LOGS" {
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.logs"
+  vpc_id              = aws_vpc.VPC2.id
+  ip_address_type     = "ipv4"
+  private_dns_enabled = true
+  security_group_ids  = [aws_security_group.sg_vpce_ep-cloudwatch.id]
+  subnet_ids          = [aws_subnet.demo-postgres-private-b.id, aws_subnet.demo-postgres-private-a.id]
+  vpc_endpoint_type   = "Interface"
+  tags = {
+    Name           = "ep-cloudwatch"
+    DifName        = "ep-cloudwatch_LOGS"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_vpc_endpoint" "ep-secret-manager_SECRETSMANAGER" {
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.secretsmanager"
+  vpc_id              = aws_vpc.VPC2.id
+  ip_address_type     = "ipv4"
+  private_dns_enabled = true
+  security_group_ids  = [aws_security_group.sg_vpce_ep-secret-manager.id]
+  subnet_ids          = [aws_subnet.demo-postgres-private-b.id, aws_subnet.demo-postgres-private-a.id]
+  vpc_endpoint_type   = "Interface"
+  tags = {
+    Name           = "ep-secret-manager"
+    DifName        = "ep-secret-manager_SECRETSMANAGER"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
@@ -463,6 +497,30 @@ resource "aws_security_group" "instance_demo-cloudbeaver_group" {
   }
 }
 
+resource "aws_security_group" "sg_vpce_ep-cloudwatch" {
+  name        = "vpce-sg-ep-cloudwatch"
+  vpc_id      = aws_vpc.VPC2.id
+  description = "Auto-generated SG for ep-cloudwatch"
+  tags = {
+    Name           = "ep-cloudwatch"
+    DifName        = "sg_vpce_ep-cloudwatch"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "sg_vpce_ep-secret-manager" {
+  name        = "vpce-sg-ep-secret-manager"
+  vpc_id      = aws_vpc.VPC2.id
+  description = "Auto-generated SG for ep-secret-manager"
+  tags = {
+    Name           = "ep-secret-manager"
+    DifName        = "sg_vpce_ep-secret-manager"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_security_group_rule" "rule_db_instance_demo_postgres_group_egress_all_protocols" {
   security_group_id = aws_security_group.db_instance_demo-postgres_group.id
   cidr_blocks       = ["0.0.0.0/0"]
@@ -557,6 +615,46 @@ resource "aws_security_group_rule" "rule_instance_demo_cloudbeaver_group_to_db_i
   type                     = "ingress"
 }
 
+resource "aws_security_group_rule" "rule_sg_vpce_ep_cloudwatch_egress_all_protocols" {
+  security_group_id = aws_security_group.sg_vpce_ep-cloudwatch.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow all outbound traffic"
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_sg_vpce_ep_cloudwatch_ingress_tcp_443" {
+  security_group_id = aws_security_group.sg_vpce_ep-cloudwatch.id
+  cidr_blocks       = ["10.8.0.0/16"]
+  description       = "Allow HTTPS from VPC"
+  from_port         = 443
+  protocol          = "tcp"
+  to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_sg_vpce_ep_secret_manager_egress_all_protocols" {
+  security_group_id = aws_security_group.sg_vpce_ep-secret-manager.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow all outbound traffic"
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_sg_vpce_ep_secret_manager_ingress_tcp_443" {
+  security_group_id = aws_security_group.sg_vpce_ep-secret-manager.id
+  cidr_blocks       = ["10.8.0.0/16"]
+  description       = "Allow HTTPS from VPC"
+  from_port         = 443
+  protocol          = "tcp"
+  to_port           = 443
+  type              = "ingress"
+}
+
 
 
 
@@ -630,7 +728,7 @@ resource "aws_db_proxy" "demo-postgres-proxy" {
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_iam_role_policy_attachment.db_proxy_demo-postgres-proxy_st_demo-postgres-state_attach]
+  depends_on = [aws_cloudwatch_log_group.LogGroup, aws_iam_role_policy_attachment.db_proxy_demo-postgres-proxy_st_demo-postgres-state_attach]
 }
 
 resource "aws_db_proxy_target" "demo-postgres-proxy_target" {
@@ -750,7 +848,7 @@ resource "aws_lambda_function" "demo-postgres-api" {
   }
   vpc_config {
     security_group_ids = [aws_security_group.demo-postgres-api.id]
-    subnet_ids         = [aws_subnet.demo-postgres-private-b.id]
+    subnet_ids         = [aws_subnet.demo-postgres-private-a.id, aws_subnet.demo-postgres-private-b.id]
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_demo-postgres-api_st_demo-postgres-state_attach]
 }
@@ -792,7 +890,7 @@ resource "aws_lambda_function" "demo-postgres-direct" {
   }
   vpc_config {
     security_group_ids = [aws_security_group.demo-postgres-direct.id]
-    subnet_ids         = [aws_subnet.demo-postgres-private-b.id]
+    subnet_ids         = [aws_subnet.demo-postgres-private-a.id, aws_subnet.demo-postgres-private-b.id]
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_demo-postgres-direct_st_demo-postgres-state_attach]
 }
@@ -845,6 +943,18 @@ resource "aws_cloudwatch_event_target" "Target1" {
 
 
 ### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_log_group" "LogGroup" {
+  name              = "/aws/rds/proxy/demo-postgres-proxy"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "LogGroup"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
 
 resource "aws_cloudwatch_log_group" "demo-postgres-log1" {
   name              = "RDSOSMetrics"
