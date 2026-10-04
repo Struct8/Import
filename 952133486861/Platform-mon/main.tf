@@ -299,6 +299,24 @@ resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_egress_all_pro
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_ingress_tcp_443" {
+  security_group_id = aws_security_group.lb_alb-grafana-mon_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 443
+  protocol          = "tcp"
+  to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_ingress_tcp_80" {
+  security_group_id = aws_security_group.lb_alb-grafana-mon_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 80
+  protocol          = "tcp"
+  to_port           = 80
+  type              = "ingress"
+}
+
 resource "aws_lb" "alb-grafana-mon" {
   name                             = "alb-grafana-mon"
   enable_cross_zone_load_balancing = true
