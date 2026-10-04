@@ -544,7 +544,7 @@ resource "aws_db_proxy" "demo-postgres-proxy" {
   require_tls            = true
   role_arn               = aws_iam_role.role_rds_proxy_demo-postgres-proxy.arn
   vpc_security_group_ids = [aws_security_group.db_proxy_demo-postgres-proxy_group.id]
-  vpc_subnet_ids         = [aws_subnet.demo-postgres-private-a.id]
+  vpc_subnet_ids         = [aws_subnet.demo-postgres-private-a.id, aws_subnet.demo-postgres-private-b.id]
   auth {
     auth_scheme               = "SECRETS"
     client_password_auth_type = "POSTGRES_SCRAM_SHA_256"
