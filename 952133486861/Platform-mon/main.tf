@@ -28,6 +28,11 @@ provider "aws" {
   region = "us-east-1"
 }
 
+provider "aws" {
+  alias  = "us_east_2"
+  region = "us-east-2"
+}
+
 
 
 
@@ -45,6 +50,11 @@ data "aws_route53_zone" "Cloudman" {
 data "aws_s3_bucket" "flowlogs-bucket" {
   bucket   = "flowlogs-bucket-${data.aws_caller_identity.current.account_id}-us-east-1-an"
   provider = aws.us_east_1
+}
+
+data "aws_s3_bucket" "grafanalabs-cf-templates" {
+  bucket   = "grafanalabs-cf-templates"
+  provider = aws.us_east_2
 }
 
 
@@ -404,6 +414,69 @@ resource "aws_lb_listener" "listener-https1-mon" {
   }
   tags = {
     Name           = "listener-https1-mon"
+    State          = "Platform-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: STORAGE ###
+
+resource "aws_s3_bucket" "bucket-source-promptail-mon" {
+  bucket              = "bucket-source-promptail-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = false
+  object_lock_enabled = false
+  tags = {
+    Name           = "bucket-source-promptail-mon"
+    State          = "Platform-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "bucket-source-promptail-mon_controls" {
+  bucket = aws_s3_bucket.bucket-source-promptail-mon.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "bucket-source-promptail-mon_block" {
+  block_public_acls       = true
+  block_public_policy     = true
+  bucket                  = aws_s3_bucket.bucket-source-promptail-mon.id
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "bucket-source-promptail-mon_configuration" {
+  bucket = aws_s3_bucket.bucket-source-promptail-mon.id
+  rule {
+    bucket_key_enabled = true
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "bucket-source-promptail-mon_versioning" {
+  bucket = aws_s3_bucket.bucket-source-promptail-mon.id
+  versioning_configuration {
+    mfa_delete = "Disabled"
+    status     = "Suspended"
+  }
+}
+
+resource "aws_s3_object_copy" "ObjectCopy-mon" {
+  source             = "${data.aws_s3_bucket.grafanalabs-cf-templates.bucket}/lambda-promtail/lambda-promtail-v1.0.1.zip"
+  bucket             = aws_s3_bucket.bucket-source-promptail-mon.bucket
+  key                = "lambda-promtail/lambda-promtail-v1.0.1.zip"
+  metadata_directive = "COPY"
+  tagging_directive  = "REPLACE"
+  tags = {
+    Name           = "ObjectCopy-mon"
     State          = "Platform-mon"
     Struct8Creator = "Contato Struct"
   }
