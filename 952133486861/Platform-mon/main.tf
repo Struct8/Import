@@ -361,6 +361,8 @@ resource "aws_flow_log" "grafana-flowlogs-mon" {
 }
 
 resource "aws_lb" "alb-grafana-mon" {
+  # ajuste manual · access_logs.bucket — Generator bug: bare aws_lb -> aws_s3_bucket connection does not emit the access_logs block (type republished 2026-10-01 marks access_logs auto-filled from connections, but compiled HCL has none). Dotted path to force the nested block form access_logs { bucket = ... } that the AWS provider requires (attribute form access_logs = {} is rejected at plan).
+  # ajuste manual · access_logs.enabled — Generator bug companion: enable the access_logs block the generator fails to emit from the ALB->bucket wire.
   name                             = "alb-grafana-mon"
   enable_cross_zone_load_balancing = true
   enable_http2                     = true
@@ -368,6 +370,10 @@ resource "aws_lb" "alb-grafana-mon" {
   load_balancer_type               = "application"
   security_groups                  = [aws_security_group.lb_alb-grafana-mon_group.id]
   subnets                          = [aws_subnet.snet-public-1a-mon.id, aws_subnet.snet-public-1b-mon.id]
+  access_logs {
+    bucket  = aws_s3_bucket.alb-access-logs-mon.id
+    enabled = true
+  }
   tags = {
     Name           = "alb-grafana-mon"
     State          = "Platform-mon"
