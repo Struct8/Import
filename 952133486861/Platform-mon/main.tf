@@ -337,13 +337,14 @@ resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_ingress_tcp_80
   type              = "ingress"
 }
 
-resource "aws_flow_log" "FlowLog-mon" {
+resource "aws_flow_log" "grafana-flowlogs-mon" {
   vpc_id               = aws_vpc.vpc-grafana-lgtm-mon.id
   log_destination      = data.aws_s3_bucket.flowlogs-bucket.arn
   log_destination_type = "s3"
+  log_format           = "$${version} $${vpc-id} $${subnet-id} $${interface-id} $${instance-id} $${srcaddr} $${dstaddr} $${pkt-srcaddr} $${pkt-dstaddr} $${srcport} $${dstport} $${protocol} $${packets} $${bytes} $${start} $${end} $${action} $${log-status} $${flow-direction} $${traffic-path} $${pkt-src-aws-service} $${pkt-dst-aws-service} $${interface-type}"
   traffic_type         = "ALL"
   tags = {
-    Name           = "FlowLog-mon"
+    Name           = "grafana-flowlogs-mon"
     State          = "Platform-mon"
     Struct8Creator = "Contato Struct"
   }
