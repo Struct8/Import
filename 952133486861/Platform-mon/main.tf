@@ -424,6 +424,18 @@ resource "aws_lb_listener" "listener-https1-mon" {
 
 ### CATEGORY: STORAGE ###
 
+resource "aws_s3_bucket" "alb-access-logs-mon" {
+  bucket              = "alb-access-logs-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = true
+  object_lock_enabled = false
+  tags = {
+    Name           = "alb-access-logs-mon"
+    State          = "Platform-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_s3_bucket" "bucket-source-promptail-mon" {
   bucket              = "bucket-source-promptail-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
   bucket_namespace    = "account-regional"
@@ -436,11 +448,26 @@ resource "aws_s3_bucket" "bucket-source-promptail-mon" {
   }
 }
 
+resource "aws_s3_bucket_ownership_controls" "alb-access-logs-mon_controls" {
+  bucket = aws_s3_bucket.alb-access-logs-mon.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
 resource "aws_s3_bucket_ownership_controls" "bucket-source-promptail-mon_controls" {
   bucket = aws_s3_bucket.bucket-source-promptail-mon.id
   rule {
     object_ownership = "BucketOwnerEnforced"
   }
+}
+
+resource "aws_s3_bucket_public_access_block" "alb-access-logs-mon_block" {
+  block_public_acls       = true
+  block_public_policy     = true
+  bucket                  = aws_s3_bucket.alb-access-logs-mon.id
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_public_access_block" "bucket-source-promptail-mon_block" {
@@ -451,6 +478,16 @@ resource "aws_s3_bucket_public_access_block" "bucket-source-promptail-mon_block"
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_server_side_encryption_configuration" "alb-access-logs-mon_configuration" {
+  bucket = aws_s3_bucket.alb-access-logs-mon.id
+  rule {
+    bucket_key_enabled = true
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "bucket-source-promptail-mon_configuration" {
   bucket = aws_s3_bucket.bucket-source-promptail-mon.id
   rule {
@@ -458,6 +495,14 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "bucket-source-pro
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "alb-access-logs-mon_versioning" {
+  bucket = aws_s3_bucket.alb-access-logs-mon.id
+  versioning_configuration {
+    mfa_delete = "Disabled"
+    status     = "Suspended"
   }
 }
 
