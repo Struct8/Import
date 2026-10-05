@@ -315,6 +315,15 @@ resource "aws_iam_policy" "lambda_function_lambda-promtail-mon_st_Stateless-mon"
   policy      = data.aws_iam_policy_document.lambda_function_lambda-promtail-mon_st_Stateless-mon_doc.json
 }
 
+data "aws_iam_policy_document" "Debug-alloy-mon_alloy-mon_exec_channel" {
+  statement {
+    sid       = "Struct8ExecChannel"
+    effect    = "Allow"
+    actions   = ["ssmmessages:CreateControlChannel", "ssmmessages:CreateDataChannel", "ssmmessages:OpenControlChannel", "ssmmessages:OpenDataChannel"]
+    resources = ["*"]
+  }
+}
+
 data "aws_iam_policy_document" "Debug-alloy-mon_alloy-mon_probe_logs" {
   statement {
     sid       = "Struct8ProbeLogs"
@@ -369,6 +378,55 @@ data "aws_iam_policy_document" "Debug-alloy-mon_debug_permissions" {
     effect    = "Allow"
     actions   = ["iam:PassRole"]
     resources = [aws_iam_role.execution_role_ecs_alloy-mon.arn]
+    condition {
+      test     = "StringEquals"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
+  statement {
+    sid       = "ExecIntoContainerShellalloymon"
+    effect    = "Allow"
+    actions   = ["ecs:ExecuteCommand"]
+    resources = ["arn:aws:ecs:*:*:task/ltfargate-target-mon/*", aws_ecs_cluster.lgtm-cluster-mon.arn]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+    condition {
+      test     = "StringEquals"
+      values   = ["alloy"]
+      variable = "ecs:container-name"
+    }
+  }
+  statement {
+    sid       = "ExecFindTaskalloymon"
+    effect    = "Allow"
+    actions   = ["ecs:ListTasks", "ecs:DescribeTasks"]
+    resources = ["*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "RunScratchTaskalloymon"
+    effect    = "Allow"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:*:*:task-definition/Struct8Scratch-bOihDfFtxnGSZEbI86NkK-alloy-mon:*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "PassScratchRolesalloymon"
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution_role_ecs_alloy-mon.arn, aws_iam_role.task_role_ecs_alloy-mon.arn]
     condition {
       test     = "StringEquals"
       values   = ["ecs-tasks.amazonaws.com"]
@@ -493,6 +551,55 @@ data "aws_iam_policy_document" "Debug-grafana-mon_debug_permissions" {
       variable = "iam:PassedToService"
     }
   }
+  statement {
+    sid       = "ExecIntoContainerShellgrafanamon"
+    effect    = "Allow"
+    actions   = ["ecs:ExecuteCommand"]
+    resources = ["arn:aws:ecs:*:*:task/ltfargate-target-mon/*", aws_ecs_cluster.lgtm-cluster-mon.arn]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+    condition {
+      test     = "StringEquals"
+      values   = ["grafana"]
+      variable = "ecs:container-name"
+    }
+  }
+  statement {
+    sid       = "ExecFindTaskgrafanamon"
+    effect    = "Allow"
+    actions   = ["ecs:ListTasks", "ecs:DescribeTasks"]
+    resources = ["*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "RunScratchTaskgrafanamon"
+    effect    = "Allow"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:*:*:task-definition/Struct8Scratch-Kj0gEoH3JSkrCLidIJNOV-grafana-mon:*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "PassScratchRolesgrafanamon"
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution_role_ecs_grafana-mon.arn, aws_iam_role.task_role_ecs_grafana-mon.arn]
+    condition {
+      test     = "StringEquals"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
 }
 
 data "aws_iam_policy_document" "Debug-grafana-mon_debug_trust" {
@@ -503,6 +610,15 @@ data "aws_iam_policy_document" "Debug-grafana-mon_debug_trust" {
       type        = "AWS"
     }
     actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug-grafana-mon_grafana-mon_exec_channel" {
+  statement {
+    sid       = "Struct8ExecChannel"
+    effect    = "Allow"
+    actions   = ["ssmmessages:CreateControlChannel", "ssmmessages:CreateDataChannel", "ssmmessages:OpenControlChannel", "ssmmessages:OpenDataChannel"]
+    resources = ["*"]
   }
 }
 
@@ -566,6 +682,55 @@ data "aws_iam_policy_document" "Debug-loki-mon_debug_permissions" {
       variable = "iam:PassedToService"
     }
   }
+  statement {
+    sid       = "ExecIntoContainerShelllokimon"
+    effect    = "Allow"
+    actions   = ["ecs:ExecuteCommand"]
+    resources = ["arn:aws:ecs:*:*:task/ltfargate-target-mon/*", aws_ecs_cluster.lgtm-cluster-mon.arn]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+    condition {
+      test     = "StringEquals"
+      values   = ["loki"]
+      variable = "ecs:container-name"
+    }
+  }
+  statement {
+    sid       = "ExecFindTasklokimon"
+    effect    = "Allow"
+    actions   = ["ecs:ListTasks", "ecs:DescribeTasks"]
+    resources = ["*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "RunScratchTasklokimon"
+    effect    = "Allow"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:*:*:task-definition/Struct8Scratch-972FIQG47OUQbuIPbAXut-loki-mon:*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "PassScratchRoleslokimon"
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution_role_ecs_loki-mon.arn, aws_iam_role.task_role_ecs_loki-mon.arn]
+    condition {
+      test     = "StringEquals"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
 }
 
 data "aws_iam_policy_document" "Debug-loki-mon_debug_trust" {
@@ -576,6 +741,15 @@ data "aws_iam_policy_document" "Debug-loki-mon_debug_trust" {
       type        = "AWS"
     }
     actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug-loki-mon_loki-mon_exec_channel" {
+  statement {
+    sid       = "Struct8ExecChannel"
+    effect    = "Allow"
+    actions   = ["ssmmessages:CreateControlChannel", "ssmmessages:CreateDataChannel", "ssmmessages:OpenControlChannel", "ssmmessages:OpenDataChannel"]
+    resources = ["*"]
   }
 }
 
@@ -1017,6 +1191,24 @@ resource "aws_iam_role_policy" "Struct8Debug-Debug-tempo-mon_policy" {
   name   = "Struct8Debug-QpJ5vanuEsErFS2EFjls6-policy"
   policy = data.aws_iam_policy_document.Debug-tempo-mon_debug_permissions.json
   role   = aws_iam_role.Struct8Debug-Debug-tempo-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8Exec-Debug-alloy-mon-alloy-mon" {
+  name   = "Struct8Exec-bOihDfFtxnGSZEbI86NkK-alloy-mon"
+  policy = data.aws_iam_policy_document.Debug-alloy-mon_alloy-mon_exec_channel.json
+  role   = aws_iam_role.task_role_ecs_alloy-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8Exec-Debug-grafana-mon-grafana-mon" {
+  name   = "Struct8Exec-Kj0gEoH3JSkrCLidIJNOV-grafana-mon"
+  policy = data.aws_iam_policy_document.Debug-grafana-mon_grafana-mon_exec_channel.json
+  role   = aws_iam_role.task_role_ecs_grafana-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8Exec-Debug-loki-mon-loki-mon" {
+  name   = "Struct8Exec-972FIQG47OUQbuIPbAXut-loki-mon"
+  policy = data.aws_iam_policy_document.Debug-loki-mon_loki-mon_exec_channel.json
+  role   = aws_iam_role.task_role_ecs_loki-mon.id
 }
 
 resource "aws_iam_role_policy" "Struct8Exec-Debug-tempo-mon-tempo-mon" {
@@ -1991,7 +2183,9 @@ resource "aws_ecs_service" "alloy-mon_service" {
   cluster                 = aws_ecs_cluster.lgtm-cluster-mon.id
   desired_count           = 1
   enable_ecs_managed_tags = true
+  enable_execute_command  = true
   force_delete            = true
+  force_new_deployment    = true
   scheduling_strategy     = "REPLICA"
   task_definition         = "${aws_ecs_task_definition.alloy-mon.family}:${aws_ecs_task_definition.alloy-mon.revision}"
   capacity_provider_strategy {
@@ -2045,7 +2239,9 @@ resource "aws_ecs_service" "grafana-mon_service" {
   deployment_minimum_healthy_percent = 0
   desired_count                      = 1
   enable_ecs_managed_tags            = true
+  enable_execute_command             = true
   force_delete                       = true
+  force_new_deployment               = true
   scheduling_strategy                = "REPLICA"
   task_definition                    = "${aws_ecs_task_definition.grafana-mon.family}:${aws_ecs_task_definition.grafana-mon.revision}"
   capacity_provider_strategy {
@@ -2082,7 +2278,9 @@ resource "aws_ecs_service" "loki-mon_service" {
   cluster                 = aws_ecs_cluster.lgtm-cluster-mon.id
   desired_count           = 1
   enable_ecs_managed_tags = true
+  enable_execute_command  = true
   force_delete            = true
+  force_new_deployment    = true
   scheduling_strategy     = "REPLICA"
   task_definition         = "${aws_ecs_task_definition.loki-mon.family}:${aws_ecs_task_definition.loki-mon.revision}"
   capacity_provider_strategy {
@@ -2225,6 +2423,33 @@ resource "aws_ecs_task_definition" "Struct8Probe_Debug-tempo-mon_tempo-mon" {
   memory                   = "512"
   network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
+}
+
+resource "aws_ecs_task_definition" "Struct8Scratch_Debug-alloy-mon_alloy-mon" {
+  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_alloy-mon_alloy.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-alloy-mon_alloy-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
+  execution_role_arn       = aws_iam_role.execution_role_ecs_alloy-mon.arn
+  family                   = "Struct8Scratch-bOihDfFtxnGSZEbI86NkK-alloy-mon"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+  task_role_arn            = aws_iam_role.task_role_ecs_alloy-mon.arn
+}
+
+resource "aws_ecs_task_definition" "Struct8Scratch_Debug-grafana-mon_grafana-mon" {
+  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_grafana-mon_grafana.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-grafana-mon_grafana-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
+  execution_role_arn       = aws_iam_role.execution_role_ecs_grafana-mon.arn
+  family                   = "Struct8Scratch-Kj0gEoH3JSkrCLidIJNOV-grafana-mon"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+  task_role_arn            = aws_iam_role.task_role_ecs_grafana-mon.arn
+}
+
+resource "aws_ecs_task_definition" "Struct8Scratch_Debug-loki-mon_loki-mon" {
+  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_loki-mon_loki.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-loki-mon_loki-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
+  execution_role_arn       = aws_iam_role.execution_role_ecs_loki-mon.arn
+  family                   = "Struct8Scratch-972FIQG47OUQbuIPbAXut-loki-mon"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+  task_role_arn            = aws_iam_role.task_role_ecs_loki-mon.arn
 }
 
 resource "aws_ecs_task_definition" "Struct8Scratch_Debug-tempo-mon_tempo-mon" {
