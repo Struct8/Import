@@ -21,19 +21,10 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### EXTERNAL REFERENCES ###
-
-data "aws_db_instance" "demo-mysql" {
-  db_instance_identifier = "demo-mysql"
-}
-
-
-
-
 ### CATEGORY: DATABASE ###
 
 resource "aws_db_snapshot" "DBSnapshot" {
-  db_instance_identifier = data.aws_db_instance.demo-mysql.db_instance_identifier
+  db_instance_identifier = "demo-mysql"
   db_snapshot_identifier = "dbsnapshot"
   tags = {
     Name           = "DBSnapshot"
