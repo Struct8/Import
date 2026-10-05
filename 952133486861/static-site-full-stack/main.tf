@@ -630,7 +630,7 @@ resource "aws_lambda_function" "presign-url-generator" {
   timeout                        = 10
   environment {
     variables = {
-    BUCKET_NAME                    = aws_s3_bucket.uploads.id
+    BUCKET_NAME                    = aws_s3_bucket.site-uploads.id
     NAME                           = "presign-url-generator"
     REGION                         = data.aws_region.current.region
     ACCOUNT                        = data.aws_caller_identity.current.account_id
