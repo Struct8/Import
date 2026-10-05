@@ -416,6 +416,11 @@ resource "aws_security_group" "instance_ec2-loadgen-mon_group" {
   vpc_id                 = aws_vpc.vpc-grafana-lgtm-mon.id
   description            = "OTLP load generator (lab). 80=web panel (default token struct8-lab; set OTEL_PANEL_TOKEN for real auth, or restrict this port to your IP). Egress open for the OTLP gateway and Docker pulls."
   revoke_rules_on_delete = false
+  tags = {
+    Name           = "instance_ec2-loadgen-mon_group"
+    State          = "Platform-mon"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_security_group" "instance_nat-a1_group" {
@@ -750,6 +755,7 @@ resource "aws_instance" "ec2-loadgen-mon" {
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ec2-loadgen-mon_profile.name
   instance_type               = "t4g.small"
+  monitoring                  = true
   user_data_base64 = base64encode(<<-EOFUData
 #!/bin/bash
 
