@@ -78,10 +78,10 @@ data "aws_iam_policy_document" "autoscaling_group_asgWordpress_st_wordpress-prof
     resources = [aws_kms_key.kmsWordpress.arn]
   }
   statement {
-    sid       = "AllowRDSSecretAccesswpAurora"
+    sid       = "AllowRDSSecretAccesswpaurora"
     effect    = "Allow"
     actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
-    resources = [aws_rds_cluster.wpAurora.master_user_secret[0].secret_arn]
+    resources = [aws_rds_cluster.wp-aurora.master_user_secret[0].secret_arn]
   }
   statement {
     sid       = "AllowSecretAccess"
@@ -236,8 +236,8 @@ resource "aws_vpc_endpoint" "vpce-s3_S3" {
   }
 }
 
-resource "aws_vpc_endpoint" "vpceLogs_EC2" {
-  service_name        = "com.amazonaws.${data.aws_region.current.region}.ec2"
+resource "aws_vpc_endpoint" "vpceLogs_LOGS" {
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.logs"
   vpc_id              = aws_vpc.wordpress-professional.id
   ip_address_type     = "ipv4"
   private_dns_enabled = true
@@ -246,7 +246,7 @@ resource "aws_vpc_endpoint" "vpceLogs_EC2" {
   vpc_endpoint_type   = "Interface"
   tags = {
     Name           = "vpceLogs"
-    DifName        = "vpceLogs_EC2"
+    DifName        = "vpceLogs_LOGS"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
@@ -533,12 +533,12 @@ resource "aws_security_group" "lb_alb-wp_group" {
   }
 }
 
-resource "aws_security_group" "rds_cluster_wpAurora_group" {
-  name                   = "rds_cluster_wpAurora_group"
+resource "aws_security_group" "rds_cluster_wp-aurora_group" {
+  name                   = "rds_cluster_wp-aurora_group"
   vpc_id                 = aws_vpc.wordpress-professional.id
   revoke_rules_on_delete = false
   tags = {
-    Name           = "rds_cluster_wpAurora_group"
+    Name           = "rds_cluster_wp-aurora_group"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
@@ -597,8 +597,8 @@ resource "aws_security_group_rule" "rule_autoscaling_group_asgWordpress_group_to
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_autoscaling_group_asgWordpress_group_to_rds_cluster_wpAurora_group_tcp_3306" {
-  security_group_id        = aws_security_group.rds_cluster_wpAurora_group.id
+resource "aws_security_group_rule" "rule_autoscaling_group_asgWordpress_group_to_rds_cluster_wp_aurora_group_tcp_3306" {
+  security_group_id        = aws_security_group.rds_cluster_wp-aurora_group.id
   source_security_group_id = aws_security_group.autoscaling_group_asgWordpress_group.id
   description              = "MySQL from the WordPress instances"
   from_port                = 3306
@@ -654,8 +654,8 @@ resource "aws_security_group_rule" "rule_lb_alb_wp_group_to_autoscaling_group_as
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_rds_cluster_wpAurora_group_egress_all_protocols" {
-  security_group_id = aws_security_group.rds_cluster_wpAurora_group.id
+resource "aws_security_group_rule" "rule_rds_cluster_wp_aurora_group_egress_all_protocols" {
+  security_group_id = aws_security_group.rds_cluster_wp-aurora_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -726,6 +726,7 @@ resource "aws_lb" "alb-wp" {
 }
 
 resource "aws_lb_listener" "listenerHttps" {
+  # ajuste manual · depends_on — The generator passes the certificate ARN without waiting for its DNS validation (the API Gateway domain handler waits; this one does not). The load balancer refuses a certificate still pending, so the first apply can fail on the listener.
   certificate_arn                      = aws_acm_certificate.certAlb.arn
   load_balancer_arn                    = aws_lb.alb-wp.arn
   port                                 = 443
@@ -747,6 +748,7 @@ resource "aws_lb_listener" "listenerHttps" {
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_acm_certificate_validation.Validation_certAlb]
 }
 
 resource "aws_lb_target_group" "tgWordpress" {
@@ -779,6 +781,7 @@ resource "aws_lb_target_group" "tgWordpress" {
 
 resource "aws_cloudfront_distribution" "cdnWordpress" {
   # ajuste manual · origin[origin_id=originAlb].domain_name — The generator always writes the load balancer's own DNS name as the origin and ignores a typed domain_name. CloudFront validates the origin certificate against this name, and only origin.wp.<zone> is on certAlb, so HTTPS to the load balancer needs it here.
+  # ajuste manual · depends_on — The generator passes the certificate ARN without waiting for its DNS validation (the API Gateway domain handler waits; this one does not). CloudFront refuses a certificate still pending, and nothing else here delays the distribution, so the first apply would fail on it.
   aliases         = ["wp.cloudman.pro"]
   enabled         = true
   http_version    = "http2and3"
@@ -838,6 +841,7 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
     minimum_protocol_version       = "TLSv1.2_2021"
     ssl_support_method             = "sni-only"
   }
+  depends_on = [aws_acm_certificate_validation.Validation_certWordpress]
 }
 
 
@@ -900,8 +904,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "albLogs_configura
   rule {
     bucket_key_enabled = true
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.kmsWordpress.arn
-      sse_algorithm     = "aws:kms"
+      sse_algorithm = "AES256"
     }
   }
 }
@@ -962,27 +965,27 @@ resource "aws_efs_mount_target" "mt_wpContent_dataB" {
 
 ### CATEGORY: DATABASE ###
 
-resource "aws_db_subnet_group" "subnet_group_wpAurora" {
-  name       = "wpaurora-subnet-group"
+resource "aws_db_subnet_group" "subnet_group_wp-aurora" {
+  name       = "wp-aurora-subnet-group"
   subnet_ids = [aws_subnet.dataA.id, aws_subnet.dataB.id]
   tags = {
-    Name           = "subnet_group_wpAurora"
+    Name           = "subnet_group_wp-aurora"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_rds_cluster" "wpAurora" {
+resource "aws_rds_cluster" "wp-aurora" {
   database_name               = "wordpress"
-  db_subnet_group_name        = aws_db_subnet_group.subnet_group_wpAurora.name
+  db_subnet_group_name        = aws_db_subnet_group.subnet_group_wp-aurora.name
   kms_key_id                  = aws_kms_key.kmsWordpress.arn
   apply_immediately           = true
   backup_retention_period     = 7
-  cluster_identifier          = "wpAurora"
+  cluster_identifier          = "wp-aurora"
   copy_tags_to_snapshot       = true
   database_insights_mode      = "standard"
   engine                      = "aurora-mysql"
-  engine_version              = "8.0.mysql_aurora.3.13.0"
+  engine_version              = "8.4.mysql_aurora.8.4.8"
   manage_master_user_password = true
   master_username             = "dbadmin"
   monitoring_interval         = 0
@@ -990,44 +993,44 @@ resource "aws_rds_cluster" "wpAurora" {
   port                        = 3306
   skip_final_snapshot         = true
   storage_encrypted           = true
-  vpc_security_group_ids      = [aws_security_group.rds_cluster_wpAurora_group.id]
+  vpc_security_group_ids      = [aws_security_group.rds_cluster_wp-aurora_group.id]
   serverlessv2_scaling_configuration {
     max_capacity             = 2
     min_capacity             = 0
     seconds_until_auto_pause = 300
   }
   tags = {
-    Name           = "wpAurora"
+    Name           = "wp-aurora"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_rds_cluster_instance" "wpAuroraReader" {
-  cluster_identifier                    = aws_rds_cluster.wpAurora.id
+resource "aws_rds_cluster_instance" "wp-aurora-reader" {
+  cluster_identifier                    = aws_rds_cluster.wp-aurora.id
   copy_tags_to_snapshot                 = true
-  engine                                = aws_rds_cluster.wpAurora.engine
-  identifier                            = "wpAuroraReader"
+  engine                                = aws_rds_cluster.wp-aurora.engine
+  identifier                            = "wp-aurora-reader"
   instance_class                        = "db.serverless"
   performance_insights_retention_period = 7
   promotion_tier                        = 2
   tags = {
-    Name           = "wpAuroraReader"
+    Name           = "wp-aurora-reader"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_rds_cluster_instance" "wpAuroraWriter" {
-  cluster_identifier                    = aws_rds_cluster.wpAurora.id
+resource "aws_rds_cluster_instance" "wp-aurora-writer" {
+  cluster_identifier                    = aws_rds_cluster.wp-aurora.id
   copy_tags_to_snapshot                 = true
-  engine                                = aws_rds_cluster.wpAurora.engine
-  identifier                            = "wpAuroraWriter"
+  engine                                = aws_rds_cluster.wp-aurora.engine
+  identifier                            = "wp-aurora-writer"
   instance_class                        = "db.serverless"
   performance_insights_retention_period = 7
   promotion_tier                        = 1
   tags = {
-    Name           = "wpAuroraWriter"
+    Name           = "wp-aurora-writer"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
@@ -1090,12 +1093,12 @@ AWS_ELASTICACHE_REPLICATION_GROUP_READER_ENDPOINT_0="${aws_elasticache_replicati
 AWS_EFS_FILE_SYSTEM_ID_0="${aws_efs_file_system.wpContent.id}"
 AWS_SECRETSMANAGER_SECRET_NAME_0="wpSecrets"
 AWS_KMS_KEY_NAME_0="kmsWordpress"
-AWS_RDS_CLUSTER_NAME_0="${aws_rds_cluster.wpAurora.cluster_identifier}"
-AWS_RDS_CLUSTER_ENGINE_0="${aws_rds_cluster.wpAurora.engine}"
-AWS_RDS_CLUSTER_ENDPOINT_0="${aws_rds_cluster.wpAurora.endpoint}"
-AWS_RDS_CLUSTER_PORT_0="${aws_rds_cluster.wpAurora.port}"
-AWS_RDS_CLUSTER_DB_NAME_0="${aws_rds_cluster.wpAurora.database_name}"
-AWS_RDS_CLUSTER_SECRET_ARN_0="${one(aws_rds_cluster.wpAurora.master_user_secret[*].secret_arn)}"
+AWS_RDS_CLUSTER_NAME_0="${aws_rds_cluster.wp-aurora.cluster_identifier}"
+AWS_RDS_CLUSTER_ENGINE_0="${aws_rds_cluster.wp-aurora.engine}"
+AWS_RDS_CLUSTER_ENDPOINT_0="${aws_rds_cluster.wp-aurora.endpoint}"
+AWS_RDS_CLUSTER_PORT_0="${aws_rds_cluster.wp-aurora.port}"
+AWS_RDS_CLUSTER_DB_NAME_0="${aws_rds_cluster.wp-aurora.database_name}"
+AWS_RDS_CLUSTER_SECRET_ARN_0="${one(aws_rds_cluster.wp-aurora.master_user_secret[*].secret_arn)}"
 EOFENV
 cat /etc/struct8_env >> /etc/environment
 sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
