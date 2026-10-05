@@ -315,6 +315,79 @@ resource "aws_iam_policy" "lambda_function_lambda-promtail-mon_st_Stateless-mon"
   policy      = data.aws_iam_policy_document.lambda_function_lambda-promtail-mon_st_Stateless-mon_doc.json
 }
 
+data "aws_iam_policy_document" "Debug-alloy-mon_alloy-mon_probe_logs" {
+  statement {
+    sid       = "Struct8ProbeLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug-alloy-mon_alloy-mon_logs.arn}:*"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug-alloy-mon_debug_permissions" {
+  statement {
+    sid       = "RunProbeTaskalloymon"
+    effect    = "Allow"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:*:*:task-definition/Struct8Probe-bOihDfFtxnGSZEbI86NkK-alloy-mon:*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadProbeTaskalloymon"
+    effect    = "Allow"
+    actions   = ["ecs:DescribeTasks", "ecs:StopTask"]
+    resources = ["arn:aws:ecs:*:*:task/*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadServiceNetworkalloymon"
+    effect    = "Allow"
+    actions   = ["ecs:DescribeServices"]
+    resources = ["arn:aws:ecs:*:*:service/ltfargate-target-mon/alloy-mon_service"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadProbeOutputalloymon"
+    effect    = "Allow"
+    actions   = ["logs:GetLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug-alloy-mon_alloy-mon_logs.arn}:*"]
+  }
+  statement {
+    sid       = "PassProbeExecutionRolealloymon"
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution_role_ecs_alloy-mon.arn]
+    condition {
+      test     = "StringEquals"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "Debug-alloy-mon_debug_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
+      type        = "AWS"
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
 data "aws_iam_policy_document" "Debug-asg-mon_debug_permissions" {
   statement {
     sid       = "SendToTaggedInstancesOnly"
@@ -369,9 +442,310 @@ data "aws_iam_policy_document" "Debug-asg-mon_debug_trust" {
   }
 }
 
+data "aws_iam_policy_document" "Debug-grafana-mon_debug_permissions" {
+  statement {
+    sid       = "RunProbeTaskgrafanamon"
+    effect    = "Allow"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:*:*:task-definition/Struct8Probe-Kj0gEoH3JSkrCLidIJNOV-grafana-mon:*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadProbeTaskgrafanamon"
+    effect    = "Allow"
+    actions   = ["ecs:DescribeTasks", "ecs:StopTask"]
+    resources = ["arn:aws:ecs:*:*:task/*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadServiceNetworkgrafanamon"
+    effect    = "Allow"
+    actions   = ["ecs:DescribeServices"]
+    resources = ["arn:aws:ecs:*:*:service/ltfargate-target-mon/grafana-mon_service"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadProbeOutputgrafanamon"
+    effect    = "Allow"
+    actions   = ["logs:GetLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug-grafana-mon_grafana-mon_logs.arn}:*"]
+  }
+  statement {
+    sid       = "PassProbeExecutionRolegrafanamon"
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution_role_ecs_grafana-mon.arn]
+    condition {
+      test     = "StringEquals"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "Debug-grafana-mon_debug_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
+      type        = "AWS"
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug-grafana-mon_grafana-mon_probe_logs" {
+  statement {
+    sid       = "Struct8ProbeLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug-grafana-mon_grafana-mon_logs.arn}:*"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug-loki-mon_debug_permissions" {
+  statement {
+    sid       = "RunProbeTasklokimon"
+    effect    = "Allow"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:*:*:task-definition/Struct8Probe-972FIQG47OUQbuIPbAXut-loki-mon:*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadProbeTasklokimon"
+    effect    = "Allow"
+    actions   = ["ecs:DescribeTasks", "ecs:StopTask"]
+    resources = ["arn:aws:ecs:*:*:task/*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadServiceNetworklokimon"
+    effect    = "Allow"
+    actions   = ["ecs:DescribeServices"]
+    resources = ["arn:aws:ecs:*:*:service/ltfargate-target-mon/loki-mon_service"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadProbeOutputlokimon"
+    effect    = "Allow"
+    actions   = ["logs:GetLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug-loki-mon_loki-mon_logs.arn}:*"]
+  }
+  statement {
+    sid       = "PassProbeExecutionRolelokimon"
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution_role_ecs_loki-mon.arn]
+    condition {
+      test     = "StringEquals"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "Debug-loki-mon_debug_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
+      type        = "AWS"
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug-loki-mon_loki-mon_probe_logs" {
+  statement {
+    sid       = "Struct8ProbeLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug-loki-mon_loki-mon_logs.arn}:*"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug-tempo-mon_debug_permissions" {
+  statement {
+    sid       = "RunProbeTasktempomon"
+    effect    = "Allow"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:*:*:task-definition/Struct8Probe-QpJ5vanuEsErFS2EFjls6-tempo-mon:*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadProbeTasktempomon"
+    effect    = "Allow"
+    actions   = ["ecs:DescribeTasks", "ecs:StopTask"]
+    resources = ["arn:aws:ecs:*:*:task/*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadServiceNetworktempomon"
+    effect    = "Allow"
+    actions   = ["ecs:DescribeServices"]
+    resources = ["arn:aws:ecs:*:*:service/ltfargate-target-mon/tempo-mon_service"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadProbeOutputtempomon"
+    effect    = "Allow"
+    actions   = ["logs:GetLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug-tempo-mon_tempo-mon_logs.arn}:*"]
+  }
+  statement {
+    sid       = "PassProbeExecutionRoletempomon"
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution_role_ecs_tempo-mon.arn]
+    condition {
+      test     = "StringEquals"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
+  statement {
+    sid       = "ExecIntoContainerShelltempomon"
+    effect    = "Allow"
+    actions   = ["ecs:ExecuteCommand"]
+    resources = ["arn:aws:ecs:*:*:task/ltfargate-target-mon/*", aws_ecs_cluster.lgtm-cluster-mon.arn]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+    condition {
+      test     = "StringEquals"
+      values   = ["tempo"]
+      variable = "ecs:container-name"
+    }
+  }
+  statement {
+    sid       = "ExecFindTasktempomon"
+    effect    = "Allow"
+    actions   = ["ecs:ListTasks", "ecs:DescribeTasks"]
+    resources = ["*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "RunScratchTasktempomon"
+    effect    = "Allow"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:*:*:task-definition/Struct8Scratch-QpJ5vanuEsErFS2EFjls6-tempo-mon:*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.lgtm-cluster-mon.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "PassScratchRolestempomon"
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution_role_ecs_tempo-mon.arn, aws_iam_role.task_role_ecs_tempo-mon.arn]
+    condition {
+      test     = "StringEquals"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "Debug-tempo-mon_debug_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
+      type        = "AWS"
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug-tempo-mon_tempo-mon_exec_channel" {
+  statement {
+    sid       = "Struct8ExecChannel"
+    effect    = "Allow"
+    actions   = ["ssmmessages:CreateControlChannel", "ssmmessages:CreateDataChannel", "ssmmessages:OpenControlChannel", "ssmmessages:OpenDataChannel"]
+    resources = ["*"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug-tempo-mon_tempo-mon_probe_logs" {
+  statement {
+    sid       = "Struct8ProbeLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug-tempo-mon_tempo-mon_logs.arn}:*"]
+  }
+}
+
+resource "aws_iam_role" "Struct8Debug-Debug-alloy-mon" {
+  name                 = "Struct8Debug-bOihDfFtxnGSZEbI86NkK"
+  assume_role_policy   = data.aws_iam_policy_document.Debug-alloy-mon_debug_trust.json
+  max_session_duration = 3600
+}
+
 resource "aws_iam_role" "Struct8Debug-Debug-asg-mon" {
   name                 = "Struct8Debug-Vz6HFyU4chYBtvk4gbnjo"
   assume_role_policy   = data.aws_iam_policy_document.Debug-asg-mon_debug_trust.json
+  max_session_duration = 3600
+}
+
+resource "aws_iam_role" "Struct8Debug-Debug-grafana-mon" {
+  name                 = "Struct8Debug-Kj0gEoH3JSkrCLidIJNOV"
+  assume_role_policy   = data.aws_iam_policy_document.Debug-grafana-mon_debug_trust.json
+  max_session_duration = 3600
+}
+
+resource "aws_iam_role" "Struct8Debug-Debug-loki-mon" {
+  name                 = "Struct8Debug-972FIQG47OUQbuIPbAXut"
+  assume_role_policy   = data.aws_iam_policy_document.Debug-loki-mon_debug_trust.json
+  max_session_duration = 3600
+}
+
+resource "aws_iam_role" "Struct8Debug-Debug-tempo-mon" {
+  name                 = "Struct8Debug-QpJ5vanuEsErFS2EFjls6"
+  assume_role_policy   = data.aws_iam_policy_document.Debug-tempo-mon_debug_trust.json
   max_session_duration = 3600
 }
 
@@ -615,10 +989,64 @@ resource "aws_iam_role" "task_role_ecs_tempo-mon" {
   }
 }
 
+resource "aws_iam_role_policy" "Struct8Debug-Debug-alloy-mon_policy" {
+  name   = "Struct8Debug-bOihDfFtxnGSZEbI86NkK-policy"
+  policy = data.aws_iam_policy_document.Debug-alloy-mon_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-Debug-alloy-mon.id
+}
+
 resource "aws_iam_role_policy" "Struct8Debug-Debug-asg-mon_policy" {
   name   = "Struct8Debug-Vz6HFyU4chYBtvk4gbnjo-policy"
   policy = data.aws_iam_policy_document.Debug-asg-mon_debug_permissions.json
   role   = aws_iam_role.Struct8Debug-Debug-asg-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8Debug-Debug-grafana-mon_policy" {
+  name   = "Struct8Debug-Kj0gEoH3JSkrCLidIJNOV-policy"
+  policy = data.aws_iam_policy_document.Debug-grafana-mon_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-Debug-grafana-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8Debug-Debug-loki-mon_policy" {
+  name   = "Struct8Debug-972FIQG47OUQbuIPbAXut-policy"
+  policy = data.aws_iam_policy_document.Debug-loki-mon_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-Debug-loki-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8Debug-Debug-tempo-mon_policy" {
+  name   = "Struct8Debug-QpJ5vanuEsErFS2EFjls6-policy"
+  policy = data.aws_iam_policy_document.Debug-tempo-mon_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-Debug-tempo-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8Exec-Debug-tempo-mon-tempo-mon" {
+  name   = "Struct8Exec-QpJ5vanuEsErFS2EFjls6-tempo-mon"
+  policy = data.aws_iam_policy_document.Debug-tempo-mon_tempo-mon_exec_channel.json
+  role   = aws_iam_role.task_role_ecs_tempo-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8ProbeLogs-Debug-alloy-mon-alloy-mon" {
+  name   = "Struct8ProbeLogs-bOihDfFtxnGSZEbI86NkK-alloy-mon"
+  policy = data.aws_iam_policy_document.Debug-alloy-mon_alloy-mon_probe_logs.json
+  role   = aws_iam_role.execution_role_ecs_alloy-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8ProbeLogs-Debug-grafana-mon-grafana-mon" {
+  name   = "Struct8ProbeLogs-Kj0gEoH3JSkrCLidIJNOV-grafana-mon"
+  policy = data.aws_iam_policy_document.Debug-grafana-mon_grafana-mon_probe_logs.json
+  role   = aws_iam_role.execution_role_ecs_grafana-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8ProbeLogs-Debug-loki-mon-loki-mon" {
+  name   = "Struct8ProbeLogs-972FIQG47OUQbuIPbAXut-loki-mon"
+  policy = data.aws_iam_policy_document.Debug-loki-mon_loki-mon_probe_logs.json
+  role   = aws_iam_role.execution_role_ecs_loki-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8ProbeLogs-Debug-tempo-mon-tempo-mon" {
+  name   = "Struct8ProbeLogs-QpJ5vanuEsErFS2EFjls6-tempo-mon"
+  policy = data.aws_iam_policy_document.Debug-tempo-mon_tempo-mon_probe_logs.json
+  role   = aws_iam_role.execution_role_ecs_tempo-mon.id
 }
 
 resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_lgtm-ecs-asg-mon_attach" {
@@ -1700,7 +2128,9 @@ resource "aws_ecs_service" "tempo-mon_service" {
   cluster                 = aws_ecs_cluster.lgtm-cluster-mon.id
   desired_count           = 1
   enable_ecs_managed_tags = true
+  enable_execute_command  = true
   force_delete            = true
+  force_new_deployment    = true
   scheduling_strategy     = "REPLICA"
   task_definition         = "${aws_ecs_task_definition.tempo-mon.family}:${aws_ecs_task_definition.tempo-mon.revision}"
   capacity_provider_strategy {
@@ -1757,12 +2187,61 @@ resource "aws_ecs_service" "tempo-mon_service" {
   }
 }
 
+resource "aws_ecs_task_definition" "Struct8Probe_Debug-alloy-mon_alloy-mon" {
+  container_definitions    = jsonencode([{"name":"probe","image":"${local.container_def_alloy-mon_alloy.image}","essential":true,"entryPoint":["/bin/sh","-c","echo \"struct8 probe: host=$1 port=$2\"\ngetent hosts \"$1\" || nslookup \"$1\" 2>/dev/null || echo \"no DNS answer\"\nping -c 3 -W 2 \"$1\" 2>/dev/null || echo \"no ICMP reply (filtered, or not permitted in this container; not conclusive)\"\nif command -v nc >/dev/null 2>&1; then\n  if nc -z -w 5 \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelif command -v bash >/dev/null 2>&1; then\n  if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelse\n  echo \"port $2 not tested: this image has neither nc nor bash\"\nfi","probe"],"command":["localhost","80"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-alloy-mon_alloy-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"probe"}}}])
+  cpu                      = "256"
+  execution_role_arn       = aws_iam_role.execution_role_ecs_alloy-mon.arn
+  family                   = "Struct8Probe-bOihDfFtxnGSZEbI86NkK-alloy-mon"
+  memory                   = "512"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+}
+
+resource "aws_ecs_task_definition" "Struct8Probe_Debug-grafana-mon_grafana-mon" {
+  container_definitions    = jsonencode([{"name":"probe","image":"${local.container_def_grafana-mon_grafana.image}","essential":true,"entryPoint":["/bin/sh","-c","echo \"struct8 probe: host=$1 port=$2\"\ngetent hosts \"$1\" || nslookup \"$1\" 2>/dev/null || echo \"no DNS answer\"\nping -c 3 -W 2 \"$1\" 2>/dev/null || echo \"no ICMP reply (filtered, or not permitted in this container; not conclusive)\"\nif command -v nc >/dev/null 2>&1; then\n  if nc -z -w 5 \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelif command -v bash >/dev/null 2>&1; then\n  if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelse\n  echo \"port $2 not tested: this image has neither nc nor bash\"\nfi","probe"],"command":["localhost","80"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-grafana-mon_grafana-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"probe"}}}])
+  cpu                      = "256"
+  execution_role_arn       = aws_iam_role.execution_role_ecs_grafana-mon.arn
+  family                   = "Struct8Probe-Kj0gEoH3JSkrCLidIJNOV-grafana-mon"
+  memory                   = "512"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+}
+
+resource "aws_ecs_task_definition" "Struct8Probe_Debug-loki-mon_loki-mon" {
+  container_definitions    = jsonencode([{"name":"probe","image":"${local.container_def_loki-mon_loki.image}","essential":true,"entryPoint":["/bin/sh","-c","echo \"struct8 probe: host=$1 port=$2\"\ngetent hosts \"$1\" || nslookup \"$1\" 2>/dev/null || echo \"no DNS answer\"\nping -c 3 -W 2 \"$1\" 2>/dev/null || echo \"no ICMP reply (filtered, or not permitted in this container; not conclusive)\"\nif command -v nc >/dev/null 2>&1; then\n  if nc -z -w 5 \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelif command -v bash >/dev/null 2>&1; then\n  if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelse\n  echo \"port $2 not tested: this image has neither nc nor bash\"\nfi","probe"],"command":["localhost","80"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-loki-mon_loki-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"probe"}}}])
+  cpu                      = "256"
+  execution_role_arn       = aws_iam_role.execution_role_ecs_loki-mon.arn
+  family                   = "Struct8Probe-972FIQG47OUQbuIPbAXut-loki-mon"
+  memory                   = "512"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+}
+
+resource "aws_ecs_task_definition" "Struct8Probe_Debug-tempo-mon_tempo-mon" {
+  container_definitions    = jsonencode([{"name":"probe","image":"${local.container_def_tempo-mon_tempo.image}","essential":true,"entryPoint":["/bin/sh","-c","echo \"struct8 probe: host=$1 port=$2\"\ngetent hosts \"$1\" || nslookup \"$1\" 2>/dev/null || echo \"no DNS answer\"\nping -c 3 -W 2 \"$1\" 2>/dev/null || echo \"no ICMP reply (filtered, or not permitted in this container; not conclusive)\"\nif command -v nc >/dev/null 2>&1; then\n  if nc -z -w 5 \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelif command -v bash >/dev/null 2>&1; then\n  if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelse\n  echo \"port $2 not tested: this image has neither nc nor bash\"\nfi","probe"],"command":["localhost","80"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-tempo-mon_tempo-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"probe"}}}])
+  cpu                      = "256"
+  execution_role_arn       = aws_iam_role.execution_role_ecs_tempo-mon.arn
+  family                   = "Struct8Probe-QpJ5vanuEsErFS2EFjls6-tempo-mon"
+  memory                   = "512"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+}
+
+resource "aws_ecs_task_definition" "Struct8Scratch_Debug-tempo-mon_tempo-mon" {
+  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_tempo-mon_tempo.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-tempo-mon_tempo-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
+  execution_role_arn       = aws_iam_role.execution_role_ecs_tempo-mon.arn
+  family                   = "Struct8Scratch-QpJ5vanuEsErFS2EFjls6-tempo-mon"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+  task_role_arn            = aws_iam_role.task_role_ecs_tempo-mon.arn
+}
+
 locals {
   container_def_alloy-mon_alloy = {
     name              = "alloy"
     image             = "grafana/alloy:v1.3.0"
     essential         = true
-    cpu               = 192
+    cpu               = 128
     memory            = 512
     memoryReservation = 256
     portMappings = [
@@ -1861,7 +2340,7 @@ locals {
     name              = "grafana"
     image             = "grafana/grafana:11.2.0"
     essential         = true
-    cpu               = 256
+    cpu               = 160
     memory            = 768
     memoryReservation = 256
     startTimeout      = 30
@@ -1984,9 +2463,9 @@ locals {
     name              = "loki"
     image             = "grafana/loki:3.1.0"
     essential         = true
-    cpu               = 192
+    cpu               = 128
     memory            = 768
-    memoryReservation = 320
+    memoryReservation = 256
     stopTimeout       = 120
     portMappings = [
       {
@@ -2076,9 +2555,9 @@ locals {
     name              = "tempo"
     image             = "grafana/tempo:2.5.0"
     essential         = true
-    cpu               = 192
+    cpu               = 128
     memory            = 768
-    memoryReservation = 320
+    memoryReservation = 256
     stopTimeout       = 120
     portMappings = [
       {
@@ -2179,6 +2658,26 @@ resource "aws_ecs_task_definition" "tempo-mon" {
 
 
 ### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_log_group" "Struct8Probe_Debug-alloy-mon_alloy-mon_logs" {
+  name              = "/struct8/probe/bOihDfFtxnGSZEbI86NkK/alloy-mon"
+  retention_in_days = 1
+}
+
+resource "aws_cloudwatch_log_group" "Struct8Probe_Debug-grafana-mon_grafana-mon_logs" {
+  name              = "/struct8/probe/Kj0gEoH3JSkrCLidIJNOV/grafana-mon"
+  retention_in_days = 1
+}
+
+resource "aws_cloudwatch_log_group" "Struct8Probe_Debug-loki-mon_loki-mon_logs" {
+  name              = "/struct8/probe/972FIQG47OUQbuIPbAXut/loki-mon"
+  retention_in_days = 1
+}
+
+resource "aws_cloudwatch_log_group" "Struct8Probe_Debug-tempo-mon_tempo-mon_logs" {
+  name              = "/struct8/probe/QpJ5vanuEsErFS2EFjls6/tempo-mon"
+  retention_in_days = 1
+}
 
 resource "aws_cloudwatch_log_group" "lambda-promtail-mon" {
   name              = "/aws/lambda/lambda-promtail-mon"
