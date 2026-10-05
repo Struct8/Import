@@ -286,7 +286,7 @@ data "aws_iam_policy_document" "lambda_function_lambda-promtail-mon_st_Stateless
   statement {
     sid       = "AllowObjectCRUD"
     effect    = "Allow"
-    actions   = ["s3:DeleteObject", "s3:GetObject", "s3:PutObject"]
+    actions   = ["s3:GetObject"]
     resources = ["${data.aws_s3_bucket.alb-access-logs-mon.arn}/*"]
   }
   statement {
@@ -750,17 +750,6 @@ resource "aws_route_table_association" "aws_route_table_association_snet_app_1b_
   subnet_id      = aws_subnet.snet-app-1b-mon.id
 }
 
-resource "aws_security_group" "SG-mon" {
-  name                   = "SG-mon"
-  vpc_id                 = data.aws_vpc.vpc-grafana-lgtm-mon.id
-  revoke_rules_on_delete = false
-  tags = {
-    Name           = "SG-mon"
-    State          = "Stateless-mon"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_security_group" "autoscaling_group_lgtm-ecs-asg-mon_group" {
   name                   = "autoscaling_group_lgtm-ecs-asg-mon_group"
   vpc_id                 = data.aws_vpc.vpc-grafana-lgtm-mon.id
@@ -810,23 +799,15 @@ resource "aws_security_group" "ecs_task_definition_tempo-mon_group" {
   revoke_rules_on_delete = false
 }
 
-resource "aws_security_group_rule" "rule_SG_mon_egress_all_protocols" {
-  security_group_id = aws_security_group.SG-mon.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 0
-  protocol          = "-1"
-  to_port           = 0
-  type              = "egress"
-}
-
-resource "aws_security_group_rule" "rule_SG_mon_to_ecs_task_definition_loki_mon_group_tcp_3100" {
-  security_group_id        = aws_security_group.ecs_task_definition_loki-mon_group.id
-  source_security_group_id = aws_security_group.SG-mon.id
-  description              = "lambda-promtail to loki push-api"
-  from_port                = 3100
-  protocol                 = "tcp"
-  to_port                  = 3100
-  type                     = "ingress"
+resource "aws_security_group" "lambda-promtail-mon" {
+  name                   = "lambda-promtail-mon"
+  vpc_id                 = data.aws_vpc.vpc-grafana-lgtm-mon.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "lambda-promtail-mon"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_security_group_rule" "rule_autoscaling_group_lgtm_ecs_asg_mon_group_egress_all_protocols" {
@@ -972,6 +953,25 @@ resource "aws_security_group_rule" "rule_ecs_task_definition_tempo_mon_group_ing
   self              = true
   to_port           = 9095
   type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lambda_promtail_mon_egress_all_protocols" {
+  security_group_id = aws_security_group.lambda-promtail-mon.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_lambda_promtail_mon_to_ecs_task_definition_loki_mon_group_tcp_3100" {
+  security_group_id        = aws_security_group.ecs_task_definition_loki-mon_group.id
+  source_security_group_id = aws_security_group.lambda-promtail-mon.id
+  description              = "lambda-promtail to loki push-api"
+  from_port                = 3100
+  protocol                 = "tcp"
+  to_port                  = 3100
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_lb_alb_grafana_mon_group_to_ecs_task_definition_alloy_mon_group_tcp_12345" {
@@ -1330,7 +1330,7 @@ resource "aws_autoscaling_group" "lgtm-ecs-asg-mon" {
   enabled_metrics           = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   health_check_type         = "EC2"
   max_instance_lifetime     = 0
-  max_size                  = 2
+  max_size                  = 3
   metrics_granularity       = "1Minute"
   min_elb_capacity          = 0
   min_size                  = 1
@@ -1367,8 +1367,9 @@ resource "aws_autoscaling_group" "lgtm-ecs-asg-mon" {
 resource "aws_lambda_function" "lambda-promtail-mon" {
   function_name                  = "lambda-promtail-mon"
   architectures                  = ["x86_64"]
+  description                    = "lambda-promtail - bridges ALB access logs into Loki. Triggered by S3 notifications from the alb-access-logs bucket; it reads each .log.gz,parses the ALB log lines,${and pushes them to Loki via WRITE_ADDRESS (http://loki-ring-mon.lgtm.internal-mon:3100/loki/api/v1/push)},${labelling them __aws_log_type=s3_lb. Runs INSIDE the VPC so it can reach the private Loki (hence the SG rule to Loki:3100). Code comes from the bucket-source-promptail ZIP. CAVEAT: a Lambda in a VPC creates AWS-managed Hyperplane ENIs that take 20-45 min to release on destroy},which blocks subnet/SG deletion - to avoid that,move the push off-VPC (e.g. send to the Alloy gateway instead of Loki directly)."
   handler                        = "bootstrap"
-  memory_size                    = 256
+  memory_size                    = 1800
   publish                        = false
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.lambda-promtail-mon_role.arn
@@ -1394,7 +1395,7 @@ resource "aws_lambda_function" "lambda-promtail-mon" {
     Struct8Creator = "Contato Struct"
   }
   vpc_config {
-    security_group_ids = [aws_security_group.SG-mon.id]
+    security_group_ids = [aws_security_group.lambda-promtail-mon.id]
     subnet_ids         = [aws_subnet.snet-app-1a-mon.id, aws_subnet.snet-app-1b-mon.id]
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_lambda-promtail-mon_st_Stateless-mon_attach]
@@ -1427,23 +1428,6 @@ resource "aws_appautoscaling_policy" "alloy-scale-cpu" {
     scale_in_cooldown  = 120
     scale_out_cooldown = 60
     target_value       = 60
-    predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageCPUUtilization"
-    }
-  }
-}
-
-resource "aws_appautoscaling_policy" "grafana-scale-cpu" {
-  name               = "grafana-scale-cpu"
-  resource_id        = aws_appautoscaling_target.grafana-scale-target-mon.resource_id
-  policy_type        = "TargetTrackingScaling"
-  scalable_dimension = aws_appautoscaling_target.grafana-scale-target-mon.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.grafana-scale-target-mon.service_namespace
-  target_tracking_scaling_policy_configuration {
-    disable_scale_in   = false
-    scale_in_cooldown  = 120
-    scale_out_cooldown = 60
-    target_value       = 40
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
@@ -1486,7 +1470,7 @@ resource "aws_appautoscaling_policy" "tempo-scale-cpu" {
 
 resource "aws_appautoscaling_target" "alloy-scale-target-mon" {
   resource_id        = "service/${aws_ecs_cluster.lgtm-cluster-mon.name}/${aws_ecs_service.alloy-mon_service.name}"
-  max_capacity       = 2
+  max_capacity       = 4
   min_capacity       = 1
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -1497,27 +1481,9 @@ resource "aws_appautoscaling_target" "alloy-scale-target-mon" {
   }
 }
 
-resource "aws_appautoscaling_target" "grafana-scale-target-mon" {
-  resource_id        = "service/${aws_ecs_cluster.lgtm-cluster-mon.name}/${aws_ecs_service.grafana-mon_service.name}"
-  max_capacity       = 1
-  min_capacity       = 1
-  scalable_dimension = "ecs:service:DesiredCount"
-  service_namespace  = "ecs"
-  suspended_state {
-    dynamic_scaling_in_suspended  = false
-    dynamic_scaling_out_suspended = false
-    scheduled_scaling_suspended   = false
-  }
-  tags = {
-    Name           = "hub-scale-target"
-    State          = "Stateless-mon"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_appautoscaling_target" "loki-scale-target-mon" {
   resource_id        = "service/${aws_ecs_cluster.lgtm-cluster-mon.name}/${aws_ecs_service.loki-mon_service.name}"
-  max_capacity       = 2
+  max_capacity       = 4
   min_capacity       = 1
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -1530,7 +1496,7 @@ resource "aws_appautoscaling_target" "loki-scale-target-mon" {
 
 resource "aws_appautoscaling_target" "tempo-scale-target-mon" {
   resource_id        = "service/${aws_ecs_cluster.lgtm-cluster-mon.name}/${aws_ecs_service.tempo-mon_service.name}"
-  max_capacity       = 2
+  max_capacity       = 4
   min_capacity       = 1
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -1654,9 +1620,6 @@ resource "aws_ecs_service" "grafana-mon_service" {
     base              = 0
     capacity_provider = aws_ecs_capacity_provider.lgtm-ec2-cp-mon.name
     weight            = 1
-  }
-  lifecycle {
-    ignore_changes = [desired_count]
   }
   load_balancer {
     container_name   = "grafana"
@@ -1785,8 +1748,8 @@ locals {
     name              = "alloy"
     image             = "grafana/alloy:v1.3.0"
     essential         = true
-    cpu               = 256
-    memory            = 640
+    cpu               = 192
+    memory            = 512
     memoryReservation = 256
     portMappings = [
       {
@@ -2007,9 +1970,9 @@ locals {
     name              = "loki"
     image             = "grafana/loki:3.1.0"
     essential         = true
-    cpu               = 256
-    memory            = 1024
-    memoryReservation = 384
+    cpu               = 192
+    memory            = 768
+    memoryReservation = 320
     stopTimeout       = 120
     portMappings = [
       {
@@ -2099,9 +2062,9 @@ locals {
     name              = "tempo"
     image             = "grafana/tempo:2.5.0"
     essential         = true
-    cpu               = 256
-    memory            = 1024
-    memoryReservation = 384
+    cpu               = 192
+    memory            = 768
+    memoryReservation = 320
     stopTimeout       = 120
     portMappings = [
       {
