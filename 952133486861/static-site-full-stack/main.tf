@@ -30,8 +30,22 @@ data "aws_cloudfront_cache_policy" "policy_cachingoptimized" {
   name = "Managed-CachingOptimized"
 }
 
+data "aws_cloudfront_origin_request_policy" "policy_allviewerexcepthostheader" {
+  name = "Managed-AllViewerExceptHostHeader"
+}
+
 data "aws_cloudfront_cache_policy" "policy_cachingdisabled" {
   name = "Managed-CachingDisabled"
+}
+
+
+
+
+### RENAMES ###
+
+moved {
+  from = aws_s3_object.index-html1
+  to   = aws_s3_object.index-html
 }
 
 
@@ -89,7 +103,7 @@ resource "aws_iam_role_policy_attachment" "lambda_function_presign-url-generator
 ### CATEGORY: NETWORK ###
 
 resource "aws_cloudfront_distribution" "site-cdn" {
-  comment             = "Static website CDN over HTTPS. Root index.html, managed caching, 403/404 -> /error.html. Region ca-central-1."
+  comment             = "Static website from S3; /api/* goes to a Lambda that returns presigned S3 upload URLs. HTTPS only."
   default_root_object = "index.html"
   enabled             = true
   http_version        = "http2and3"
@@ -115,12 +129,13 @@ resource "aws_cloudfront_distribution" "site-cdn" {
     viewer_protocol_policy = "redirect-to-https"
   }
   ordered_cache_behavior {
-    cache_policy_id        = data.aws_cloudfront_cache_policy.policy_cachingdisabled.id
-    target_origin_id       = "api-origin"
-    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods         = ["GET", "HEAD", "OPTIONS"]
-    path_pattern           = "/api/*"
-    viewer_protocol_policy = "redirect-to-https"
+    cache_policy_id          = data.aws_cloudfront_cache_policy.policy_cachingdisabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.policy_allviewerexcepthostheader.id
+    target_origin_id         = "api-origin"
+    allowed_methods          = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods           = ["GET", "HEAD", "OPTIONS"]
+    path_pattern             = "/api/*"
+    viewer_protocol_policy   = "redirect-to-https"
     function_association {
       event_type   = "viewer-request"
       function_arn = aws_cloudfront_function.path-rewrite-api-to-origin.arn
@@ -357,7 +372,7 @@ resource "aws_s3_object" "error-html" {
   }
 }
 
-resource "aws_s3_object" "index-html1" {
+resource "aws_s3_object" "index-html" {
   acl    = "private"
   bucket = aws_s3_bucket.site-assets.bucket
   content = <<EOF
@@ -412,7 +427,7 @@ resource "aws_s3_object" "index-html1" {
     .message.success { background:rgba(34,197,94,0.15); color:var(--success); border:1px solid rgba(34,197,94,0.3); }
     .message.error { background:rgba(239,68,68,0.15); color:var(--error); border:1px solid rgba(239,68,68,0.3); }
     
-    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:28px; }
+    .info-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:28px; }
     .info-item { background:rgba(148,163,184,0.08); border:1px solid rgba(148,163,184,0.12); border-radius:10px; padding:16px; }
     .info-item h3 { font-size:14px; color:var(--accent); margin-bottom:6px; }
     .info-item span { font-size:13px; color:var(--muted); }
@@ -449,7 +464,6 @@ resource "aws_s3_object" "index-html1" {
       <div class="info-item"><h3>Storage</h3><span>Amazon S3</span></div>
       <div class="info-item"><h3>CDN</h3><span>Amazon CloudFront</span></div>
       <div class="info-item"><h3>API</h3><span>Lambda + Presigned URL</span></div>
-      <div class="info-item"><h3>Region</h3><span>us-east-1</span></div>
     </div>
     
     <footer>Provisioned with Struct8 &middot; Infrastructure as code</footer>
@@ -537,17 +551,11 @@ resource "aws_s3_object" "index-html1" {
       progressBar.style.width = '10%';
 
       try {
-        // 1. Get presigned URL from Lambda
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            filename: selectedFile.name,
-            contentType: selectedFile.type
-          })
-        });
+        // 1. Get presigned URL from Lambda. The object key keeps the original
+        // file name, after a timestamp that keeps two uploads of the same name apart.
+        let query = '?key=' + encodeURIComponent('uploads/' + Date.now() + '-' + selectedFile.name);
+        if (selectedFile.type) query += '&contentType=' + encodeURIComponent(selectedFile.type);
+        const response = await fetch(API_URL + query, { method: 'POST' });
 
         if (!response.ok) {
           throw new Error('Failed to get presigned URL');
@@ -573,7 +581,7 @@ resource "aws_s3_object" "index-html1" {
         }
 
         progressBar.style.width = '100%';
-        showMessage('✅ Upload successful! File is now in S3.', 'success');
+        showMessage('✅ Upload successful! Saved as ' + data.key, 'success');
 
         // Clear after success
         setTimeout(() => {
@@ -598,7 +606,7 @@ resource "aws_s3_object" "index-html1" {
   content_type = "text/html"
   key          = "index.html"
   tags = {
-    Name           = "index-html1"
+    Name           = "index-html"
     State          = "static-site-full-stack"
     Struct8Creator = "Contato Struct"
   }
