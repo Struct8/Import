@@ -842,7 +842,7 @@ resource "aws_rds_cluster" "demo-aurora" {
   database_insights_mode              = "standard"
   enable_http_endpoint                = true
   engine                              = "aurora-postgresql"
-  engine_version                      = "16.6"
+  engine_version                      = "16.8"
   iam_database_authentication_enabled = true
   manage_master_user_password         = true
   master_username                     = "dbadmin"
