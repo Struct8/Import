@@ -319,13 +319,37 @@ locals {
       path            = "/assets/{proxy+}"
       uri             = "arn:aws:apigateway:us-east-1:s3:path/${aws_s3_bucket.assets.id}/{proxy}"
       type            = "aws"
-      methods         = ["get", "post", "put", "delete"]
-      method_security = {"get" = [{ "api_key" = [] }], "post" = [{ "api_key" = [] }], "put" = [{ "api_key" = [] }], "delete" = [{ "api_key" = [] }]}
+      methods         = ["get", "put", "delete"]
+      method_security = {"get" = [{ "api_key" = [] }], "put" = [{ "api_key" = [] }], "delete" = [{ "api_key" = [] }]}
       enable_mock     = true
       credentials     = aws_iam_role.role_apigw_demo-rest-api_to_assets.arn
       requestTemplates = {
       }
       integ_method = "MATCH"
+      parameters = [
+          {
+            name     = "proxy"
+            in       = "path"
+            required = true
+            schema   = { type = "string" }
+          }
+        ]
+      integ_req_params = {
+        "integration.request.path.proxy" = "method.request.path.proxy"
+      }
+      error_responses = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
+    },
+    {
+      path            = "/assets/{proxy+}"
+      uri             = "arn:aws:apigateway:us-east-1:s3:path/${aws_s3_bucket.assets.id}/{proxy}"
+      type            = "aws"
+      methods         = ["post"]
+      method_security = {"post" = [{ "api_key" = [] }]}
+      enable_mock     = true
+      credentials     = aws_iam_role.role_apigw_demo-rest-api_to_assets.arn
+      requestTemplates = {
+      }
+      integ_method = "PUT"
       parameters = [
           {
             name     = "proxy"
