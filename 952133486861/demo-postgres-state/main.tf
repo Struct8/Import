@@ -41,7 +41,7 @@ data "aws_iam_policy_document" "db_proxy_demo-postgres-proxy_st_demo-postgres-st
     sid       = "ReadDatabaseCredentials"
     effect    = "Allow"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)]
+    resources = [one(aws_rds_cluster.demo-aurora.master_user_secret[*].secret_arn)]
   }
 }
 
@@ -53,10 +53,16 @@ resource "aws_iam_policy" "db_proxy_demo-postgres-proxy_st_demo-postgres-state" 
 
 data "aws_iam_policy_document" "instance_demo-pgweb_st_demo-postgres-state_doc" {
   statement {
-    sid       = "AllowRDSSecretAccessdemopostgres"
+    sid       = "AllowRDSDataApidemoaurora"
+    effect    = "Allow"
+    actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
+    resources = [aws_rds_cluster.demo-aurora.arn]
+  }
+  statement {
+    sid       = "AllowRDSSecretAccessdemoaurora"
     effect    = "Allow"
     actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
-    resources = [aws_db_instance.demo-postgres.master_user_secret[0].secret_arn]
+    resources = [aws_rds_cluster.demo-aurora.master_user_secret[0].secret_arn]
   }
 }
 
@@ -77,7 +83,7 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-api_st_demo-postgr
     sid       = "ReadDatabaseCredentials"
     effect    = "Allow"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)]
+    resources = [one(aws_rds_cluster.demo-aurora.master_user_secret[*].secret_arn)]
   }
   statement {
     sid       = "AllowAllResources"
@@ -101,10 +107,16 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-direct_st_demo-pos
     resources = ["${aws_cloudwatch_log_group.demo-postgres-direct-logs.arn}:*"]
   }
   statement {
-    sid       = "AllowRDSSecretAccessdemopostgres"
+    sid       = "AllowRDSDataApidemoaurora"
+    effect    = "Allow"
+    actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
+    resources = [aws_rds_cluster.demo-aurora.arn]
+  }
+  statement {
+    sid       = "AllowRDSSecretAccessdemoaurora"
     effect    = "Allow"
     actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
-    resources = [aws_db_instance.demo-postgres.master_user_secret[0].secret_arn]
+    resources = [aws_rds_cluster.demo-aurora.master_user_secret[0].secret_arn]
   }
   statement {
     sid       = "AllowAllResources"
@@ -128,10 +140,16 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-iam_st_demo-postgr
     resources = ["${aws_cloudwatch_log_group.demo-postgres-iam-logs.arn}:*"]
   }
   statement {
-    sid       = "AllowRDSSecretAccessdemopostgres"
+    sid       = "AllowRDSDataApidemoaurora"
+    effect    = "Allow"
+    actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
+    resources = [aws_rds_cluster.demo-aurora.arn]
+  }
+  statement {
+    sid       = "AllowRDSSecretAccessdemoaurora"
     effect    = "Allow"
     actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
-    resources = [aws_db_instance.demo-postgres.master_user_secret[0].secret_arn]
+    resources = [aws_rds_cluster.demo-aurora.master_user_secret[0].secret_arn]
   }
   statement {
     sid       = "AllowAllResources"
@@ -143,7 +161,7 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-iam_st_demo-postgr
     sid       = "RdsIamConnect"
     effect    = "Allow"
     actions   = ["rds-db:connect"]
-    resources = ["arn:aws:rds-db:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:dbuser:${aws_db_instance.demo-postgres.resource_id}/lambda_iam"]
+    resources = ["arn:aws:rds-db:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:dbuser:${aws_rds_cluster.demo-aurora.cluster_resource_id}/lambda_iam"]
   }
 }
 
@@ -309,27 +327,6 @@ resource "aws_iam_role" "demo-postgres-iam_role" {
   }
 }
 
-resource "aws_iam_role" "role_monitoring_demo-postgres" {
-  name = "role_monitoring_demo-postgres"
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "monitoring.rds.amazonaws.com"
-      }
-    }
-  ]
-})
-  tags = {
-    Name           = "role_monitoring_demo-postgres"
-    State          = "demo-postgres-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_iam_role" "role_rds_proxy_demo-postgres-proxy" {
   name = "role_rds_proxy_demo-postgres-proxy"
   assume_role_policy = jsonencode({
@@ -390,23 +387,18 @@ resource "aws_iam_role_policy_attachment" "lambda_function_demo-postgres-iam_st_
   role       = aws_iam_role.demo-postgres-iam_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "service_role_AmazonRDSEnhancedMonitoringRole_to_demo-postgres_attach" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
-  role       = aws_iam_role.role_monitoring_demo-postgres.name
-}
-
 
 
 
 ### CATEGORY: NETWORK ###
 
-resource "aws_vpc" "VPC2" {
+resource "aws_vpc" "rds-access-patterns-lab" {
   cidr_block           = "10.8.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
   instance_tenancy     = "default"
   tags = {
-    Name           = "VPC2"
+    Name           = "rds-access-patterns-lab"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
@@ -414,7 +406,7 @@ resource "aws_vpc" "VPC2" {
 
 resource "aws_vpc_endpoint" "ep-cloudwatch_LOGS" {
   service_name        = "com.amazonaws.${data.aws_region.current.region}.logs"
-  vpc_id              = aws_vpc.VPC2.id
+  vpc_id              = aws_vpc.rds-access-patterns-lab.id
   ip_address_type     = "ipv4"
   private_dns_enabled = true
   security_group_ids  = [aws_security_group.sg_vpce_ep-cloudwatch.id]
@@ -430,7 +422,7 @@ resource "aws_vpc_endpoint" "ep-cloudwatch_LOGS" {
 
 resource "aws_vpc_endpoint" "ep-secret-manager_SECRETSMANAGER" {
   service_name        = "com.amazonaws.${data.aws_region.current.region}.secretsmanager"
-  vpc_id              = aws_vpc.VPC2.id
+  vpc_id              = aws_vpc.rds-access-patterns-lab.id
   ip_address_type     = "ipv4"
   private_dns_enabled = true
   security_group_ids  = [aws_security_group.sg_vpce_ep-secret-manager.id]
@@ -445,7 +437,7 @@ resource "aws_vpc_endpoint" "ep-secret-manager_SECRETSMANAGER" {
 }
 
 resource "aws_subnet" "demo-postgres-private-a" {
-  vpc_id                  = aws_vpc.VPC2.id
+  vpc_id                  = aws_vpc.rds-access-patterns-lab.id
   availability_zone       = "us-west-2a"
   cidr_block              = "10.8.0.0/24"
   map_public_ip_on_launch = false
@@ -457,7 +449,7 @@ resource "aws_subnet" "demo-postgres-private-a" {
 }
 
 resource "aws_subnet" "demo-postgres-private-b" {
-  vpc_id                  = aws_vpc.VPC2.id
+  vpc_id                  = aws_vpc.rds-access-patterns-lab.id
   availability_zone       = "us-west-2b"
   cidr_block              = "10.8.1.0/24"
   map_public_ip_on_launch = false
@@ -469,7 +461,7 @@ resource "aws_subnet" "demo-postgres-private-b" {
 }
 
 resource "aws_subnet" "demo-public-a" {
-  vpc_id                  = aws_vpc.VPC2.id
+  vpc_id                  = aws_vpc.rds-access-patterns-lab.id
   availability_zone       = "us-west-2a"
   cidr_block              = "10.8.10.0/24"
   map_public_ip_on_launch = true
@@ -481,7 +473,7 @@ resource "aws_subnet" "demo-public-a" {
 }
 
 resource "aws_internet_gateway" "demo-igw" {
-  vpc_id = aws_vpc.VPC2.id
+  vpc_id = aws_vpc.rds-access-patterns-lab.id
   tags = {
     Name           = "demo-igw"
     State          = "demo-postgres-state"
@@ -496,7 +488,7 @@ resource "aws_route" "route_demo-public-rt_to_demo-igw_ipv4" {
 }
 
 resource "aws_route_table" "demo-public-rt" {
-  vpc_id = aws_vpc.VPC2.id
+  vpc_id = aws_vpc.rds-access-patterns-lab.id
   tags = {
     Name           = "demo-public-rt"
     State          = "demo-postgres-state"
@@ -509,20 +501,9 @@ resource "aws_route_table_association" "aws_route_table_association_demo_public_
   subnet_id      = aws_subnet.demo-public-a.id
 }
 
-resource "aws_security_group" "db_instance_demo-postgres_group" {
-  name                   = "db_instance_demo-postgres_group"
-  vpc_id                 = aws_vpc.VPC2.id
-  revoke_rules_on_delete = false
-  tags = {
-    Name           = "db_instance_demo-postgres_group"
-    State          = "demo-postgres-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_security_group" "db_proxy_demo-postgres-proxy_group" {
   name                   = "db_proxy_demo-postgres-proxy_group"
-  vpc_id                 = aws_vpc.VPC2.id
+  vpc_id                 = aws_vpc.rds-access-patterns-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "db_proxy_demo-postgres-proxy_group"
@@ -533,7 +514,7 @@ resource "aws_security_group" "db_proxy_demo-postgres-proxy_group" {
 
 resource "aws_security_group" "demo-postgres-api" {
   name                   = "demo-postgres-api"
-  vpc_id                 = aws_vpc.VPC2.id
+  vpc_id                 = aws_vpc.rds-access-patterns-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "demo-postgres-api"
@@ -544,7 +525,7 @@ resource "aws_security_group" "demo-postgres-api" {
 
 resource "aws_security_group" "demo-postgres-direct" {
   name                   = "demo-postgres-direct"
-  vpc_id                 = aws_vpc.VPC2.id
+  vpc_id                 = aws_vpc.rds-access-patterns-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "demo-postgres-direct"
@@ -555,7 +536,7 @@ resource "aws_security_group" "demo-postgres-direct" {
 
 resource "aws_security_group" "demo-postgres-iam" {
   name                   = "demo-postgres-iam"
-  vpc_id                 = aws_vpc.VPC2.id
+  vpc_id                 = aws_vpc.rds-access-patterns-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "demo-postgres-iam"
@@ -566,14 +547,25 @@ resource "aws_security_group" "demo-postgres-iam" {
 
 resource "aws_security_group" "instance_demo-pgweb_group" {
   name                   = "instance_demo-pgweb_group"
-  vpc_id                 = aws_vpc.VPC2.id
+  vpc_id                 = aws_vpc.rds-access-patterns-lab.id
   description            = "pgweb web UI"
   revoke_rules_on_delete = false
 }
 
+resource "aws_security_group" "rds_cluster_demo-aurora_group" {
+  name                   = "rds_cluster_demo-aurora_group"
+  vpc_id                 = aws_vpc.rds-access-patterns-lab.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "rds_cluster_demo-aurora_group"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_security_group" "sg_vpce_ep-cloudwatch" {
   name        = "vpce-sg-ep-cloudwatch"
-  vpc_id      = aws_vpc.VPC2.id
+  vpc_id      = aws_vpc.rds-access-patterns-lab.id
   description = "Auto-generated SG for ep-cloudwatch"
   tags = {
     Name           = "ep-cloudwatch"
@@ -585,7 +577,7 @@ resource "aws_security_group" "sg_vpce_ep-cloudwatch" {
 
 resource "aws_security_group" "sg_vpce_ep-secret-manager" {
   name        = "vpce-sg-ep-secret-manager"
-  vpc_id      = aws_vpc.VPC2.id
+  vpc_id      = aws_vpc.rds-access-patterns-lab.id
   description = "Auto-generated SG for ep-secret-manager"
   tags = {
     Name           = "ep-secret-manager"
@@ -593,15 +585,6 @@ resource "aws_security_group" "sg_vpce_ep-secret-manager" {
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
-}
-
-resource "aws_security_group_rule" "rule_db_instance_demo_postgres_group_egress_all_protocols" {
-  security_group_id = aws_security_group.db_instance_demo-postgres_group.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 0
-  protocol          = "-1"
-  to_port           = 0
-  type              = "egress"
 }
 
 resource "aws_security_group_rule" "rule_db_proxy_demo_postgres_proxy_group_egress_all_protocols" {
@@ -613,8 +596,8 @@ resource "aws_security_group_rule" "rule_db_proxy_demo_postgres_proxy_group_egre
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_db_proxy_demo_postgres_proxy_group_to_db_instance_demo_postgres_group_tcp_5432" {
-  security_group_id        = aws_security_group.db_instance_demo-postgres_group.id
+resource "aws_security_group_rule" "rule_db_proxy_demo_postgres_proxy_group_to_rds_cluster_demo_aurora_group_tcp_5432" {
+  security_group_id        = aws_security_group.rds_cluster_demo-aurora_group.id
   source_security_group_id = aws_security_group.db_proxy_demo-postgres-proxy_group.id
   description              = "Allow from RDS Proxy demo-postgres-proxy"
   from_port                = 5432
@@ -651,8 +634,8 @@ resource "aws_security_group_rule" "rule_demo_postgres_direct_egress_all_protoco
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_demo_postgres_direct_to_db_instance_demo_postgres_group_tcp_5432" {
-  security_group_id        = aws_security_group.db_instance_demo-postgres_group.id
+resource "aws_security_group_rule" "rule_demo_postgres_direct_to_rds_cluster_demo_aurora_group_tcp_5432" {
+  security_group_id        = aws_security_group.rds_cluster_demo-aurora_group.id
   source_security_group_id = aws_security_group.demo-postgres-direct.id
   description              = "Allow from demo-postgres-direct (tcp:5432-5432)"
   from_port                = 5432
@@ -670,8 +653,8 @@ resource "aws_security_group_rule" "rule_demo_postgres_iam_egress_all_protocols"
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_demo_postgres_iam_to_db_instance_demo_postgres_group_tcp_5432" {
-  security_group_id        = aws_security_group.db_instance_demo-postgres_group.id
+resource "aws_security_group_rule" "rule_demo_postgres_iam_to_rds_cluster_demo_aurora_group_tcp_5432" {
+  security_group_id        = aws_security_group.rds_cluster_demo-aurora_group.id
   source_security_group_id = aws_security_group.demo-postgres-iam.id
   description              = "Allow from demo-postgres-iam (tcp:5432-5432)"
   from_port                = 5432
@@ -698,14 +681,23 @@ resource "aws_security_group_rule" "rule_instance_demo_pgweb_group_ingress_tcp_8
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_instance_demo_pgweb_group_to_db_instance_demo_postgres_group_tcp_5432" {
-  security_group_id        = aws_security_group.db_instance_demo-postgres_group.id
+resource "aws_security_group_rule" "rule_instance_demo_pgweb_group_to_rds_cluster_demo_aurora_group_tcp_5432" {
+  security_group_id        = aws_security_group.rds_cluster_demo-aurora_group.id
   source_security_group_id = aws_security_group.instance_demo-pgweb_group.id
   description              = "Allow from instance_demo-pgweb_group (tcp:5432-5432)"
   from_port                = 5432
   protocol                 = "tcp"
   to_port                  = 5432
   type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_rds_cluster_demo_aurora_group_egress_all_protocols" {
+  security_group_id = aws_security_group.rds_cluster_demo-aurora_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
 }
 
 resource "aws_security_group_rule" "rule_sg_vpce_ep_cloudwatch_egress_all_protocols" {
@@ -753,57 +745,6 @@ resource "aws_security_group_rule" "rule_sg_vpce_ep_secret_manager_ingress_tcp_4
 
 ### CATEGORY: DATABASE ###
 
-resource "aws_db_instance" "demo-postgres" {
-  db_name                             = "appdb"
-  db_subnet_group_name                = aws_db_subnet_group.subnet_group_demo-postgres.name
-  parameter_group_name                = aws_db_parameter_group.demo-postgres-params1.name
-  allocated_storage                   = 20
-  availability_zone                   = aws_subnet.demo-postgres-private-a.availability_zone
-  backup_retention_period             = 7
-  backup_window                       = "03:00-04:00"
-  copy_tags_to_snapshot               = true
-  delete_automated_backups            = false
-  engine                              = "postgres"
-  engine_lifecycle_support            = "open-source-rds-extended-support-disabled"
-  engine_version                      = "18"
-  iam_database_authentication_enabled = true
-  identifier                          = "demo-postgres"
-  instance_class                      = "db.t3.micro"
-  maintenance_window                  = "mon:04:30-mon:05:30"
-  manage_master_user_password         = true
-  max_allocated_storage               = 100
-  monitoring_interval                 = 60
-  monitoring_role_arn                 = aws_iam_role.role_monitoring_demo-postgres.arn
-  port                                = 5432
-  skip_final_snapshot                 = true
-  storage_encrypted                   = true
-  storage_type                        = "gp3"
-  upgrade_storage_config              = false
-  username                            = "dbadmin"
-  vpc_security_group_ids              = [aws_security_group.db_instance_demo-postgres_group.id]
-  tags = {
-    Name           = "demo-postgres"
-    State          = "demo-postgres-state"
-    Struct8Creator = "Contato Struct"
-  }
-  depends_on = [aws_cloudwatch_log_group.demo-postgres-log1, aws_iam_role_policy_attachment.service_role_AmazonRDSEnhancedMonitoringRole_to_demo-postgres_attach]
-}
-
-resource "aws_db_parameter_group" "demo-postgres-params1" {
-  description  = "Parametros PostgreSQL 18 para a demo"
-  family       = "postgres18"
-  name_prefix  = "demo-postgres-params1"
-  skip_destroy = false
-  lifecycle {
-    create_before_destroy = true
-  }
-  tags = {
-    Name           = "demo-postgres-params1"
-    State          = "demo-postgres-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_db_proxy" "demo-postgres-proxy" {
   name                   = "demo-postgres-proxy"
   engine_family          = "POSTGRESQL"
@@ -815,7 +756,7 @@ resource "aws_db_proxy" "demo-postgres-proxy" {
     auth_scheme               = "SECRETS"
     client_password_auth_type = "POSTGRES_SCRAM_SHA_256"
     iam_auth                  = "DISABLED"
-    secret_arn                = one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)
+    secret_arn                = one(aws_rds_cluster.demo-aurora.master_user_secret[*].secret_arn)
   }
   tags = {
     Name           = "demo-postgres-proxy"
@@ -826,16 +767,62 @@ resource "aws_db_proxy" "demo-postgres-proxy" {
 }
 
 resource "aws_db_proxy_target" "demo-postgres-proxy_target" {
-  db_proxy_name          = aws_db_proxy.demo-postgres-proxy.name
-  target_group_name      = "default"
-  db_instance_identifier = aws_db_instance.demo-postgres.identifier
+  db_proxy_name         = aws_db_proxy.demo-postgres-proxy.name
+  target_group_name     = "default"
+  db_cluster_identifier = aws_rds_cluster.demo-aurora.cluster_identifier
 }
 
-resource "aws_db_subnet_group" "subnet_group_demo-postgres" {
-  name       = "demo-postgres-subnet-group"
-  subnet_ids = [aws_subnet.demo-postgres-private-a.id, aws_subnet.demo-postgres-private-b.id]
+resource "aws_db_subnet_group" "subnet_group_demo-aurora" {
+  name       = "demo-aurora-subnet-group"
+  subnet_ids = [aws_subnet.demo-postgres-private-a.id]
   tags = {
-    Name           = "subnet_group_demo-postgres"
+    Name           = "subnet_group_demo-aurora"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_rds_cluster" "demo-aurora" {
+  database_name                       = "appdb"
+  db_subnet_group_name                = aws_db_subnet_group.subnet_group_demo-aurora.name
+  apply_immediately                   = true
+  backup_retention_period             = 7
+  cluster_identifier                  = "demo-aurora"
+  copy_tags_to_snapshot               = true
+  database_insights_mode              = "standard"
+  enable_http_endpoint                = true
+  engine                              = "aurora-postgresql"
+  engine_version                      = "16.6"
+  iam_database_authentication_enabled = true
+  manage_master_user_password         = true
+  master_username                     = "dbadmin"
+  monitoring_interval                 = 0
+  network_type                        = "IPV4"
+  port                                = 5432
+  skip_final_snapshot                 = true
+  storage_encrypted                   = true
+  vpc_security_group_ids              = [aws_security_group.rds_cluster_demo-aurora_group.id]
+  serverlessv2_scaling_configuration {
+    max_capacity = 2
+    min_capacity = 0.5
+  }
+  tags = {
+    Name           = "demo-aurora"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_rds_cluster_instance" "demo-aurora-1" {
+  cluster_identifier                    = aws_rds_cluster.demo-aurora.id
+  copy_tags_to_snapshot                 = true
+  engine                                = aws_rds_cluster.demo-aurora.engine
+  identifier                            = "demo-aurora-1"
+  instance_class                        = "db.serverless"
+  performance_insights_retention_period = 7
+  promotion_tier                        = 1
+  tags = {
+    Name           = "demo-aurora-1"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
@@ -873,12 +860,13 @@ cat << 'EOFENV' > /etc/struct8_env
 NAME="demo-pgweb"
 REGION="${data.aws_region.current.region}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
-AWS_DB_INSTANCE_NAME_0="${aws_db_instance.demo-postgres.identifier}"
-AWS_DB_INSTANCE_ENGINE_0="${aws_db_instance.demo-postgres.engine}"
-AWS_DB_INSTANCE_ENDPOINT_0="${aws_db_instance.demo-postgres.endpoint}"
-AWS_DB_INSTANCE_DB_NAME_0="${aws_db_instance.demo-postgres.db_name}"
-AWS_DB_INSTANCE_SECRET_ARN_0="${one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)}"
-AWS_DB_INSTANCE_USER_NAME_0="${one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)}:username::"
+AWS_RDS_CLUSTER_NAME_0="${aws_rds_cluster.demo-aurora.cluster_identifier}"
+AWS_RDS_CLUSTER_ENGINE_0="${aws_rds_cluster.demo-aurora.engine}"
+AWS_RDS_CLUSTER_ENDPOINT_0="${aws_rds_cluster.demo-aurora.endpoint}"
+AWS_RDS_CLUSTER_PORT_0="${aws_rds_cluster.demo-aurora.port}"
+AWS_RDS_CLUSTER_DB_NAME_0="${coalesce(aws_rds_cluster.demo-aurora.database_name, \"postgres\")}"
+AWS_RDS_CLUSTER_SECRET_ARN_0="${one(aws_rds_cluster.demo-aurora.master_user_secret[*].secret_arn)}"
+AWS_RDS_CLUSTER_ARN_0="${aws_rds_cluster.demo-aurora.arn}"
 EOFENV
 cat /etc/struct8_env >> /etc/environment
 sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
@@ -977,12 +965,13 @@ resource "aws_lambda_function" "demo-postgres-direct" {
     NAME                         = "demo-postgres-direct"
     REGION                       = data.aws_region.current.region
     ACCOUNT                      = data.aws_caller_identity.current.account_id
-    AWS_DB_INSTANCE_NAME_0       = aws_db_instance.demo-postgres.identifier
-    AWS_DB_INSTANCE_ENGINE_0     = aws_db_instance.demo-postgres.engine
-    AWS_DB_INSTANCE_ENDPOINT_0   = aws_db_instance.demo-postgres.endpoint
-    AWS_DB_INSTANCE_DB_NAME_0    = aws_db_instance.demo-postgres.db_name
-    AWS_DB_INSTANCE_SECRET_ARN_0 = one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)
-    AWS_DB_INSTANCE_USER_NAME_0  = "${one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)}:username::"
+    AWS_RDS_CLUSTER_NAME_0       = aws_rds_cluster.demo-aurora.cluster_identifier
+    AWS_RDS_CLUSTER_ENGINE_0     = aws_rds_cluster.demo-aurora.engine
+    AWS_RDS_CLUSTER_ENDPOINT_0   = aws_rds_cluster.demo-aurora.endpoint
+    AWS_RDS_CLUSTER_PORT_0       = aws_rds_cluster.demo-aurora.port
+    AWS_RDS_CLUSTER_DB_NAME_0    = coalesce(aws_rds_cluster.demo-aurora.database_name, "postgres")
+    AWS_RDS_CLUSTER_SECRET_ARN_0 = one(aws_rds_cluster.demo-aurora.master_user_secret[*].secret_arn)
+    AWS_RDS_CLUSTER_ARN_0        = aws_rds_cluster.demo-aurora.arn
   }
   }
   tags = {
@@ -1021,12 +1010,14 @@ resource "aws_lambda_function" "demo-postgres-iam" {
     NAME                         = "demo-postgres-iam"
     REGION                       = data.aws_region.current.region
     ACCOUNT                      = data.aws_caller_identity.current.account_id
-    AWS_DB_INSTANCE_NAME_0       = aws_db_instance.demo-postgres.identifier
-    AWS_DB_INSTANCE_ENGINE_0     = aws_db_instance.demo-postgres.engine
-    AWS_DB_INSTANCE_ENDPOINT_0   = aws_db_instance.demo-postgres.endpoint
-    AWS_DB_INSTANCE_DB_NAME_0    = aws_db_instance.demo-postgres.db_name
-    AWS_DB_INSTANCE_SECRET_ARN_0 = one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)
-    AWS_DB_INSTANCE_USER_NAME_0  = "${one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)}:username::"
+    AWS_RDS_CLUSTER_NAME_0       = aws_rds_cluster.demo-aurora.cluster_identifier
+    AWS_RDS_CLUSTER_ENGINE_0     = aws_rds_cluster.demo-aurora.engine
+    AWS_RDS_CLUSTER_ENDPOINT_0   = aws_rds_cluster.demo-aurora.endpoint
+    AWS_RDS_CLUSTER_PORT_0       = aws_rds_cluster.demo-aurora.port
+    AWS_RDS_CLUSTER_DB_NAME_0    = coalesce(aws_rds_cluster.demo-aurora.database_name, "postgres")
+    AWS_RDS_CLUSTER_SECRET_ARN_0 = one(aws_rds_cluster.demo-aurora.master_user_secret[*].secret_arn)
+    AWS_RDS_CLUSTER_ARN_0        = aws_rds_cluster.demo-aurora.arn
+    AWS_RDS_CLUSTER_IAM_USER_0   = "lambda_iam"
   }
   }
   tags = {
@@ -1147,18 +1138,6 @@ resource "aws_cloudwatch_log_group" "demo-postgres-iam-logs" {
   skip_destroy      = false
   tags = {
     Name           = "demo-postgres-iam-logs"
-    State          = "demo-postgres-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_cloudwatch_log_group" "demo-postgres-log1" {
-  name              = "RDSOSMetrics"
-  log_group_class   = "STANDARD"
-  retention_in_days = 30
-  skip_destroy      = false
-  tags = {
-    Name           = "demo-postgres-log1"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
