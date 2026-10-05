@@ -416,6 +416,11 @@ resource "aws_security_group" "instance_ec2-loadgen-mon_group" {
   vpc_id                 = aws_vpc.vpc-grafana-lgtm-mon.id
   description            = "SG for the OTLP load generator. Ingress 80 for the web control panel (protected by OTEL_PANEL_TOKEN); egress open so it can reach the OTLP gateway over the internet and pull the Docker image."
   revoke_rules_on_delete = false
+  tags = {
+    Name           = "instance_ec2-loadgen-mon_group"
+    State          = "Platform-mon"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_security_group" "instance_nat-a1_group" {
