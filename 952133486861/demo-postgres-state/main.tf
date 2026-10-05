@@ -847,6 +847,7 @@ data "aws_ami" "AMI_Data_Source_demo-pgweb" {
 }
 
 resource "aws_instance" "demo-pgweb" {
+  # ajuste manual · user_data_base64 — Generator bug: EC2 user_data env-var path escapes the string literal inside coalesce(...,"postgres") as \"postgres\", which is invalid HCL inside a ${} interpolation and breaks terraform plan. database_name is always set (appdb), so reference it directly without the coalesce fallback. Remove when the generator stops escaping quotes in the EC2 env block.
   subnet_id                   = aws_subnet.demo-public-a.id
   ami                         = data.aws_ami.AMI_Data_Source_demo-pgweb.id
   associate_public_ip_address = true
@@ -864,7 +865,7 @@ AWS_RDS_CLUSTER_NAME_0="${aws_rds_cluster.demo-aurora.cluster_identifier}"
 AWS_RDS_CLUSTER_ENGINE_0="${aws_rds_cluster.demo-aurora.engine}"
 AWS_RDS_CLUSTER_ENDPOINT_0="${aws_rds_cluster.demo-aurora.endpoint}"
 AWS_RDS_CLUSTER_PORT_0="${aws_rds_cluster.demo-aurora.port}"
-AWS_RDS_CLUSTER_DB_NAME_0="${coalesce(aws_rds_cluster.demo-aurora.database_name, \"postgres\")}"
+AWS_RDS_CLUSTER_DB_NAME_0="${aws_rds_cluster.demo-aurora.database_name}"
 AWS_RDS_CLUSTER_SECRET_ARN_0="${one(aws_rds_cluster.demo-aurora.master_user_secret[*].secret_arn)}"
 AWS_RDS_CLUSTER_ARN_0="${aws_rds_cluster.demo-aurora.arn}"
 EOFENV
