@@ -15,12 +15,12 @@
       "branch": "main",
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
-        "templates/ec2-cloudbeaver/v1/user_data"
+        "templates/ec2-pgweb/v1/user_data"
       ]
     }
   ],
-  "action": "destroy",
-  "trigger_id": "1791206942877",
+  "action": "apply",
+  "trigger_id": "1791209025423",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
