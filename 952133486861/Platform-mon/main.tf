@@ -414,7 +414,7 @@ resource "aws_route_table_association" "aws_route_table_association_snet_public_
 resource "aws_security_group" "instance_ec2-loadgen-mon_group" {
   name                   = "instance_ec2-loadgen-mon_group"
   vpc_id                 = aws_vpc.vpc-grafana-lgtm-mon.id
-  description            = "SG for the OTLP load generator (lab tool). Ingress 80 = web control panel (default token 'struct8-lab', pre-filled; set OTEL_PANEL_TOKEN for real auth). A documented default is a weak barrier, so restrict this port to the operator's IP for anything beyond a quick lab. Egress open to reach the OTLP gateway and pull the Docker image."
+  description            = "OTLP load generator (lab). 80=web panel (default token struct8-lab; set OTEL_PANEL_TOKEN for real auth, or restrict this port to your IP). Egress open for the OTLP gateway and Docker pulls."
   revoke_rules_on_delete = false
 }
 
@@ -453,7 +453,7 @@ resource "aws_security_group_rule" "rule_instance_ec2_loadgen_mon_group_egress_a
 resource "aws_security_group_rule" "rule_instance_ec2_loadgen_mon_group_ingress_tcp_80" {
   security_group_id = aws_security_group.instance_ec2-loadgen-mon_group.id
   cidr_blocks       = ["0.0.0.0/0"]
-  description       = "web control panel (default token struct8-lab; restrict to operator IP for real use)"
+  description       = "web control panel"
   from_port         = 80
   protocol          = "tcp"
   to_port           = 80
