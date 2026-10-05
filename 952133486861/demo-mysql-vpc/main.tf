@@ -157,7 +157,7 @@ resource "aws_db_instance" "demo-mysql" {
   backup_retention_period         = 7
   backup_window                   = "03:00-04:00"
   copy_tags_to_snapshot           = true
-  enabled_cloudwatch_logs_exports = ["general", "slowquery", "error", "audit"]
+  enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
   engine                          = "mysql"
   engine_lifecycle_support        = "open-source-rds-extended-support-disabled"
   engine_version                  = "8.4"
@@ -179,7 +179,7 @@ resource "aws_db_instance" "demo-mysql" {
     State          = "demo-mysql-vpc"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_cloudwatch_log_group.demo-mysql-general-log, aws_cloudwatch_log_group.demo-mysql-error-log, aws_cloudwatch_log_group.demo-mysql-slowquery-log, aws_cloudwatch_log_group.demo-mysql-audit-log, aws_cloudwatch_log_group.demo-mysql-app-log, aws_iam_role_policy_attachment.service_role_AmazonRDSEnhancedMonitoringRole_to_demo-mysql_attach]
+  depends_on = [aws_cloudwatch_log_group.demo-mysql-logs, aws_iam_role_policy_attachment.service_role_AmazonRDSEnhancedMonitoringRole_to_demo-mysql_attach]
 }
 
 resource "aws_db_option_group" "demo-mysql-options" {
@@ -187,7 +187,7 @@ resource "aws_db_option_group" "demo-mysql-options" {
   major_engine_version     = "8.4"
   name_prefix              = "demo-mysql-options"
   option_group_description = "Option group MySQL 8.0 da demo com plugin de auditoria MariaDB."
-  skip_destroy             = true
+  skip_destroy             = false
   lifecycle {
     create_before_destroy = false
   }
@@ -251,61 +251,13 @@ resource "aws_db_subnet_group" "subnet_group_demo-mysql" {
 
 ### CATEGORY: MONITORING ###
 
-resource "aws_cloudwatch_log_group" "demo-mysql-app-log" {
-  name              = "/aws/rds/instance/demo-mysql/audit"
-  log_group_class   = "STANDARD"
-  retention_in_days = 30
-  skip_destroy      = false
-  tags = {
-    Name           = "demo-mysql-app-log"
-    State          = "demo-mysql-vpc"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_cloudwatch_log_group" "demo-mysql-audit-log" {
-  name              = "/aws/rds/instance/demo-mysql/error"
-  log_group_class   = "STANDARD"
-  retention_in_days = 30
-  skip_destroy      = false
-  tags = {
-    Name           = "demo-mysql-audit-log"
-    State          = "demo-mysql-vpc"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_cloudwatch_log_group" "demo-mysql-error-log" {
-  name              = "/aws/rds/instance/demo-mysql/general"
-  log_group_class   = "STANDARD"
-  retention_in_days = 1
-  skip_destroy      = false
-  tags = {
-    Name           = "demo-mysql-error-log"
-    State          = "demo-mysql-vpc"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_cloudwatch_log_group" "demo-mysql-general-log" {
+resource "aws_cloudwatch_log_group" "demo-mysql-logs" {
   name              = "RDSOSMetrics"
   log_group_class   = "STANDARD"
   retention_in_days = 1
   skip_destroy      = false
   tags = {
-    Name           = "demo-mysql-general-log"
-    State          = "demo-mysql-vpc"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_cloudwatch_log_group" "demo-mysql-slowquery-log" {
-  name              = "/aws/rds/instance/demo-mysql/slowquery"
-  log_group_class   = "STANDARD"
-  retention_in_days = 30
-  skip_destroy      = false
-  tags = {
-    Name           = "demo-mysql-slowquery-log"
+    Name           = "demo-mysql-logs"
     State          = "demo-mysql-vpc"
     Struct8Creator = "Contato Struct"
   }
