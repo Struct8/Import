@@ -797,6 +797,11 @@ resource "aws_security_group" "ecs_task_definition_tempo-mon_group" {
   vpc_id                 = data.aws_vpc.vpc-grafana-lgtm-mon.id
   description            = "SG for the tempo ECS service (traces, listens on 3200). Ingress on 3200 is added by the Service Connect wires from grafana and alloy; egress open for S3 (blocks) and peers."
   revoke_rules_on_delete = false
+  tags = {
+    Name           = "ecs_task_definition_tempo-mon_group"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_security_group" "lambda-promtail-mon" {
@@ -1367,7 +1372,6 @@ resource "aws_autoscaling_group" "lgtm-ecs-asg-mon" {
 resource "aws_lambda_function" "lambda-promtail-mon" {
   function_name                  = "lambda-promtail-mon"
   architectures                  = ["x86_64"]
-  description                    = "lambda-promtail - bridges ALB access logs into Loki. Triggered by S3 notifications from the alb-access-logs bucket; it reads each .log.gz,parses the ALB log lines,${and pushes them to Loki via WRITE_ADDRESS (http://loki-ring-mon.lgtm.internal-mon:3100/loki/api/v1/push)},${labelling them __aws_log_type=s3_lb. Runs INSIDE the VPC so it can reach the private Loki (hence the SG rule to Loki:3100). Code comes from the bucket-source-promptail ZIP. CAVEAT: a Lambda in a VPC creates AWS-managed Hyperplane ENIs that take 20-45 min to release on destroy},which blocks subnet/SG deletion - to avoid that,move the push off-VPC (e.g. send to the Alloy gateway instead of Loki directly)."
   handler                        = "bootstrap"
   memory_size                    = 1800
   publish                        = false
@@ -1638,6 +1642,11 @@ resource "aws_ecs_service" "grafana-mon_service" {
   service_connect_configuration {
     enabled = true
   }
+  tags = {
+    Name           = "grafana-mon_service"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_ecs_service" "loki-mon_service" {
@@ -1740,6 +1749,11 @@ resource "aws_ecs_service" "tempo-mon_service" {
   }
   service_registries {
     registry_arn = aws_service_discovery_service.tempo-ring-mon.arn
+  }
+  tags = {
+    Name           = "tempo-mon_service"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
   }
 }
 
