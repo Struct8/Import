@@ -41,7 +41,7 @@ data "aws_iam_policy_document" "db_proxy_demo-postgres-proxy_st_demo-postgres-st
     sid       = "ReadDatabaseCredentials"
     effect    = "Allow"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)]
+    resources = [aws_secretsmanager_secret.demo-postgres-credentials.arn]
   }
 }
 
@@ -49,21 +49,6 @@ resource "aws_iam_policy" "db_proxy_demo-postgres-proxy_st_demo-postgres-state" 
   name        = "db_proxy_demo-postgres-proxy_st_demo-postgres-state"
   description = "Access Policy for demo-postgres-proxy"
   policy      = data.aws_iam_policy_document.db_proxy_demo-postgres-proxy_st_demo-postgres-state_doc.json
-}
-
-data "aws_iam_policy_document" "instance_demo-cloudbeaver_st_demo-postgres-state_doc" {
-  statement {
-    sid       = "AllowRDSSecretAccessdemopostgres"
-    effect    = "Allow"
-    actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
-    resources = [aws_db_instance.demo-postgres.master_user_secret[0].secret_arn]
-  }
-}
-
-resource "aws_iam_policy" "instance_demo-cloudbeaver_st_demo-postgres-state" {
-  name        = "instance_demo-cloudbeaver_st_demo-postgres-state"
-  description = "Access Policy for demo-cloudbeaver"
-  policy      = data.aws_iam_policy_document.instance_demo-cloudbeaver_st_demo-postgres-state_doc.json
 }
 
 data "aws_iam_policy_document" "lambda_function_demo-postgres-api_st_demo-postgres-state_doc" {
@@ -77,7 +62,7 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-api_st_demo-postgr
     sid       = "ReadDatabaseCredentials"
     effect    = "Allow"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)]
+    resources = [aws_secretsmanager_secret.demo-postgres-credentials.arn]
   }
   statement {
     sid       = "AllowAllResources"
@@ -99,12 +84,6 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-direct_st_demo-pos
     effect    = "Allow"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["${aws_cloudwatch_log_group.demo-postgres-direct-logs.arn}:*"]
-  }
-  statement {
-    sid       = "AllowRDSSecretAccessdemopostgres"
-    effect    = "Allow"
-    actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
-    resources = [aws_db_instance.demo-postgres.master_user_secret[0].secret_arn]
   }
   statement {
     sid       = "AllowAllResources"
@@ -313,11 +292,6 @@ resource "aws_iam_role_policy_attachment" "db_proxy_demo-postgres-proxy_st_demo-
   role       = aws_iam_role.role_rds_proxy_demo-postgres-proxy.name
 }
 
-resource "aws_iam_role_policy_attachment" "instance_demo-cloudbeaver_st_demo-postgres-state_attach" {
-  policy_arn = aws_iam_policy.instance_demo-cloudbeaver_st_demo-postgres-state.arn
-  role       = aws_iam_role.demo-cloudbeaver_role.name
-}
-
 resource "aws_iam_role_policy_attachment" "lambda_function_demo-postgres-api_st_demo-postgres-state_attach" {
   policy_arn = aws_iam_policy.lambda_function_demo-postgres-api_st_demo-postgres-state.arn
   role       = aws_iam_role.demo-postgres-api_role.name
@@ -331,6 +305,24 @@ resource "aws_iam_role_policy_attachment" "lambda_function_demo-postgres-direct_
 resource "aws_iam_role_policy_attachment" "service_role_AmazonRDSEnhancedMonitoringRole_to_demo-postgres_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
   role       = aws_iam_role.role_monitoring_demo-postgres.name
+}
+
+resource "aws_secretsmanager_secret" "demo-postgres-credentials" {
+  name                           = "demo-postgres-credentials"
+  description                    = "Credenciais fixas do demo-postgres (usadas pelo RDS Proxy e clientes)"
+  force_overwrite_replica_secret = false
+  recovery_window_in_days        = 0
+  tags = {
+    Name           = "demo-postgres-credentials"
+    State          = "demo-postgres-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "demo-postgres-credentials_version" {
+  secret_id      = aws_secretsmanager_secret.demo-postgres-credentials.id
+  secret_string  = "{\"username\":\"dbadmin\",\"password\":\"Struct8Demo2026!\"}"
+  version_stages = ["AWSCURRENT"]
 }
 
 
@@ -667,32 +659,32 @@ resource "aws_security_group_rule" "rule_sg_vpce_ep_secret_manager_ingress_tcp_4
 ### CATEGORY: DATABASE ###
 
 resource "aws_db_instance" "demo-postgres" {
-  db_name                     = "appdb"
-  db_subnet_group_name        = aws_db_subnet_group.subnet_group_demo-postgres.name
-  parameter_group_name        = aws_db_parameter_group.demo-postgres-params1.name
-  allocated_storage           = 20
-  availability_zone           = aws_subnet.demo-postgres-private-a.availability_zone
-  backup_retention_period     = 7
-  backup_window               = "03:00-04:00"
-  copy_tags_to_snapshot       = true
-  delete_automated_backups    = false
-  engine                      = "postgres"
-  engine_lifecycle_support    = "open-source-rds-extended-support-disabled"
-  engine_version              = "18"
-  identifier                  = "demo-postgres"
-  instance_class              = "db.t3.micro"
-  maintenance_window          = "mon:04:30-mon:05:30"
-  manage_master_user_password = true
-  max_allocated_storage       = 100
-  monitoring_interval         = 60
-  monitoring_role_arn         = aws_iam_role.role_monitoring_demo-postgres.arn
-  port                        = 5432
-  skip_final_snapshot         = true
-  storage_encrypted           = true
-  storage_type                = "gp3"
-  upgrade_storage_config      = false
-  username                    = "dbadmin"
-  vpc_security_group_ids      = [aws_security_group.db_instance_demo-postgres_group.id]
+  db_name                  = "appdb"
+  db_subnet_group_name     = aws_db_subnet_group.subnet_group_demo-postgres.name
+  parameter_group_name     = aws_db_parameter_group.demo-postgres-params1.name
+  allocated_storage        = 20
+  availability_zone        = aws_subnet.demo-postgres-private-a.availability_zone
+  backup_retention_period  = 7
+  backup_window            = "03:00-04:00"
+  copy_tags_to_snapshot    = true
+  delete_automated_backups = false
+  engine                   = "postgres"
+  engine_lifecycle_support = "open-source-rds-extended-support-disabled"
+  engine_version           = "18"
+  identifier               = "demo-postgres"
+  instance_class           = "db.t3.micro"
+  maintenance_window       = "mon:04:30-mon:05:30"
+  max_allocated_storage    = 100
+  monitoring_interval      = 60
+  monitoring_role_arn      = aws_iam_role.role_monitoring_demo-postgres.arn
+  password                 = "Struct8Demo2026!"
+  port                     = 5432
+  skip_final_snapshot      = true
+  storage_encrypted        = true
+  storage_type             = "gp3"
+  upgrade_storage_config   = false
+  username                 = "dbadmin"
+  vpc_security_group_ids   = [aws_security_group.db_instance_demo-postgres_group.id]
   tags = {
     Name           = "demo-postgres"
     State          = "demo-postgres-state"
@@ -727,7 +719,7 @@ resource "aws_db_proxy" "demo-postgres-proxy" {
     auth_scheme               = "SECRETS"
     client_password_auth_type = "POSTGRES_SCRAM_SHA_256"
     iam_auth                  = "DISABLED"
-    secret_arn                = one(aws_db_instance.demo-postgres.master_user_secret[*].secret_arn)
+    secret_arn                = aws_secretsmanager_secret.demo-postgres-credentials.arn
   }
   tags = {
     Name           = "demo-postgres-proxy"
