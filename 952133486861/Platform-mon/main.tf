@@ -414,13 +414,8 @@ resource "aws_route_table_association" "aws_route_table_association_snet_public_
 resource "aws_security_group" "instance_ec2-loadgen-mon_group" {
   name                   = "instance_ec2-loadgen-mon_group"
   vpc_id                 = aws_vpc.vpc-grafana-lgtm-mon.id
-  description            = "SG for the OTLP load generator. Ingress 80 for the web control panel (protected by OTEL_PANEL_TOKEN); egress open so it can reach the OTLP gateway over the internet and pull the Docker image."
+  description            = "SG for the OTLP load generator (lab tool). Ingress 80 = web control panel. The panel has NO auth by default (lab), so this port should be restricted to the operator's IP in production use; here it is open for convenience. Egress open to reach the OTLP gateway and pull the Docker image."
   revoke_rules_on_delete = false
-  tags = {
-    Name           = "instance_ec2-loadgen-mon_group"
-    State          = "Platform-mon"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_security_group" "instance_nat-a1_group" {
@@ -458,7 +453,7 @@ resource "aws_security_group_rule" "rule_instance_ec2_loadgen_mon_group_egress_a
 resource "aws_security_group_rule" "rule_instance_ec2_loadgen_mon_group_ingress_tcp_80" {
   security_group_id = aws_security_group.instance_ec2-loadgen-mon_group.id
   cidr_blocks       = ["0.0.0.0/0"]
-  description       = "web control panel (token-protected)"
+  description       = "web control panel (no auth; restrict to operator IP for real use)"
   from_port         = 80
   protocol          = "tcp"
   to_port           = 80
@@ -764,7 +759,6 @@ OTLP_ENDPOINT="otel.cloudman.pro:443"
 OTLP_PROTOCOL="http"
 OTLP_INSECURE="false"
 OTEL_PANEL="on"
-OTEL_PANEL_TOKEN="nXtcLKE19mP5MxoVaObypeSU3l70GfWZ"
 OTEL_PANEL_MAX_WORKERS="20"
 OTEL_PANEL_MAX_DURATION="3600"
 OTEL_DEF_MODE="curve"
