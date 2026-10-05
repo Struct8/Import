@@ -2496,11 +2496,11 @@ locals {
       },
       {
         name  = "REGION"
-        value = data.aws_region.current.region
+        value = tostring(data.aws_region.current.region)
       },
       {
         name  = "ACCOUNT"
-        value = data.aws_caller_identity.current.account_id
+        value = tostring(data.aws_caller_identity.current.account_id)
       },
       {
         name  = "AWS_ECS_TASK_DEFINITION_NAME_TEMPO"
@@ -2516,11 +2516,11 @@ locals {
       },
       {
         name  = "AWS_PROMETHEUS_WORKSPACE_ENDPOINT_0"
-        value = aws_prometheus_workspace.lgtm-amp-mon.prometheus_endpoint
+        value = tostring(aws_prometheus_workspace.lgtm-amp-mon.prometheus_endpoint)
       },
       {
         name  = "AWS_PROMETHEUS_WORKSPACE_ID_0"
-        value = aws_prometheus_workspace.lgtm-amp-mon.id
+        value = tostring(aws_prometheus_workspace.lgtm-amp-mon.id)
       }
     ]
     mountPoints    = []
@@ -2600,11 +2600,11 @@ locals {
       },
       {
         name  = "REGION"
-        value = data.aws_region.current.region
+        value = tostring(data.aws_region.current.region)
       },
       {
         name  = "ACCOUNT"
-        value = data.aws_caller_identity.current.account_id
+        value = tostring(data.aws_caller_identity.current.account_id)
       },
       {
         name  = "AWS_ECS_CAPACITY_PROVIDER_NAME_0"
@@ -2624,15 +2624,15 @@ locals {
       },
       {
         name  = "AWS_PROMETHEUS_WORKSPACE_ENDPOINT_0"
-        value = aws_prometheus_workspace.lgtm-amp-mon.prometheus_endpoint
+        value = tostring(aws_prometheus_workspace.lgtm-amp-mon.prometheus_endpoint)
       },
       {
         name  = "AWS_PROMETHEUS_WORKSPACE_ID_0"
-        value = aws_prometheus_workspace.lgtm-amp-mon.id
+        value = tostring(aws_prometheus_workspace.lgtm-amp-mon.id)
       },
       {
         name  = "AWS_EFS_FILE_SYSTEM_ID_0"
-        value = data.aws_efs_file_system.efs-grafana-lgtm-mon.id
+        value = tostring(data.aws_efs_file_system.efs-grafana-lgtm-mon.id)
       }
     ]
     mountPoints = [
@@ -2723,11 +2723,11 @@ locals {
       },
       {
         name  = "REGION"
-        value = data.aws_region.current.region
+        value = tostring(data.aws_region.current.region)
       },
       {
         name  = "ACCOUNT"
-        value = data.aws_caller_identity.current.account_id
+        value = tostring(data.aws_caller_identity.current.account_id)
       },
       {
         name  = "AWS_ECS_CAPACITY_PROVIDER_NAME_0"
@@ -2827,11 +2827,11 @@ locals {
       },
       {
         name  = "REGION"
-        value = data.aws_region.current.region
+        value = tostring(data.aws_region.current.region)
       },
       {
         name  = "ACCOUNT"
-        value = data.aws_caller_identity.current.account_id
+        value = tostring(data.aws_caller_identity.current.account_id)
       },
       {
         name  = "AWS_ECS_CAPACITY_PROVIDER_NAME_0"
