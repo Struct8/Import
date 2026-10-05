@@ -41,16 +41,6 @@ data "aws_cloudfront_cache_policy" "policy_cachingdisabled" {
 
 
 
-### RENAMES ###
-
-moved {
-  from = aws_s3_object.index-html1
-  to   = aws_s3_object.index-html
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 data "aws_iam_policy_document" "lambda_function_presign-url-generator_st_static-site-full-stack_doc" {
