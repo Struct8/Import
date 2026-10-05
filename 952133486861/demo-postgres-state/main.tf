@@ -26,11 +26,11 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
-resource "aws_iam_instance_profile" "demo-cloudbeaver_profile" {
-  name = "demo-cloudbeaver_profile"
-  role = aws_iam_role.demo-cloudbeaver_role.name
+resource "aws_iam_instance_profile" "demo-pgweb_profile" {
+  name = "demo-pgweb_profile"
+  role = aws_iam_role.demo-pgweb_role.name
   tags = {
-    Name           = "demo-cloudbeaver_profile"
+    Name           = "demo-pgweb_profile"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
@@ -51,7 +51,7 @@ resource "aws_iam_policy" "db_proxy_demo-postgres-proxy_st_demo-postgres-state" 
   policy      = data.aws_iam_policy_document.db_proxy_demo-postgres-proxy_st_demo-postgres-state_doc.json
 }
 
-data "aws_iam_policy_document" "instance_demo-cloudbeaver_st_demo-postgres-state_doc" {
+data "aws_iam_policy_document" "instance_demo-pgweb_st_demo-postgres-state_doc" {
   statement {
     sid       = "AllowRDSSecretAccessdemopostgres"
     effect    = "Allow"
@@ -60,10 +60,10 @@ data "aws_iam_policy_document" "instance_demo-cloudbeaver_st_demo-postgres-state
   }
 }
 
-resource "aws_iam_policy" "instance_demo-cloudbeaver_st_demo-postgres-state" {
-  name        = "instance_demo-cloudbeaver_st_demo-postgres-state"
-  description = "Access Policy for demo-cloudbeaver"
-  policy      = data.aws_iam_policy_document.instance_demo-cloudbeaver_st_demo-postgres-state_doc.json
+resource "aws_iam_policy" "instance_demo-pgweb_st_demo-postgres-state" {
+  name        = "instance_demo-pgweb_st_demo-postgres-state"
+  description = "Access Policy for demo-pgweb"
+  policy      = data.aws_iam_policy_document.instance_demo-pgweb_st_demo-postgres-state_doc.json
 }
 
 data "aws_iam_policy_document" "lambda_function_demo-postgres-api_st_demo-postgres-state_doc" {
@@ -213,8 +213,8 @@ resource "aws_iam_role" "Struct8Debug-Debug" {
   max_session_duration = 3600
 }
 
-resource "aws_iam_role" "demo-cloudbeaver_role" {
-  name = "demo-cloudbeaver_role"
+resource "aws_iam_role" "demo-pgweb_role" {
+  name = "demo-pgweb_role"
   assume_role_policy = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -231,7 +231,7 @@ resource "aws_iam_role" "demo-cloudbeaver_role" {
   max_session_duration  = 3600
   path                  = "/"
   tags = {
-    Name           = "demo-cloudbeaver_role"
+    Name           = "demo-pgweb_role"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
@@ -360,9 +360,9 @@ resource "aws_iam_role_policy" "Struct8Debug-Debug_policy" {
   role   = aws_iam_role.Struct8Debug-Debug.id
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_demo-cloudbeaver_attach" {
+resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_demo-pgweb_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.demo-cloudbeaver_role.name
+  role       = aws_iam_role.demo-pgweb_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "db_proxy_demo-postgres-proxy_st_demo-postgres-state_attach" {
@@ -370,9 +370,9 @@ resource "aws_iam_role_policy_attachment" "db_proxy_demo-postgres-proxy_st_demo-
   role       = aws_iam_role.role_rds_proxy_demo-postgres-proxy.name
 }
 
-resource "aws_iam_role_policy_attachment" "instance_demo-cloudbeaver_st_demo-postgres-state_attach" {
-  policy_arn = aws_iam_policy.instance_demo-cloudbeaver_st_demo-postgres-state.arn
-  role       = aws_iam_role.demo-cloudbeaver_role.name
+resource "aws_iam_role_policy_attachment" "instance_demo-pgweb_st_demo-postgres-state_attach" {
+  policy_arn = aws_iam_policy.instance_demo-pgweb_st_demo-postgres-state.arn
+  role       = aws_iam_role.demo-pgweb_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_function_demo-postgres-api_st_demo-postgres-state_attach" {
@@ -564,16 +564,11 @@ resource "aws_security_group" "demo-postgres-iam" {
   }
 }
 
-resource "aws_security_group" "instance_demo-cloudbeaver_group" {
-  name                   = "instance_demo-cloudbeaver_group"
+resource "aws_security_group" "instance_demo-pgweb_group" {
+  name                   = "instance_demo-pgweb_group"
   vpc_id                 = aws_vpc.VPC2.id
-  description            = "CloudBeaver web UI"
+  description            = "pgweb web UI"
   revoke_rules_on_delete = false
-  tags = {
-    Name           = "instance_demo-cloudbeaver_group"
-    State          = "demo-postgres-state"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_security_group" "sg_vpce_ep-cloudwatch" {
@@ -685,8 +680,8 @@ resource "aws_security_group_rule" "rule_demo_postgres_iam_to_db_instance_demo_p
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_instance_demo_cloudbeaver_group_egress_all_protocols" {
-  security_group_id = aws_security_group.instance_demo-cloudbeaver_group.id
+resource "aws_security_group_rule" "rule_instance_demo_pgweb_group_egress_all_protocols" {
+  security_group_id = aws_security_group.instance_demo-pgweb_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -694,19 +689,19 @@ resource "aws_security_group_rule" "rule_instance_demo_cloudbeaver_group_egress_
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_instance_demo_cloudbeaver_group_ingress_tcp_8978" {
-  security_group_id = aws_security_group.instance_demo-cloudbeaver_group.id
+resource "aws_security_group_rule" "rule_instance_demo_pgweb_group_ingress_tcp_8081" {
+  security_group_id = aws_security_group.instance_demo-pgweb_group.id
   cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 8978
+  from_port         = 8081
   protocol          = "tcp"
-  to_port           = 8978
+  to_port           = 8081
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_instance_demo_cloudbeaver_group_to_db_instance_demo_postgres_group_tcp_5432" {
+resource "aws_security_group_rule" "rule_instance_demo_pgweb_group_to_db_instance_demo_postgres_group_tcp_5432" {
   security_group_id        = aws_security_group.db_instance_demo-postgres_group.id
-  source_security_group_id = aws_security_group.instance_demo-cloudbeaver_group.id
-  description              = "Allow from instance_demo-cloudbeaver_group (tcp:5432-5432)"
+  source_security_group_id = aws_security_group.instance_demo-pgweb_group.id
+  description              = "Allow from instance_demo-pgweb_group (tcp:5432-5432)"
   from_port                = 5432
   protocol                 = "tcp"
   to_port                  = 5432
@@ -851,11 +846,11 @@ resource "aws_db_subnet_group" "subnet_group_demo-postgres" {
 
 ### CATEGORY: COMPUTE ###
 
-data "local_file" "UserData_demo-cloudbeaver" {
-  filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-cloudbeaver/v1/user_data/cloudbeaver.sh"
+data "local_file" "UserData_demo-pgweb" {
+  filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-pgweb/v1/user_data/pgweb.sh"
 }
 
-data "aws_ami" "AMI_Data_Source_demo-cloudbeaver" {
+data "aws_ami" "AMI_Data_Source_demo-pgweb" {
   most_recent = true
   owners      = ["amazon"]
   filter {
@@ -864,18 +859,18 @@ data "aws_ami" "AMI_Data_Source_demo-cloudbeaver" {
   }
 }
 
-resource "aws_instance" "demo-cloudbeaver" {
+resource "aws_instance" "demo-pgweb" {
   subnet_id                   = aws_subnet.demo-public-a.id
-  ami                         = data.aws_ami.AMI_Data_Source_demo-cloudbeaver.id
+  ami                         = data.aws_ami.AMI_Data_Source_demo-pgweb.id
   associate_public_ip_address = true
-  iam_instance_profile        = aws_iam_instance_profile.demo-cloudbeaver_profile.name
+  iam_instance_profile        = aws_iam_instance_profile.demo-pgweb_profile.name
   instance_type               = "t3.small"
   user_data_base64 = base64encode(<<-EOFUData
 #!/bin/bash
 
 # --- BEGIN STRUCT8 VARIABLES ---
 cat << 'EOFENV' > /etc/struct8_env
-NAME="demo-cloudbeaver"
+NAME="demo-pgweb"
 REGION="${data.aws_region.current.region}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
 AWS_DB_INSTANCE_NAME_0="${aws_db_instance.demo-postgres.identifier}"
@@ -891,10 +886,10 @@ chmod +x /etc/profile.d/struct8_vars.sh
 chmod 644 /etc/struct8_env
 # --- END STRUCT8 VARIABLES ---
 
-${data.local_file.UserData_demo-cloudbeaver.content}
+${data.local_file.UserData_demo-pgweb.content}
 EOFUData
 )
-  vpc_security_group_ids = [aws_security_group.instance_demo-cloudbeaver_group.id]
+  vpc_security_group_ids = [aws_security_group.instance_demo-pgweb_group.id]
   metadata_options {
     http_endpoint = "enabled"
     http_tokens   = "required"
@@ -908,7 +903,7 @@ EOFUData
   }
   tags = {
     Struct8Debug   = "n2L5m9CkjzH7IUewAgbOZ"
-    Name           = "demo-cloudbeaver"
+    Name           = "demo-pgweb"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
   }
