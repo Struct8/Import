@@ -6,12 +6,13 @@
       "branch": "main",
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
-        "bedrock-lab1/v1/lambda/rag-handler"
+        "templates/bedrock-rag-lab/v1/lambda/rag-handler",
+        "templates/bedrock-rag-lab/v1/documents"
       ]
     }
   ],
   "action": "plan",
-  "trigger_id": "1791240168660",
+  "trigger_id": "1791241075666",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
