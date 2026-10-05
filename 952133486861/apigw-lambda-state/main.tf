@@ -313,6 +313,7 @@ locals {
       integ_method     = "POST"
       parameters       = null
       integ_req_params = null
+      error_responses  = {}
     },
     {
       path            = "/assets/{proxy+}"
@@ -336,6 +337,7 @@ locals {
       integ_req_params = {
         "integration.request.path.proxy" = "method.request.path.proxy"
       }
+      error_responses = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
     },
     {
       path            = "/items/{id}"
@@ -351,6 +353,7 @@ locals {
       integ_method     = "POST"
       parameters       = [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}]
       integ_req_params = null
+      error_responses  = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
     },
     {
       path            = "/items/{id}"
@@ -366,6 +369,7 @@ locals {
       integ_method     = "POST"
       parameters       = [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}]
       integ_req_params = null
+      error_responses  = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
     },
     {
       path            = "/items/{id}"
@@ -381,6 +385,7 @@ locals {
       integ_method     = "POST"
       parameters       = [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}]
       integ_req_params = null
+      error_responses  = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
     },
     {
       path            = "/jobs"
@@ -407,6 +412,7 @@ locals {
       integ_req_params = {
         "integration.request.header.Content-Type" = "'application/x-www-form-urlencoded'"
       }
+      error_responses = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
     },
     {
       path            = "/events"
@@ -424,6 +430,7 @@ locals {
       integ_req_params = {
         "integration.request.header.Content-Type" = "'application/x-amz-json-1.1'"
       }
+      error_responses = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
     },
   ]
   openapi_spec_demo-rest-api = {
@@ -451,7 +458,7 @@ locals {
               for method in toset(item.methods) :
               method => merge(
                 {
-                  "responses" = {
+                  "responses" = merge({
                     "200" = {
                       description = "Successful operation"
                       headers = {
@@ -459,7 +466,14 @@ locals {
                         "Set-Cookie"                  = { type = "string" }
                       }
                     }
-                  }
+                  }, {
+                    for code in distinct(values(item.error_responses)) : code => {
+                      description = "Error returned by the integration"
+                      headers = {
+                        "Access-Control-Allow-Origin" = { type = "string" }
+                      }
+                    }
+                  })
                   "x-amazon-apigateway-integration" = merge(
                     {
                       uri        = item.uri
@@ -467,7 +481,7 @@ locals {
                       type       = item.type
                     },
                     item.type == "aws_proxy" ? {} : {
-                      responses = {
+                      responses = merge({
                         "default" = {
                           statusCode = "200"
                           responseParameters = {
@@ -477,7 +491,14 @@ locals {
                             "application/json" = "$input.body"
                           }
                         }
-                      }
+                      }, {
+                        for pattern, code in item.error_responses : pattern => {
+                          statusCode = code
+                          responseParameters = {
+                            "method.response.header.Access-Control-Allow-Origin" = "'*'"
+                          }
+                        }
+                      })
                     },
                     item.credentials != null ? { credentials = item.credentials } : {},
                     item.requestTemplates != null ? { requestTemplates = item.requestTemplates } : {},
