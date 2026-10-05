@@ -134,6 +134,12 @@ data "aws_iam_policy_document" "lambda_function_demo-postgres-iam_st_demo-postgr
     resources = [aws_db_instance.demo-postgres.master_user_secret[0].secret_arn]
   }
   statement {
+    sid       = "AllowAllResources"
+    effect    = "Allow"
+    actions   = ["ec2:AssignPrivateIpAddresses", "ec2:CreateNetworkInterface", "ec2:DeleteNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:UnassignPrivateIpAddresses"]
+    resources = ["*"]
+  }
+  statement {
     sid       = "RdsIamConnect"
     effect    = "Allow"
     actions   = ["rds-db:connect"]
@@ -1032,6 +1038,10 @@ resource "aws_lambda_function" "demo-postgres-iam" {
     Name           = "demo-postgres-iam"
     State          = "demo-postgres-state"
     Struct8Creator = "Contato Struct"
+  }
+  vpc_config {
+    security_group_ids = [aws_security_group.demo-postgres-iam.id]
+    subnet_ids         = [aws_subnet.demo-postgres-private-a.id, aws_subnet.demo-postgres-private-b.id]
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_demo-postgres-iam_st_demo-postgres-state_attach]
 }
