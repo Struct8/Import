@@ -62,6 +62,16 @@ data "aws_s3_bucket" "grafanalabs-cf-templates" {
 
 ### CATEGORY: IAM ###
 
+resource "aws_iam_instance_profile" "ec2-loadgen-mon_profile" {
+  name = "ec2-loadgen-mon_profile"
+  role = aws_iam_role.ec2-loadgen-mon_role.name
+  tags = {
+    Name           = "ec2-loadgen-mon_profile"
+    State          = "Platform-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_instance_profile" "nat-a1_profile" {
   name = "nat-a1_profile"
   path = "/"
@@ -73,7 +83,61 @@ resource "aws_iam_instance_profile" "nat-a1_profile" {
   }
 }
 
-data "aws_iam_policy_document" "Debug-nat-mon_debug_permissions" {
+data "aws_iam_policy_document" "loadgen-mon_debug_permissions" {
+  statement {
+    sid       = "SendToTaggedInstancesOnly"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["rnfvftw1G6oN_45VxIfOe"]
+      variable = "aws:ResourceTag/Struct8Debug"
+    }
+  }
+  statement {
+    sid       = "PinnedDocumentOnly"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+  }
+  statement {
+    sid       = "ReadOwnResults"
+    effect    = "Allow"
+    actions   = ["ssm:GetCommandInvocation", "ssm:DescribeInstanceInformation"]
+    resources = ["*"]
+  }
+  statement {
+    sid       = "CancelOnTaggedInstancesOnly"
+    effect    = "Allow"
+    actions   = ["ssm:CancelCommand"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["rnfvftw1G6oN_45VxIfOe"]
+      variable = "aws:ResourceTag/Struct8Debug"
+    }
+  }
+  statement {
+    sid       = "RunShellScriptDocument"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+  }
+}
+
+data "aws_iam_policy_document" "loadgen-mon_debug_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
+      type        = "AWS"
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "nat-mon_debug_permissions" {
   statement {
     sid       = "SendToTaggedInstancesOnly"
     effect    = "Allow"
@@ -116,7 +180,7 @@ data "aws_iam_policy_document" "Debug-nat-mon_debug_permissions" {
   }
 }
 
-data "aws_iam_policy_document" "Debug-nat-mon_debug_trust" {
+data "aws_iam_policy_document" "nat-mon_debug_trust" {
   statement {
     effect = "Allow"
     principals {
@@ -127,10 +191,40 @@ data "aws_iam_policy_document" "Debug-nat-mon_debug_trust" {
   }
 }
 
-resource "aws_iam_role" "Struct8Debug-Debug-nat-mon" {
-  name                 = "Struct8Debug-pdhvQPpUXFTwmrU_D1L5h"
-  assume_role_policy   = data.aws_iam_policy_document.Debug-nat-mon_debug_trust.json
+resource "aws_iam_role" "Struct8Debug-loadgen-mon" {
+  name                 = "Struct8Debug-rnfvftw1G6oN_45VxIfOe"
+  assume_role_policy   = data.aws_iam_policy_document.loadgen-mon_debug_trust.json
   max_session_duration = 3600
+}
+
+resource "aws_iam_role" "Struct8Debug-nat-mon" {
+  name                 = "Struct8Debug-pdhvQPpUXFTwmrU_D1L5h"
+  assume_role_policy   = data.aws_iam_policy_document.nat-mon_debug_trust.json
+  max_session_duration = 3600
+}
+
+resource "aws_iam_role" "ec2-loadgen-mon_role" {
+  name = "ec2-loadgen-mon_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "ec2-loadgen-mon_role"
+    State          = "Platform-mon"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_iam_role" "nat-a1_role" {
@@ -146,10 +240,21 @@ resource "aws_iam_role" "nat-a1_role" {
   }
 }
 
-resource "aws_iam_role_policy" "Struct8Debug-Debug-nat-mon_policy" {
+resource "aws_iam_role_policy" "Struct8Debug-loadgen-mon_policy" {
+  name   = "Struct8Debug-rnfvftw1G6oN_45VxIfOe-policy"
+  policy = data.aws_iam_policy_document.loadgen-mon_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-loadgen-mon.id
+}
+
+resource "aws_iam_role_policy" "Struct8Debug-nat-mon_policy" {
   name   = "Struct8Debug-pdhvQPpUXFTwmrU_D1L5h-policy"
-  policy = data.aws_iam_policy_document.Debug-nat-mon_debug_permissions.json
-  role   = aws_iam_role.Struct8Debug-Debug-nat-mon.id
+  policy = data.aws_iam_policy_document.nat-mon_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-nat-mon.id
+}
+
+resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_ec2-loadgen-mon_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.ec2-loadgen-mon_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_ec2-nat-grafana-mon_attach" {
@@ -158,9 +263,10 @@ resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_ec2-n
 }
 
 resource "aws_acm_certificate" "grafana-cloudman-pro-cert-mon" {
-  domain_name       = "grafana.cloudman.pro"
-  key_algorithm     = "RSA_2048"
-  validation_method = "DNS"
+  domain_name               = "grafana.cloudman.pro"
+  key_algorithm             = "RSA_2048"
+  subject_alternative_names = ["otel.cloudman.pro"]
+  validation_method         = "DNS"
   lifecycle {
     create_before_destroy = true
   }
@@ -175,8 +281,11 @@ resource "aws_acm_certificate" "grafana-cloudman-pro-cert-mon" {
 }
 
 resource "aws_acm_certificate_validation" "Validation_grafana-cloudman-pro-cert-mon" {
-  certificate_arn         = aws_acm_certificate.grafana-cloudman-pro-cert-mon.arn
-  validation_record_fqdns = [for record in aws_route53_record.Route53_Record_grafana-cloudman-pro-cert-mon_grafana_cloudman_pro : record.fqdn]
+  certificate_arn = aws_acm_certificate.grafana-cloudman-pro-cert-mon.arn
+  validation_record_fqdns = concat(
+    [for record in aws_route53_record.Route53_Record_grafana-cloudman-pro-cert-mon_grafana_cloudman_pro : record.fqdn],
+    [for record in aws_route53_record.Route53_Record_grafana-cloudman-pro-cert-mon_otel_cloudman_pro : record.fqdn],
+  )
 }
 
 
@@ -248,8 +357,32 @@ resource "aws_route53_record" "Route53_Record_grafana-cloudman-pro-cert-mon_graf
   type            = each.value.resource_record_type
 }
 
+resource "aws_route53_record" "Route53_Record_grafana-cloudman-pro-cert-mon_otel_cloudman_pro" {
+  for_each = {
+    for dvo in aws_acm_certificate.grafana-cloudman-pro-cert-mon.domain_validation_options : dvo.domain_name => dvo
+    if dvo.domain_name == "otel.cloudman.pro"
+  }
+  name            = each.value.resource_record_name
+  zone_id         = data.aws_route53_zone.Cloudman.zone_id
+  allow_overwrite = true
+  records         = [each.value.resource_record_value]
+  ttl             = 300
+  type            = each.value.resource_record_type
+}
+
 resource "aws_route53_record" "alias_a_aws_lb_alb-grafana-mon_grafana_cloudman_pro" {
   name    = "grafana.cloudman.pro"
+  zone_id = data.aws_route53_zone.Cloudman.zone_id
+  type    = "A"
+  alias {
+    name                   = aws_lb.alb-grafana-mon.dns_name
+    zone_id                = aws_lb.alb-grafana-mon.zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "alias_a_aws_lb_alb-grafana-mon_otel_cloudman_pro" {
+  name    = "otel.cloudman.pro"
   zone_id = data.aws_route53_zone.Cloudman.zone_id
   type    = "A"
   alias {
@@ -278,6 +411,13 @@ resource "aws_route_table_association" "aws_route_table_association_snet_public_
   subnet_id      = aws_subnet.snet-public-1b-mon.id
 }
 
+resource "aws_security_group" "instance_ec2-loadgen-mon_group" {
+  name                   = "instance_ec2-loadgen-mon_group"
+  vpc_id                 = aws_vpc.vpc-grafana-lgtm-mon.id
+  description            = "SG for the OTLP load generator. Ingress 80 for the web control panel (protected by OTEL_PANEL_TOKEN); egress open so it can reach the OTLP gateway over the internet and pull the Docker image."
+  revoke_rules_on_delete = false
+}
+
 resource "aws_security_group" "instance_nat-a1_group" {
   name                   = "instance_nat-a1_group"
   vpc_id                 = aws_vpc.vpc-grafana-lgtm-mon.id
@@ -299,6 +439,25 @@ resource "aws_security_group" "lb_alb-grafana-mon_group" {
     State          = "Platform-mon"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_security_group_rule" "rule_instance_ec2_loadgen_mon_group_egress_all_protocols" {
+  security_group_id = aws_security_group.instance_ec2-loadgen-mon_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_instance_ec2_loadgen_mon_group_ingress_tcp_80" {
+  security_group_id = aws_security_group.instance_ec2-loadgen-mon_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "web control panel (token-protected)"
+  from_port         = 80
+  protocol          = "tcp"
+  to_port           = 80
+  type              = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_instance_nat_a1_group_egress_all_protocols" {
@@ -453,6 +612,18 @@ resource "aws_s3_bucket" "bucket-source-promptail-mon" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "alb-access-logs-mon_lifecycle" {
+  bucket = aws_s3_bucket.alb-access-logs-mon.id
+  rule {
+    id     = "expire-alb-logs-7d"
+    status = "Enabled"
+    expiration {
+      days                         = 7
+      expired_object_delete_marker = false
+    }
+  }
+}
+
 resource "aws_s3_bucket_ownership_controls" "alb-access-logs-mon_controls" {
   bucket = aws_s3_bucket.alb-access-logs-mon.id
   rule {
@@ -559,6 +730,70 @@ resource "aws_s3_object_copy" "ObjectCopy-mon" {
 
 
 ### CATEGORY: COMPUTE ###
+
+data "local_file" "UserData_ec2-loadgen-mon" {
+  filename = "${path.module}/.external_modules/struct8-templates/templates/vpc-otel-load-generator/v1/user_data/otel-loadgen-bootstrap.sh"
+}
+
+data "aws_ami" "AMI_Data_Source_ec2-loadgen-mon" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["al2023-ami-minimal-2023.*-kernel-6.1-arm64"]
+  }
+}
+
+resource "aws_instance" "ec2-loadgen-mon" {
+  subnet_id                   = aws_subnet.snet-public-1b-mon.id
+  ami                         = data.aws_ami.AMI_Data_Source_ec2-loadgen-mon.id
+  associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.ec2-loadgen-mon_profile.name
+  instance_type               = "t4g.small"
+  user_data_base64 = base64encode(<<-EOFUData
+#!/bin/bash
+
+# --- BEGIN STRUCT8 VARIABLES ---
+cat << 'EOFENV' > /etc/struct8_env
+OTLP_ENDPOINT="otel.cloudman.pro:443"
+OTLP_PROTOCOL="http"
+OTLP_INSECURE="false"
+OTEL_PANEL="on"
+OTEL_PANEL_TOKEN="nXtcLKE19mP5MxoVaObypeSU3l70GfWZ"
+OTEL_PANEL_MAX_WORKERS="20"
+OTEL_PANEL_MAX_DURATION="3600"
+NAME="ec2-loadgen-mon"
+REGION="${data.aws_region.current.region}"
+ACCOUNT="${data.aws_caller_identity.current.account_id}"
+EOFENV
+cat /etc/struct8_env >> /etc/environment
+sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
+chmod +x /etc/profile.d/struct8_vars.sh
+chmod 644 /etc/struct8_env
+# --- END STRUCT8 VARIABLES ---
+
+${data.local_file.UserData_ec2-loadgen-mon.content}
+EOFUData
+)
+  vpc_security_group_ids = [aws_security_group.instance_ec2-loadgen-mon_group.id]
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+  root_block_device {
+    encrypted   = true
+    iops        = 3000
+    throughput  = 125
+    volume_size = 8
+    volume_type = "gp3"
+  }
+  tags = {
+    Struct8Debug   = "rnfvftw1G6oN_45VxIfOe"
+    Name           = "ec2-loadgen-mon"
+    State          = "Platform-mon"
+    Struct8Creator = "Contato Struct"
+  }
+}
 
 data "local_file" "UserData_ec2-nat-grafana-mon" {
   filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-nat-private/v1/user_data/Nat.sh"
