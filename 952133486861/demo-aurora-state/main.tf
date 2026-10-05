@@ -869,6 +869,7 @@ resource "aws_rds_cluster_instance" "demo-aurora-1" {
   engine                                = aws_rds_cluster.demo-aurora.engine
   identifier                            = "demo-aurora-1"
   instance_class                        = "db.serverless"
+  performance_insights_enabled          = true
   performance_insights_retention_period = 7
   promotion_tier                        = 1
   tags = {
