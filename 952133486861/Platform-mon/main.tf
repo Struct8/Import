@@ -414,8 +414,13 @@ resource "aws_route_table_association" "aws_route_table_association_snet_public_
 resource "aws_security_group" "instance_ec2-loadgen-mon_group" {
   name                   = "instance_ec2-loadgen-mon_group"
   vpc_id                 = aws_vpc.vpc-grafana-lgtm-mon.id
-  description            = "SG for the OTLP load generator (lab tool). Ingress 80 = web control panel. The panel has NO auth by default (lab), so this port should be restricted to the operator's IP in production use; here it is open for convenience. Egress open to reach the OTLP gateway and pull the Docker image."
+  description            = "SG for the OTLP load generator (lab tool). Ingress 80 = web control panel."
   revoke_rules_on_delete = false
+  tags = {
+    Name           = "instance_ec2-loadgen-mon_group"
+    State          = "Platform-mon"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_security_group" "instance_nat-a1_group" {
