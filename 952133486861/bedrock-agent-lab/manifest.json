@@ -1,0 +1,42 @@
+{
+  "external_repositories": [
+    {
+      "repo_name": "struct8-templates",
+      "org": "Struct8",
+      "branch": "main",
+      "target_dir": ".external_modules/struct8-templates",
+      "folders": [
+        "templates/bedrock-agent-lab/v1/lambda/orders-tool",
+        "templates/bedrock-agent-lab/v1/lambda/chat"
+      ]
+    }
+  ],
+  "action": "plan",
+  "trigger_id": "1791241082664",
+  "triggered_by": "Contato Struct",
+  "engine_ref": "devlocal",
+  "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
+  "backend_global_config": {
+    "provider": "aws",
+    "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+    "region": "us-west-2",
+    "bucket": "struct8-import"
+  },
+  "pipeline_stages": [
+    {
+      "stage_name": "Manual Trigger: bedrock-agent-lab",
+      "parallel_execution": false,
+      "states": [
+        {
+          "path": "952133486861/bedrock-agent-lab",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        }
+      ]
+    }
+  ]
+}
