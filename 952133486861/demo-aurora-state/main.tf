@@ -824,7 +824,7 @@ resource "aws_db_proxy_target" "demo-aurora-rds-proxy_target" {
 
 resource "aws_db_subnet_group" "subnet_group_demo-aurora" {
   name       = "demo-aurora-subnet-group"
-  subnet_ids = [aws_subnet.demo-aurora-private-a.id]
+  subnet_ids = [aws_subnet.demo-aurora-private-a.id, aws_subnet.demo-aurora-private-b.id]
   tags = {
     Name           = "subnet_group_demo-aurora"
     State          = "demo-aurora-state"
@@ -1215,7 +1215,7 @@ resource "aws_cloudwatch_log_group" "LogGroup" {
 }
 
 resource "aws_cloudwatch_log_group" "demo-aurora-direct-logs" {
-  name              = "/aws/lambda/demo-postgres-direct"
+  name              = "/aws/lambda/demo-aurora-direct"
   log_group_class   = "STANDARD"
   retention_in_days = 1
   skip_destroy      = false
@@ -1239,7 +1239,7 @@ resource "aws_cloudwatch_log_group" "demo-aurora-iam-logs" {
 }
 
 resource "aws_cloudwatch_log_group" "demo-aurora-proxy-logs" {
-  name              = "/aws/lambda/demo-postgres-api"
+  name              = "/aws/lambda/demo-aurora-proxy"
   log_group_class   = "STANDARD"
   retention_in_days = 1
   skip_destroy      = false
