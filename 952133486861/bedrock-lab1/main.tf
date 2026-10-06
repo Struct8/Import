@@ -26,6 +26,27 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
+data "aws_iam_policy_document" "bedrockagent_knowledge_base_bedrock-kb-lab1_st_bedrock-lab1_doc" {
+  statement {
+    sid       = "ListTheDocuments"
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.bedrock-documents.arn]
+  }
+  statement {
+    sid       = "ReadTheDocuments"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.bedrock-documents.arn}/*"]
+  }
+}
+
+resource "aws_iam_policy" "bedrockagent_knowledge_base_bedrock-kb-lab1_st_bedrock-lab1" {
+  name        = "bedrockagent_knowledge_base_bedrock-kb-lab1_st_bedrock-lab1"
+  description = "Access Policy for bedrock-kb-lab1"
+  policy      = data.aws_iam_policy_document.bedrockagent_knowledge_base_bedrock-kb-lab1_st_bedrock-lab1_doc.json
+}
+
 data "aws_iam_policy_document" "lambda_function_bedrock-rag-handler_st_bedrock-lab1_doc" {
   statement {
     sid       = "AllowWriteLogs"
@@ -42,16 +63,34 @@ resource "aws_iam_policy" "lambda_function_bedrock-rag-handler_st_bedrock-lab1" 
 }
 
 resource "aws_iam_role" "bedrock-kb-role" {
-  # ajuste manual · assume_role_policy — No wire writes this trust policy: aws_bedrockagent_knowledge_base declares no roles:, so a role wired to it reaches the plan without one. Bedrock assumes the knowledge base role as bedrock.amazonaws.com; the conditions limit that to knowledge bases of this account and region.
-  name                  = "bedrock-kb-role"
-  assume_role_policy    = jsonencode({ Version = "2012-10-17", Statement = [{ Effect = "Allow", Principal = { Service = "bedrock.amazonaws.com" }, Action = "sts:AssumeRole", Condition = { StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.current.account_id }, ArnLike = { "aws:SourceArn" = "arn:aws:bedrock:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:knowledge-base/*" } } }] })
+  name = "bedrock-kb-role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "bedrock.amazonaws.com"
+      },
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
+        },
+        "ArnLike": {
+          "aws:SourceArn": "arn:aws:bedrock:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:knowledge-base/*"
+        }
+      }
+    }
+  ]
+})
   force_detach_policies = false
   max_session_duration  = 3600
   path                  = "/"
   inline_policy {
     name = "bedrock-kb-permissions"
     policy = <<EOF
-{"Version":"2012-10-17","Statement":[{"Sid":"EmbedWithTitan","Effect":"Allow","Action":"bedrock:InvokeModel","Resource":"arn:aws:bedrock:${data.aws_region.current.region}::foundation-model/amazon.titan-embed-text-v2:0"},{"Sid":"UseTheVectorIndex","Effect":"Allow","Action":["s3vectors:PutVectors","s3vectors:GetVectors","s3vectors:DeleteVectors","s3vectors:QueryVectors","s3vectors:GetIndex"],"Resource":"${aws_s3vectors_index.bedrock-kb-index.index_arn}"},{"Sid":"ListTheDocuments","Effect":"Allow","Action":"s3:ListBucket","Resource":"${aws_s3_bucket.bedrock-documents.arn}"},{"Sid":"ReadTheDocuments","Effect":"Allow","Action":"s3:GetObject","Resource":"${aws_s3_bucket.bedrock-documents.arn}/*"}]}
+{"Version":"2012-10-17","Statement":[{"Sid":"EmbedWithTitan","Effect":"Allow","Action":"bedrock:InvokeModel","Resource":"arn:aws:bedrock:${data.aws_region.current.region}::foundation-model/amazon.titan-embed-text-v2:0"},{"Sid":"UseTheVectorIndex","Effect":"Allow","Action":["s3vectors:PutVectors","s3vectors:GetVectors","s3vectors:DeleteVectors","s3vectors:QueryVectors","s3vectors:GetIndex"],"Resource":"${aws_s3vectors_index.bedrock-kb-index.index_arn}"}]}
   EOF
   }
   tags = {
@@ -89,6 +128,11 @@ resource "aws_iam_role" "bedrock-rag-handler_role" {
     State          = "bedrock-lab1"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_iam_role_policy_attachment" "bedrockagent_knowledge_base_bedrock-kb-lab1_st_bedrock-lab1_attach" {
+  policy_arn = aws_iam_policy.bedrockagent_knowledge_base_bedrock-kb-lab1_st_bedrock-lab1.arn
+  role       = aws_iam_role.bedrock-kb-role.name
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_function_bedrock-rag-handler_st_bedrock-lab1_attach" {
@@ -235,21 +279,20 @@ resource "aws_lambda_function_url" "bedrock-rag-url" {
   authorization_type = "NONE"
 }
 
-resource "aws_lambda_permission" "bedrock-rag-url-invoke" {
+resource "aws_lambda_permission" "perm_aws_lambda_function_url_bedrock-rag-url_to_bedrock-rag-handler" {
+  function_name          = aws_lambda_function.bedrock-rag-handler.function_name
+  statement_id           = "perm_aws_lambda_function_url_bedrock-rag-url_to_bedrock-rag-handler"
+  principal              = "*"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_url_auth_type = "NONE"
+}
+
+resource "aws_lambda_permission" "perm_aws_lambda_function_url_bedrock-rag-url_to_bedrock-rag-handler_invoke" {
   function_name            = aws_lambda_function.bedrock-rag-handler.function_name
-  statement_id             = "FunctionURLInvokeAllowPublicAccess"
+  statement_id             = "perm_aws_lambda_function_url_bedrock-rag-url_to_bedrock-rag-handler_invoke"
   principal                = "*"
   action                   = "lambda:InvokeFunction"
   invoked_via_function_url = true
-}
-
-resource "aws_lambda_permission" "bedrock-rag-url-public" {
-  function_name            = aws_lambda_function.bedrock-rag-handler.function_name
-  statement_id             = "FunctionURLAllowPublicAccess"
-  principal                = "*"
-  action                   = "lambda:InvokeFunctionUrl"
-  function_url_auth_type   = "NONE"
-  invoked_via_function_url = false
 }
 
 
@@ -322,6 +365,7 @@ resource "aws_bedrockagent_knowledge_base" "bedrock-kb-lab1" {
     State          = "bedrock-lab1"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_iam_role_policy_attachment.bedrockagent_knowledge_base_bedrock-kb-lab1_st_bedrock-lab1_attach]
 }
 
 
