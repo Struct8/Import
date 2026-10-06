@@ -39,6 +39,18 @@ data "aws_iam_policy_document" "bedrockagent_knowledge_base_bedrock-kb-lab1_st_b
     actions   = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.bedrock-documents.arn}/*"]
   }
+  statement {
+    sid       = "UseTheVectorIndex"
+    effect    = "Allow"
+    actions   = ["s3vectors:DeleteVectors", "s3vectors:GetIndex", "s3vectors:GetVectors", "s3vectors:PutVectors", "s3vectors:QueryVectors"]
+    resources = [aws_s3vectors_index.bedrock-kb-index.index_arn]
+  }
+  statement {
+    sid       = "InvokeTheEmbeddingModel"
+    effect    = "Allow"
+    actions   = ["bedrock:InvokeModel"]
+    resources = ["arn:aws:bedrock:${data.aws_region.current.region}::foundation-model/amazon.titan-embed-text-v2:0"]
+  }
 }
 
 resource "aws_iam_policy" "bedrockagent_knowledge_base_bedrock-kb-lab1_st_bedrock-lab1" {
@@ -60,44 +72,6 @@ resource "aws_iam_policy" "lambda_function_bedrock-rag-handler_st_bedrock-lab1" 
   name        = "lambda_function_bedrock-rag-handler_st_bedrock-lab1"
   description = "Access Policy for bedrock-rag-handler"
   policy      = data.aws_iam_policy_document.lambda_function_bedrock-rag-handler_st_bedrock-lab1_doc.json
-}
-
-resource "aws_iam_role" "bedrock-kb-role" {
-  name = "bedrock-kb-role"
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "bedrock.amazonaws.com"
-      },
-      "Condition": {
-        "StringEquals": {
-          "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
-        },
-        "ArnLike": {
-          "aws:SourceArn": "arn:aws:bedrock:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:knowledge-base/*"
-        }
-      }
-    }
-  ]
-})
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  inline_policy {
-    name = "bedrock-kb-permissions"
-    policy = <<EOF
-{"Version":"2012-10-17","Statement":[{"Sid":"EmbedWithTitan","Effect":"Allow","Action":"bedrock:InvokeModel","Resource":"arn:aws:bedrock:${data.aws_region.current.region}::foundation-model/amazon.titan-embed-text-v2:0"},{"Sid":"UseTheVectorIndex","Effect":"Allow","Action":["s3vectors:PutVectors","s3vectors:GetVectors","s3vectors:DeleteVectors","s3vectors:QueryVectors","s3vectors:GetIndex"],"Resource":"${aws_s3vectors_index.bedrock-kb-index.index_arn}"}]}
-  EOF
-  }
-  tags = {
-    Name           = "bedrock-kb-role"
-    State          = "bedrock-lab1"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_iam_role" "bedrock-rag-handler_role" {
@@ -130,9 +104,38 @@ resource "aws_iam_role" "bedrock-rag-handler_role" {
   }
 }
 
+resource "aws_iam_role" "role_kb_bedrock-kb-lab1" {
+  name = "role_kb_bedrock-kb-lab1"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "bedrock.amazonaws.com"
+      },
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
+        },
+        "ArnLike": {
+          "aws:SourceArn": "arn:aws:bedrock:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:knowledge-base/*"
+        }
+      }
+    }
+  ]
+})
+  tags = {
+    Name           = "role_kb_bedrock-kb-lab1"
+    State          = "bedrock-lab1"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "bedrockagent_knowledge_base_bedrock-kb-lab1_st_bedrock-lab1_attach" {
   policy_arn = aws_iam_policy.bedrockagent_knowledge_base_bedrock-kb-lab1_st_bedrock-lab1.arn
-  role       = aws_iam_role.bedrock-kb-role.name
+  role       = aws_iam_role.role_kb_bedrock-kb-lab1.name
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_function_bedrock-rag-handler_st_bedrock-lab1_attach" {
@@ -347,7 +350,7 @@ resource "aws_bedrockagent_data_source" "bedrock-rag-documents" {
 
 resource "aws_bedrockagent_knowledge_base" "bedrock-kb-lab1" {
   name     = "bedrock-kb-lab1"
-  role_arn = aws_iam_role.bedrock-kb-role.arn
+  role_arn = aws_iam_role.role_kb_bedrock-kb-lab1.arn
   knowledge_base_configuration {
     type = "VECTOR"
     vector_knowledge_base_configuration {
