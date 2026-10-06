@@ -358,8 +358,10 @@ resource "aws_bedrock_guardrail" "agent-lab-guardrail" {
   }
   sensitive_information_policy_config {
     pii_entities_config {
-      action = "ANONYMIZE"
-      type   = "EMAIL"
+      action        = "ANONYMIZE"
+      input_action  = "ANONYMIZE"
+      output_action = "ANONYMIZE"
+      type          = "EMAIL"
     }
   }
   tags = {
@@ -427,7 +429,7 @@ resource "aws_bedrockagentcore_harness" "agent-lab-harness" {
       arn = aws_bedrockagentcore_memory.agent-lab-memory.arn
       retrieval_config {
         strategy_id     = aws_bedrockagentcore_memory_strategy.agent-lab-session-summaries.memory_strategy_id
-        map_block_key   = "/summaries/{actorId}/{sessionId}"
+        map_block_key   = "/summaries/{actorId}/"
         relevance_score = 0.2
         top_k           = 10
       }
