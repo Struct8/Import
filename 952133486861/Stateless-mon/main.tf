@@ -2426,7 +2426,7 @@ resource "aws_ecs_task_definition" "Struct8Probe_Debug-tempo-mon_tempo-mon" {
 }
 
 resource "aws_ecs_task_definition" "Struct8Scratch_Debug-alloy-mon_alloy-mon" {
-  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_alloy-mon_alloy.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-alloy-mon_alloy-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
+  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_alloy-mon_alloy.image}","essential":true,"cpu":128,"memory":512,"memoryReservation":256,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-alloy-mon_alloy-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
   execution_role_arn       = aws_iam_role.execution_role_ecs_alloy-mon.arn
   family                   = "Struct8Scratch-bOihDfFtxnGSZEbI86NkK-alloy-mon"
   network_mode             = "awsvpc"
@@ -2435,7 +2435,7 @@ resource "aws_ecs_task_definition" "Struct8Scratch_Debug-alloy-mon_alloy-mon" {
 }
 
 resource "aws_ecs_task_definition" "Struct8Scratch_Debug-grafana-mon_grafana-mon" {
-  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_grafana-mon_grafana.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-grafana-mon_grafana-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
+  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_grafana-mon_grafana.image}","essential":true,"cpu":160,"memory":768,"memoryReservation":256,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-grafana-mon_grafana-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
   execution_role_arn       = aws_iam_role.execution_role_ecs_grafana-mon.arn
   family                   = "Struct8Scratch-Kj0gEoH3JSkrCLidIJNOV-grafana-mon"
   network_mode             = "awsvpc"
@@ -2444,7 +2444,7 @@ resource "aws_ecs_task_definition" "Struct8Scratch_Debug-grafana-mon_grafana-mon
 }
 
 resource "aws_ecs_task_definition" "Struct8Scratch_Debug-loki-mon_loki-mon" {
-  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_loki-mon_loki.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-loki-mon_loki-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
+  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_loki-mon_loki.image}","essential":true,"cpu":128,"memory":768,"memoryReservation":256,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-loki-mon_loki-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
   execution_role_arn       = aws_iam_role.execution_role_ecs_loki-mon.arn
   family                   = "Struct8Scratch-972FIQG47OUQbuIPbAXut-loki-mon"
   network_mode             = "awsvpc"
@@ -2453,7 +2453,7 @@ resource "aws_ecs_task_definition" "Struct8Scratch_Debug-loki-mon_loki-mon" {
 }
 
 resource "aws_ecs_task_definition" "Struct8Scratch_Debug-tempo-mon_tempo-mon" {
-  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_tempo-mon_tempo.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-tempo-mon_tempo-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
+  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_tempo-mon_tempo.image}","essential":true,"cpu":128,"memory":768,"memoryReservation":256,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug-tempo-mon_tempo-mon_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
   execution_role_arn       = aws_iam_role.execution_role_ecs_tempo-mon.arn
   family                   = "Struct8Scratch-QpJ5vanuEsErFS2EFjls6-tempo-mon"
   network_mode             = "awsvpc"
@@ -2528,7 +2528,7 @@ locals {
     volumesFrom    = []
     command = [
       <<EOF
-printf '%s\n' 'otelcol.receiver.otlp "in" {' '  grpc { endpoint = "0.0.0.0:4317" }' '  http { endpoint = "0.0.0.0:4318" }' '  output {' '    metrics = [otelcol.processor.batch.d.input]' '    logs = [otelcol.processor.batch.d.input]' '    traces = [otelcol.processor.batch.d.input]' '  }' '}' 'otelcol.processor.batch "d" {' '  output {' '    metrics = [otelcol.exporter.prometheus.amp.input]' '    logs = [otelcol.exporter.loki.lk.input]' '    traces = [otelcol.exporter.otlp.tp.input]' '  }' '}' 'otelcol.exporter.otlp "tp" {' '  client {' '    endpoint = "tempo:4317"' '    tls { insecure = true }' '  }' '}' 'otelcol.exporter.loki "lk" {' '  forward_to = [loki.write.lw.receiver]' '}' 'loki.write "lw" {' '  endpoint {' '    url = "http://loki:3100/loki/api/v1/push"' '  }' '}' 'otelcol.exporter.prometheus "amp" {' '  forward_to = [prometheus.remote_write.rw.receiver]' '}' 'prometheus.remote_write "rw" {' '  endpoint {' "    url = \"$${AWS_PROMETHEUS_WORKSPACE_ENDPOINT_0}api/v1/remote_write\"" '    sigv4 {' "      region = \"$REGION\"" '    }' '  }' '}' > /etc/alloy/config.alloy && exec /bin/alloy run /etc/alloy/config.alloy --server.http.listen-addr=0.0.0.0:12345 --storage.path=/tmp/alloy
+printf '%s\n' 'otelcol.receiver.otlp "in" {' '  grpc { endpoint = "0.0.0.0:4317" }' '  http { endpoint = "0.0.0.0:4318" }' '  output {' '    metrics = [otelcol.processor.batch.d.input]' '    logs = [otelcol.processor.batch.d.input]' '    traces = [otelcol.processor.batch.d.input]' '  }' '}' 'otelcol.processor.batch "d" {' '  output {' '    metrics = [otelcol.exporter.prometheus.amp.input]' '    logs = [otelcol.exporter.loki.lk.input]' '    traces = [otelcol.exporter.otlp.tp.input]' '  }' '}' 'otelcol.exporter.otlp "tp" {' '  client {' '    endpoint = "tempo-otlp-grpc:4317"' '    tls { insecure = true }' '  }' '}' 'otelcol.exporter.loki "lk" {' '  forward_to = [loki.write.lw.receiver]' '}' 'loki.write "lw" {' '  endpoint {' '    url = "http://loki:3100/loki/api/v1/push"' '  }' '}' 'otelcol.exporter.prometheus "amp" {' '  forward_to = [prometheus.remote_write.rw.receiver]' '}' 'prometheus.remote_write "rw" {' '  endpoint {' "    url = \"$${AWS_PROMETHEUS_WORKSPACE_ENDPOINT_0}api/v1/remote_write\"" '    sigv4 {' "      region = \"$REGION\"" '    }' '  }' '}' > /etc/alloy/config.alloy && exec /bin/alloy run /etc/alloy/config.alloy --server.http.listen-addr=0.0.0.0:12345 --storage.path=/tmp/alloy
       EOF
     ]
     entryPoint             = ["/bin/sh", "-c"]
