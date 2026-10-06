@@ -1935,10 +1935,11 @@ EOFUData
   tag_specifications {
     resource_type = "volume"
     tags = {
-    Struct8Debug   = "Vz6HFyU4chYBtvk4gbnjo"
-    Name           = "lgtm-ecs-asg-mon"
-    State          = "Stateless-mon"
-    Struct8Creator = "Contato Struct"
+    AmazonECSManaged = true
+    Struct8Debug     = "Vz6HFyU4chYBtvk4gbnjo"
+    Name             = "lgtm-ecs-asg-mon"
+    State            = "Stateless-mon"
+    Struct8Creator   = "Contato Struct"
   }
   }
   tags = {
@@ -1966,6 +1967,11 @@ resource "aws_autoscaling_group" "lgtm-ecs-asg-mon" {
   launch_template {
     version = aws_launch_template.lgtm-ecs-lt-mon.latest_version
     id      = aws_launch_template.lgtm-ecs-lt-mon.id
+  }
+  tag {
+    key                 = "AmazonECSManaged"
+    propagate_at_launch = true
+    value               = true
   }
   tag {
     key                 = "Struct8Debug"
