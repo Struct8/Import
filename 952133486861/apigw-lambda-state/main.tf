@@ -314,6 +314,7 @@ locals {
       parameters       = null
       integ_req_params = null
       error_responses  = {}
+      binary_body      = false
     },
     {
       path            = "/assets/{proxy+}"
@@ -338,6 +339,7 @@ locals {
         "integration.request.path.proxy" = "method.request.path.proxy"
       }
       error_responses = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
+      binary_body     = true
     },
     {
       path            = "/assets/{proxy+}"
@@ -362,6 +364,7 @@ locals {
         "integration.request.path.proxy" = "method.request.path.proxy"
       }
       error_responses = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
+      binary_body     = true
     },
     {
       path            = "/items/{id}"
@@ -372,12 +375,13 @@ locals {
       enable_mock     = true
       credentials     = aws_iam_role.role_apigw_demo-rest-api_to_items.arn
       requestTemplates = {
-        "application/json" = "{\"TableName\": \"${aws_dynamodb_table.items.name}\", \"Key\": { \"id\": { \"S\": \"$util.escapeJavaScript($input.params('id'))\" } } }"
+        "application/json" = "{\"TableName\": \"${aws_dynamodb_table.items.name}\", \"Key\": { \"id\": { \"S\": \"$util.escapeJavaScript($util.urlDecode($input.params('id').replace(\"+\",\"%2B\"))).replaceAll(\"\\\\'\",\"'\")\" } } }"
       }
       integ_method     = "POST"
       parameters       = [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}]
       integ_req_params = null
       error_responses  = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
+      binary_body      = false
     },
     {
       path            = "/items/{id}"
@@ -388,12 +392,13 @@ locals {
       enable_mock     = true
       credentials     = aws_iam_role.role_apigw_demo-rest-api_to_items.arn
       requestTemplates = {
-        "application/json" = "{\"TableName\": \"${aws_dynamodb_table.items.name}\", \"Key\": { \"id\": { \"S\": \"$util.escapeJavaScript($input.params('id'))\" } } }"
+        "application/json" = "{\"TableName\": \"${aws_dynamodb_table.items.name}\", \"Key\": { \"id\": { \"S\": \"$util.escapeJavaScript($util.urlDecode($input.params('id').replace(\"+\",\"%2B\"))).replaceAll(\"\\\\'\",\"'\")\" } } }"
       }
       integ_method     = "POST"
       parameters       = [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}]
       integ_req_params = null
       error_responses  = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
+      binary_body      = false
     },
     {
       path            = "/items/{id}"
@@ -404,12 +409,13 @@ locals {
       enable_mock     = true
       credentials     = aws_iam_role.role_apigw_demo-rest-api_to_items.arn
       requestTemplates = {
-        "application/json" = "{\"TableName\": \"${aws_dynamodb_table.items.name}\", \"Item\": { \"id\": { \"S\": \"$util.escapeJavaScript($input.params('id'))\" }, \"Payload\": { \"S\": \"$util.escapeJavaScript($input.body)\" } } }"
+        "application/json" = "{\"TableName\": \"${aws_dynamodb_table.items.name}\", \"Item\": { \"id\": { \"S\": \"$util.escapeJavaScript($util.urlDecode($input.params('id').replace(\"+\",\"%2B\"))).replaceAll(\"\\\\'\",\"'\")\" }, \"Payload\": { \"S\": \"$util.escapeJavaScript($input.body).replaceAll(\"\\\\'\",\"'\")\" } } }"
       }
       integ_method     = "POST"
       parameters       = [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}]
       integ_req_params = null
       error_responses  = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
+      binary_body      = false
     },
     {
       path            = "/jobs"
@@ -437,6 +443,7 @@ locals {
         "integration.request.header.Content-Type" = "'application/x-www-form-urlencoded'"
       }
       error_responses = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
+      binary_body     = false
     },
     {
       path            = "/events"
@@ -455,6 +462,7 @@ locals {
         "integration.request.header.Content-Type" = "'application/x-amz-json-1.1'"
       }
       error_responses = {"403" = "403", "404" = "404", "4(0[0-25-9]|[1-9][0-9])" = "400", "5[0-9]{2}" = "500"}
+      binary_body     = false
     },
   ]
   openapi_spec_demo-rest-api = {
@@ -473,6 +481,7 @@ locals {
             }
         }
       }
+      "x-amazon-apigateway-binary-media-types" = ["application/octet-stream", "application/pdf", "application/zip", "application/gzip", "application/x-tar", "image/*", "audio/*", "video/*", "font/*"]
       paths = {
         for path in distinct([for i in local.api_config_demo-rest-api : i.path]) :
         path => merge([
@@ -485,10 +494,12 @@ locals {
                   "responses" = merge({
                     "200" = {
                       description = "Successful operation"
-                      headers = {
+                      headers = merge({
                         "Access-Control-Allow-Origin" = { type = "string" }
                         "Set-Cookie"                  = { type = "string" }
-                      }
+                      }, item.binary_body ? {
+                        "Content-Type" = { type = "string" }
+                      } : {})
                     }
                   }, {
                     for code in distinct(values(item.error_responses)) : code => {
@@ -506,15 +517,18 @@ locals {
                     },
                     item.type == "aws_proxy" ? {} : {
                       responses = merge({
-                        "default" = {
+                        "default" = merge({
                           statusCode = "200"
-                          responseParameters = {
+                          responseParameters = merge({
                             "method.response.header.Access-Control-Allow-Origin" = "'*'"
-                          }
+                          }, item.binary_body ? {
+                            "method.response.header.Content-Type" = "integration.response.header.Content-Type"
+                          } : {})
+                        }, item.binary_body ? {} : {
                           responseTemplates = {
                             "application/json" = "$input.body"
                           }
-                        }
+                        })
                       }, {
                         for pattern, code in item.error_responses : pattern => {
                           statusCode = code
