@@ -1410,6 +1410,11 @@ resource "aws_security_group" "ecs_task_definition_loki-mon_group" {
   vpc_id                 = data.aws_vpc.vpc-grafana-lgtm-mon.id
   description            = "SG for the loki ECS service (logs, listens on 3100). Ingress on 3100 is added by the Service Connect wires from grafana and alloy; egress open for S3 (chunks) and peers."
   revoke_rules_on_delete = false
+  tags = {
+    Name           = "ecs_task_definition_loki-mon_group"
+    State          = "Stateless-mon"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_security_group" "ecs_task_definition_tempo-mon_group" {
@@ -2220,6 +2225,10 @@ resource "aws_ecs_service" "alloy-mon_service" {
     assign_public_ip = false
     security_groups  = [aws_security_group.autoscaling_group_lgtm-ecs-asg-mon_group.id, aws_security_group.ecs_task_definition_alloy-mon_group.id]
     subnets          = [aws_subnet.snet-app-1a-mon.id, aws_subnet.snet-app-1b-mon.id]
+  }
+  ordered_placement_strategy {
+    field = "cpu"
+    type  = "binpack"
   }
   service_connect_configuration {
     enabled = true
