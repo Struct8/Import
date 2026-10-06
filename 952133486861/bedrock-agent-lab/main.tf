@@ -400,12 +400,12 @@ resource "aws_bedrockagentcore_gateway_target" "orders" {
         tool_schema {
           inline_payload {
             name        = "get_order_status"
-            description = "Returns the status, item and quantity of one order, looked up by its order id."
+            description = "Returns the status, item and quantity of one order, looked up by its order id. Call it only with an order id the customer gave."
             input_schema {
               type = "object"
               property {
                 name        = "order_id"
-                description = "The order id, for example 1001."
+                description = "The order id the customer gave."
                 required    = true
                 type        = "string"
               }
@@ -445,7 +445,7 @@ resource "aws_bedrockagentcore_harness" "agent-lab-harness" {
     }
   }
   system_prompt {
-    text = "You are the order assistant of Bean Lab Coffee, a fictional coffee roaster used in a lab. Answer questions about orders. To learn the status of an order, call the get_order_status tool with the order id, even when the user context mentions that order, since its status may have changed. The user context, when present, summarizes this customer's earlier conversations: use it to answer questions about them and to find an order id the customer already gave. Never make up order details; if the tool says an order was not found, say so. Ask for an order id only when neither the question nor the user context gives one. Keep answers short."
+    text = "You are the order assistant of Bean Lab Coffee, a fictional coffee roaster used in a lab. Answer questions about orders. To learn the status of an order, call the get_order_status tool with the order id, even when the user context mentions that order, since its status may have changed. The user context, when present, summarizes this customer's earlier conversations: use it to answer questions about them and to find an order id the customer already gave. Never make up order details; if the tool says an order was not found, say so. Use only an order id that the question or the user context gives, never one you guess; when neither gives one, ask the customer for it. Keep answers short."
   }
   tags = {
     Name           = "agent-lab-harness"
