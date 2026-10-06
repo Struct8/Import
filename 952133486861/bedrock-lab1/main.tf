@@ -270,6 +270,10 @@ resource "aws_bedrock_guardrail" "lab1-guardrail" {
   }
   contextual_grounding_policy_config {
     filters_config {
+      threshold = 0.75
+      type      = "GROUNDING"
+    }
+    filters_config {
       threshold = 0.5
       type      = "RELEVANCE"
     }
