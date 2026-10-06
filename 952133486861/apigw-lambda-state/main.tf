@@ -661,9 +661,10 @@ locals {
 }
 
 resource "aws_api_gateway_rest_api" "demo-rest-api" {
-  name        = "demo-rest-api"
-  body        = jsonencode(local.openapi_spec_demo-rest-api)
-  description = "Regional REST API. Routes are generated from the OpenAPI spec (demo-api-spec), each integration pointing to a service. Requires an API key on every method (api_key_required)."
+  name               = "demo-rest-api"
+  binary_media_types = ["application/octet-stream", "binary/octet-stream", "application/pdf", "application/zip", "application/x-zip-compressed", "application/gzip", "application/x-gzip", "application/x-tar", "application/x-7z-compressed", "application/vnd.rar", "application/x-rar-compressed", "application/msword", "application/vnd.ms-excel", "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "image/*", "audio/*", "video/*", "font/*"]
+  body               = jsonencode(local.openapi_spec_demo-rest-api)
+  description        = "Regional REST API. Routes are generated from the OpenAPI spec (demo-api-spec), each integration pointing to a service. Requires an API key on every method (api_key_required)."
   endpoint_configuration {
     types = ["REGIONAL"]
   }
