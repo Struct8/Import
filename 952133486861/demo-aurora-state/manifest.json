@@ -1,26 +1,7 @@
 {
-  "external_repositories": [
-    {
-      "repo_name": "struct8-hub",
-      "org": "Struct8",
-      "branch": "main",
-      "target_dir": ".external_modules/struct8-hub",
-      "folders": [
-        "prebuilt"
-      ]
-    },
-    {
-      "repo_name": "struct8-templates",
-      "org": "Struct8",
-      "branch": "main",
-      "target_dir": ".external_modules/struct8-templates",
-      "folders": [
-        "templates/ec2-pgweb/v1/user_data"
-      ]
-    }
-  ],
-  "action": "destroy",
-  "trigger_id": "1791248565395",
+  "external_repositories": [],
+  "action": "plan",
+  "trigger_id": "1791251650264",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
