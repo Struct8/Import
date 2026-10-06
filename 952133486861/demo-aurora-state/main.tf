@@ -859,9 +859,8 @@ resource "aws_rds_cluster" "demo-aurora" {
   storage_encrypted                   = true
   vpc_security_group_ids              = [aws_security_group.rds_cluster_demo-aurora_group.id]
   serverlessv2_scaling_configuration {
-    max_capacity             = 1
-    min_capacity             = 0.5
-    seconds_until_auto_pause = 10
+    max_capacity = 1
+    min_capacity = 0.5
   }
   tags = {
     Name           = "demo-aurora"
