@@ -885,7 +885,7 @@ resource "aws_rds_cluster_instance" "demo-aurora-1" {
 ### CATEGORY: COMPUTE ###
 
 data "local_file" "UserData_demo-pgweb" {
-  filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-pgweb-aurora/v1/user_data/pgweb-aurora.sh"
+  filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-pgweb/v1/user_data/pgweb.sh"
 }
 
 data "aws_ami" "AMI_Data_Source_demo-pgweb" {
