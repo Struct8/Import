@@ -1951,6 +1951,7 @@ EOFUData
 
 resource "aws_autoscaling_group" "lgtm-ecs-asg-mon" {
   name                      = "lgtm-ecs-asg-mon"
+  default_cooldown          = 30
   default_instance_warmup   = 0
   desired_capacity          = 1
   enabled_metrics           = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
@@ -1964,6 +1965,14 @@ resource "aws_autoscaling_group" "lgtm-ecs-asg-mon" {
   vpc_zone_identifier       = [aws_subnet.snet-app-1a-mon.id, aws_subnet.snet-app-1b-mon.id]
   wait_for_capacity_timeout = "0"
   wait_for_elb_capacity     = 0
+  instance_refresh {
+    strategy = "Rolling"
+    triggers = ["launch_template"]
+    preferences {
+      instance_warmup        = 60
+      min_healthy_percentage = 0
+    }
+  }
   launch_template {
     version = aws_launch_template.lgtm-ecs-lt-mon.latest_version
     id      = aws_launch_template.lgtm-ecs-lt-mon.id
@@ -2055,9 +2064,9 @@ resource "aws_appautoscaling_policy" "alloy-scale-cpu" {
   service_namespace  = aws_appautoscaling_target.alloy-scale-target-mon.service_namespace
   target_tracking_scaling_policy_configuration {
     disable_scale_in   = false
-    scale_in_cooldown  = 120
-    scale_out_cooldown = 60
-    target_value       = 60
+    scale_in_cooldown  = 60
+    scale_out_cooldown = 50
+    target_value       = 70
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
@@ -2072,9 +2081,9 @@ resource "aws_appautoscaling_policy" "loki-scale-cpu" {
   service_namespace  = aws_appautoscaling_target.loki-scale-target-mon.service_namespace
   target_tracking_scaling_policy_configuration {
     disable_scale_in   = false
-    scale_in_cooldown  = 120
-    scale_out_cooldown = 60
-    target_value       = 60
+    scale_in_cooldown  = 60
+    scale_out_cooldown = 50
+    target_value       = 70
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
@@ -2089,9 +2098,9 @@ resource "aws_appautoscaling_policy" "tempo-scale-cpu" {
   service_namespace  = aws_appautoscaling_target.tempo-scale-target-mon.service_namespace
   target_tracking_scaling_policy_configuration {
     disable_scale_in   = false
-    scale_in_cooldown  = 120
-    scale_out_cooldown = 60
-    target_value       = 60
+    scale_in_cooldown  = 60
+    scale_out_cooldown = 50
+    target_value       = 70
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
@@ -2149,7 +2158,7 @@ resource "aws_ecs_capacity_provider" "lgtm-ec2-cp-mon" {
     managed_draining               = "ENABLED"
     managed_termination_protection = "DISABLED"
     managed_scaling {
-      instance_warmup_period    = 300
+      instance_warmup_period    = 60
       maximum_scaling_step_size = 10000
       minimum_scaling_step_size = 1
       status                    = "ENABLED"
@@ -2697,7 +2706,7 @@ locals {
     cpu               = 128
     memory            = 768
     memoryReservation = 256
-    stopTimeout       = 120
+    stopTimeout       = 30
     portMappings = [
       {
         protocol      = "tcp"
@@ -2789,7 +2798,7 @@ locals {
     cpu               = 128
     memory            = 768
     memoryReservation = 256
-    stopTimeout       = 120
+    stopTimeout       = 30
     portMappings = [
       {
         protocol      = "tcp"
