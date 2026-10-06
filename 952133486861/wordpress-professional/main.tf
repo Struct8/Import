@@ -3,6 +3,9 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+    random = {
+      source = "hashicorp/random"
+    }
   }
 
   backend "s3" {
@@ -43,6 +46,10 @@ data "aws_cloudfront_cache_policy" "policy_cachingoptimized" {
   name = "Managed-CachingOptimized"
 }
 
+data "aws_ec2_managed_prefix_list" "cloudfront_origin_facing" {
+  name = "com.amazonaws.global.cloudfront.origin-facing"
+}
+
 
 
 
@@ -60,21 +67,30 @@ resource "aws_iam_instance_profile" "asgWordpress_profile" {
 
 data "aws_iam_policy_document" "autoscaling_group_asgWordpress_st_wordpress-professional_doc" {
   statement {
+    sid       = "AllowWpcluster"
+    effect    = "Allow"
+    actions   = ["ecs:DeregisterContainerInstance", "ecs:DiscoverPollEndpoint", "ecs:Poll", "ecs:RegisterContainerInstance", "ecs:StartTelemetrySession", "ecs:Submit*"]
+    resources = [aws_ecs_cluster.wp-cluster.arn]
+  }
+}
+
+resource "aws_iam_policy" "autoscaling_group_asgWordpress_st_wordpress-professional" {
+  name        = "autoscaling_group_asgWordpress_st_wordpress-professional"
+  description = "Access Policy for asgWordpress"
+  policy      = data.aws_iam_policy_document.autoscaling_group_asgWordpress_st_wordpress-professional_doc.json
+}
+
+data "aws_iam_policy_document" "ecs_task_definition_wordpress_execution_st_wordpress-professional_doc" {
+  statement {
     sid       = "AllowWriteLogs"
     effect    = "Allow"
-    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["${aws_cloudwatch_log_group.logsWordpress.arn}:*"]
   }
   statement {
-    sid       = "AllowEFSBasicAccess"
+    sid       = "AllowDecryptInjectedSecrets"
     effect    = "Allow"
-    actions   = ["elasticfilesystem:ClientMount", "elasticfilesystem:ClientRootAccess", "elasticfilesystem:ClientWrite"]
-    resources = ["${aws_efs_file_system.wpContent.arn}:*"]
-  }
-  statement {
-    sid       = "AllowKMSAccess"
-    effect    = "Allow"
-    actions   = ["kms:Decrypt", "kms:DescribeKey", "kms:Encrypt", "kms:GenerateDataKey"]
+    actions   = ["kms:Decrypt"]
     resources = [aws_kms_key.kmsWordpress.arn]
   }
   statement {
@@ -91,10 +107,43 @@ data "aws_iam_policy_document" "autoscaling_group_asgWordpress_st_wordpress-prof
   }
 }
 
-resource "aws_iam_policy" "autoscaling_group_asgWordpress_st_wordpress-professional" {
-  name        = "autoscaling_group_asgWordpress_st_wordpress-professional"
-  description = "Access Policy for asgWordpress"
-  policy      = data.aws_iam_policy_document.autoscaling_group_asgWordpress_st_wordpress-professional_doc.json
+resource "aws_iam_policy" "ecs_task_definition_wordpress_execution_st_wordpress-professional" {
+  name        = "ecs_task_definition_wordpress_execution_st_wordpress-professional"
+  description = "Access Policy for wordpress (Role: execution)"
+  policy      = data.aws_iam_policy_document.ecs_task_definition_wordpress_execution_st_wordpress-professional_doc.json
+}
+
+data "aws_iam_policy_document" "ecs_task_definition_wordpress_st_wordpress-professional_doc" {
+  statement {
+    sid       = "AllowEFSBasicAccess"
+    effect    = "Allow"
+    actions   = ["elasticfilesystem:ClientMount", "elasticfilesystem:ClientWrite"]
+    resources = [aws_efs_file_system.wpContent.arn]
+  }
+  statement {
+    sid       = "AllowRDSSecretAccesswpaurora"
+    effect    = "Allow"
+    actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
+    resources = [aws_rds_cluster.wp-aurora.master_user_secret[0].secret_arn]
+  }
+  statement {
+    sid       = "AllowBucketLevelActions"
+    effect    = "Allow"
+    actions   = ["s3:GetBucketLocation", "s3:GetBucketOwnershipControls", "s3:GetBucketPublicAccessBlock", "s3:ListBucket"]
+    resources = [aws_s3_bucket.wpMedia.arn]
+  }
+  statement {
+    sid       = "AllowObjectCRUD"
+    effect    = "Allow"
+    actions   = ["s3:DeleteObject", "s3:GetObject", "s3:PutObject"]
+    resources = ["${aws_s3_bucket.wpMedia.arn}/*"]
+  }
+}
+
+resource "aws_iam_policy" "ecs_task_definition_wordpress_st_wordpress-professional" {
+  name        = "ecs_task_definition_wordpress_st_wordpress-professional"
+  description = "Access Policy for wordpress"
+  policy      = data.aws_iam_policy_document.ecs_task_definition_wordpress_st_wordpress-professional_doc.json
 }
 
 resource "aws_iam_role" "asgWordpress_role" {
@@ -121,8 +170,65 @@ resource "aws_iam_role" "asgWordpress_role" {
   }
 }
 
+resource "aws_iam_role" "execution_role_ecs_wordpress" {
+  name = "execution_role_ecs_wordpress"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags = {
+    Name           = "execution_role_ecs_wordpress"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role" "task_role_ecs_wordpress" {
+  name = "task_role_ecs_wordpress"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags = {
+    Name           = "task_role_ecs_wordpress"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "autoscaling_group_asgWordpress_st_wordpress-professional_attach" {
   policy_arn = aws_iam_policy.autoscaling_group_asgWordpress_st_wordpress-professional.arn
+  role       = aws_iam_role.asgWordpress_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_definition_wordpress_execution_st_wordpress-professional_attach" {
+  policy_arn = aws_iam_policy.ecs_task_definition_wordpress_execution_st_wordpress-professional.arn
+  role       = aws_iam_role.execution_role_ecs_wordpress.name
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_definition_wordpress_st_wordpress-professional_attach" {
+  policy_arn = aws_iam_policy.ecs_task_definition_wordpress_st_wordpress-professional.arn
+  role       = aws_iam_role.task_role_ecs_wordpress.name
+}
+
+resource "aws_iam_role_policy_attachment" "service_role_AmazonEC2ContainerServiceforEC2Role_to_asgWordpress_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
   role       = aws_iam_role.asgWordpress_role.name
 }
 
@@ -143,7 +249,7 @@ resource "aws_kms_key" "kmsWordpress" {
 resource "aws_secretsmanager_secret" "wpSecrets" {
   kms_key_id              = aws_kms_key.kmsWordpress.id
   name                    = "wpSecrets"
-  description             = "WordPress authentication keys and salts. Database credentials are not stored here - Aurora writes those to its own managed secret."
+  description             = "Password of the WordPress database user. Terraform generates it, and each WordPress task creates or updates that user at startup with the Aurora master credentials."
   recovery_window_in_days = 0
   tags = {
     Name           = "wpSecrets"
@@ -154,7 +260,7 @@ resource "aws_secretsmanager_secret" "wpSecrets" {
 
 resource "aws_secretsmanager_secret_version" "wpSecrets_version" {
   secret_id      = aws_secretsmanager_secret.wpSecrets.id
-  secret_string  = " "
+  secret_string  = random_password.wpDbPassword.result
   version_stages = ["AWSCURRENT"]
 }
 
@@ -221,7 +327,7 @@ resource "aws_vpc" "wordpress-professional" {
 resource "aws_vpc_endpoint" "vpce-s3_S3" {
   service_name      = "com.amazonaws.us-west-2.s3"
   vpc_id            = aws_vpc.wordpress-professional.id
-  route_table_ids   = [aws_route_table.rt-public-wp.id]
+  route_table_ids   = [aws_route_table.rt-public-wp.id, aws_route_table.rtPrivate.id]
   vpc_endpoint_type = "Gateway"
   tags = {
     DifName        = "vpce-s3_S3"
@@ -242,7 +348,7 @@ resource "aws_vpc_endpoint" "vpceLogs_LOGS" {
   ip_address_type     = "ipv4"
   private_dns_enabled = true
   security_group_ids  = [aws_security_group.sg_vpce_vpceLogs.id]
-  subnet_ids          = [aws_subnet.appA.id]
+  subnet_ids          = [aws_subnet.appB.id, aws_subnet.appA.id]
   vpc_endpoint_type   = "Interface"
   tags = {
     Name           = "vpceLogs"
@@ -263,7 +369,7 @@ resource "aws_vpc_endpoint" "vpceSecrets_SECRETSMANAGER" {
   ip_address_type     = "ipv4"
   private_dns_enabled = true
   security_group_ids  = [aws_security_group.sg_vpce_vpceSecrets.id]
-  subnet_ids          = [aws_subnet.appA.id]
+  subnet_ids          = [aws_subnet.appB.id, aws_subnet.appA.id]
   vpc_endpoint_type   = "Interface"
   tags = {
     Name           = "vpceSecrets"
@@ -368,6 +474,7 @@ resource "aws_nat_gateway" "nat-wp" {
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_internet_gateway.igw-wp]
 }
 
 resource "aws_route" "route_rt-public-wp_to_igw-wp_ipv4" {
@@ -469,16 +576,6 @@ resource "aws_route_table_association" "aws_route_table_association_appB_rtPriva
   subnet_id      = aws_subnet.appB.id
 }
 
-resource "aws_route_table_association" "aws_route_table_association_dataA_rtPrivate" {
-  route_table_id = aws_route_table.rtPrivate.id
-  subnet_id      = aws_subnet.dataA.id
-}
-
-resource "aws_route_table_association" "aws_route_table_association_dataB_rtPrivate" {
-  route_table_id = aws_route_table.rtPrivate.id
-  subnet_id      = aws_subnet.dataB.id
-}
-
 resource "aws_route_table_association" "aws_route_table_association_pubA_rt_public_wp" {
   route_table_id = aws_route_table.rt-public-wp.id
   subnet_id      = aws_subnet.pubA.id
@@ -489,12 +586,35 @@ resource "aws_route_table_association" "aws_route_table_association_pubB_rt_publ
   subnet_id      = aws_subnet.pubB.id
 }
 
+resource "aws_security_group" "alb-cloudfront-wp" {
+  name                   = "alb-cloudfront-wp"
+  vpc_id                 = aws_vpc.wordpress-professional.id
+  description            = "HTTPS from CloudFront origin-facing servers to the WordPress load balancer"
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "alb-cloudfront-wp"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_security_group" "autoscaling_group_asgWordpress_group" {
   name                   = "autoscaling_group_asgWordpress_group"
   vpc_id                 = aws_vpc.wordpress-professional.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "autoscaling_group_asgWordpress_group"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "ecs_task_definition_wordpress_group" {
+  name                   = "ecs_task_definition_wordpress_group"
+  vpc_id                 = aws_vpc.wordpress-professional.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "ecs_task_definition_wordpress_group"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
@@ -568,6 +688,25 @@ resource "aws_security_group" "sg_vpce_vpceSecrets" {
   }
 }
 
+resource "aws_security_group_rule" "rule_alb_cloudfront_wp_cloudfront_tcp_443" {
+  security_group_id = aws_security_group.alb-cloudfront-wp.id
+  description       = "HTTPS from CloudFront"
+  from_port         = 443
+  prefix_list_ids   = [data.aws_ec2_managed_prefix_list.cloudfront_origin_facing.id]
+  protocol          = "tcp"
+  to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_alb_cloudfront_wp_egress_all_protocols" {
+  security_group_id = aws_security_group.alb-cloudfront-wp.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
 resource "aws_security_group_rule" "rule_autoscaling_group_asgWordpress_group_egress_all_protocols" {
   security_group_id = aws_security_group.autoscaling_group_asgWordpress_group.id
   cidr_blocks       = ["0.0.0.0/0"]
@@ -577,30 +716,39 @@ resource "aws_security_group_rule" "rule_autoscaling_group_asgWordpress_group_eg
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_autoscaling_group_asgWordpress_group_to_efs_file_system_wpContent_group_tcp_2049" {
+resource "aws_security_group_rule" "rule_ecs_task_definition_wordpress_group_egress_all_protocols" {
+  security_group_id = aws_security_group.ecs_task_definition_wordpress_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_ecs_task_definition_wordpress_group_to_efs_file_system_wpContent_group_tcp_2049" {
   security_group_id        = aws_security_group.efs_file_system_wpContent_group.id
-  source_security_group_id = aws_security_group.autoscaling_group_asgWordpress_group.id
-  description              = "NFS from the WordPress instances to EFS"
+  source_security_group_id = aws_security_group.ecs_task_definition_wordpress_group.id
+  description              = "NFS from the WordPress tasks to EFS"
   from_port                = 2049
   protocol                 = "tcp"
   to_port                  = 2049
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_autoscaling_group_asgWordpress_group_to_elasticache_replication_group_wpRedis_group_tcp_6379" {
+resource "aws_security_group_rule" "rule_ecs_task_definition_wordpress_group_to_elasticache_replication_group_wpRedis_group_tcp_6379" {
   security_group_id        = aws_security_group.elasticache_replication_group_wpRedis_group.id
-  source_security_group_id = aws_security_group.autoscaling_group_asgWordpress_group.id
-  description              = "Redis from the WordPress instances"
+  source_security_group_id = aws_security_group.ecs_task_definition_wordpress_group.id
+  description              = "Redis from the WordPress tasks"
   from_port                = 6379
   protocol                 = "tcp"
   to_port                  = 6379
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_autoscaling_group_asgWordpress_group_to_rds_cluster_wp_aurora_group_tcp_3306" {
+resource "aws_security_group_rule" "rule_ecs_task_definition_wordpress_group_to_rds_cluster_wp_aurora_group_tcp_3306" {
   security_group_id        = aws_security_group.rds_cluster_wp-aurora_group.id
-  source_security_group_id = aws_security_group.autoscaling_group_asgWordpress_group.id
-  description              = "MySQL from the WordPress instances"
+  source_security_group_id = aws_security_group.ecs_task_definition_wordpress_group.id
+  description              = "MySQL from the WordPress tasks"
   from_port                = 3306
   protocol                 = "tcp"
   to_port                  = 3306
@@ -634,20 +782,10 @@ resource "aws_security_group_rule" "rule_lb_alb_wp_group_egress_all_protocols" {
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_lb_alb_wp_group_ingress_tcp_443" {
-  security_group_id = aws_security_group.lb_alb-wp_group.id
-  description       = "HTTPS from CloudFront edge locations only"
-  from_port         = 443
-  prefix_list_ids   = ["pl-82a045eb"]
-  protocol          = "tcp"
-  to_port           = 443
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_lb_alb_wp_group_to_autoscaling_group_asgWordpress_group_tcp_443" {
-  security_group_id        = aws_security_group.autoscaling_group_asgWordpress_group.id
+resource "aws_security_group_rule" "rule_lb_alb_wp_group_to_ecs_task_definition_wordpress_group_tcp_443" {
+  security_group_id        = aws_security_group.ecs_task_definition_wordpress_group.id
   source_security_group_id = aws_security_group.lb_alb-wp_group.id
-  description              = "HTTPS from the load balancer to the WordPress instances"
+  description              = "HTTPS from the load balancer to the WordPress tasks"
   from_port                = 443
   protocol                 = "tcp"
   to_port                  = 443
@@ -711,7 +849,7 @@ resource "aws_lb" "alb-wp" {
   idle_timeout                     = 60
   load_balancer_type               = "application"
   preserve_host_header             = true
-  security_groups                  = [aws_security_group.lb_alb-wp_group.id]
+  security_groups                  = [aws_security_group.alb-cloudfront-wp.id, aws_security_group.lb_alb-wp_group.id]
   subnets                          = [aws_subnet.pubA.id, aws_subnet.pubB.id]
   access_logs {
     bucket  = aws_s3_bucket.albLogs.id
@@ -726,21 +864,19 @@ resource "aws_lb" "alb-wp" {
 }
 
 resource "aws_lb_listener" "listenerHttps" {
-  # ajuste manual · depends_on — The generator passes the certificate ARN without waiting for its DNS validation (the API Gateway domain handler waits; this one does not). The load balancer refuses a certificate still pending, so the first apply can fail on the listener.
-  certificate_arn                      = aws_acm_certificate.certAlb.arn
+  certificate_arn                      = aws_acm_certificate_validation.Validation_certAlb.certificate_arn
   load_balancer_arn                    = aws_lb.alb-wp.arn
   port                                 = 443
   protocol                             = "HTTPS"
   routing_http_response_server_enabled = true
   ssl_policy                           = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   default_action {
-    order            = 1
-    target_group_arn = aws_lb_target_group.tgWordpress.arn
-    type             = "forward"
-    forward {
-      target_group {
-        arn = aws_lb_target_group.tgWordpress.arn
-      }
+    order = 1
+    type  = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Forbidden"
+      status_code  = "403"
     }
   }
   tags = {
@@ -748,7 +884,31 @@ resource "aws_lb_listener" "listenerHttps" {
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_acm_certificate_validation.Validation_certAlb]
+}
+
+resource "aws_lb_listener_rule" "ruleFromCloudFront" {
+  action {
+    order = 1
+    type  = "forward"
+    forward {
+      target_group {
+        arn = aws_lb_target_group.tgWordpress.arn
+      }
+    }
+  }
+  condition {
+    http_header {
+      http_header_name = "X-Origin-Verify"
+      values           = [random_id.originVerify.hex]
+    }
+  }
+  listener_arn = aws_lb_listener.listenerHttps.arn
+  priority     = 1
+  tags = {
+    Name           = "ruleFromCloudFront"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_lb_target_group" "tgWordpress" {
@@ -760,7 +920,7 @@ resource "aws_lb_target_group" "tgWordpress" {
   port                          = 443
   protocol                      = "HTTPS"
   slow_start                    = 0
-  target_type                   = "instance"
+  target_type                   = "ip"
   health_check {
     enabled             = true
     healthy_threshold   = 3
@@ -781,7 +941,6 @@ resource "aws_lb_target_group" "tgWordpress" {
 
 resource "aws_cloudfront_distribution" "cdnWordpress" {
   # ajuste manual · origin[origin_id=originAlb].domain_name — The generator always writes the load balancer's own DNS name as the origin and ignores a typed domain_name. CloudFront validates the origin certificate against this name, and only origin.wp.<zone> is on certAlb, so HTTPS to the load balancer needs it here.
-  # ajuste manual · depends_on — The generator passes the certificate ARN without waiting for its DNS validation (the API Gateway domain handler waits; this one does not). CloudFront refuses a certificate still pending, and nothing else here delays the distribution, so the first apply would fail on it.
   aliases         = ["wp.cloudman.pro"]
   enabled         = true
   http_version    = "http2and3"
@@ -809,6 +968,15 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
   ordered_cache_behavior {
     cache_policy_id            = data.aws_cloudfront_cache_policy.policy_cachingoptimized.id
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.policy_securityheaderspolicy.id
+    target_origin_id           = "originMedia"
+    allowed_methods            = ["GET", "HEAD", "OPTIONS"]
+    cached_methods             = ["GET", "HEAD", "OPTIONS"]
+    path_pattern               = "/wp-content/media/*"
+    viewer_protocol_policy     = "redirect-to-https"
+  }
+  ordered_cache_behavior {
+    cache_policy_id            = data.aws_cloudfront_cache_policy.policy_cachingoptimized.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.policy_securityheaderspolicy.id
     target_origin_id           = "originAlb"
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD", "OPTIONS"]
@@ -816,8 +984,17 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
     viewer_protocol_policy     = "redirect-to-https"
   }
   origin {
+    domain_name              = aws_s3_bucket.wpMedia.bucket_regional_domain_name
+    origin_access_control_id = aws_cloudfront_origin_access_control.oac_wpmedia.id
+    origin_id                = "originMedia"
+  }
+  origin {
     domain_name = "origin.wp.${data.aws_route53_zone.zoneWordpress.name}"
     origin_id   = "originAlb"
+    custom_header {
+      name  = "X-Origin-Verify"
+      value = random_id.originVerify.hex
+    }
     custom_origin_config {
       http_port              = 80
       https_port             = 443
@@ -836,12 +1013,19 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
     Struct8Creator = "Contato Struct"
   }
   viewer_certificate {
-    acm_certificate_arn            = aws_acm_certificate.certWordpress.arn
+    acm_certificate_arn            = aws_acm_certificate_validation.Validation_certWordpress.certificate_arn
     cloudfront_default_certificate = false
     minimum_protocol_version       = "TLSv1.2_2021"
     ssl_support_method             = "sni-only"
   }
-  depends_on = [aws_acm_certificate_validation.Validation_certWordpress]
+}
+
+resource "aws_cloudfront_origin_access_control" "oac_wpmedia" {
+  name                              = "oac-wpmedia"
+  description                       = "OAC for wpmedia"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
 }
 
 
@@ -861,8 +1045,27 @@ resource "aws_s3_bucket" "albLogs" {
   }
 }
 
+resource "aws_s3_bucket" "wpMedia" {
+  bucket              = "wp-pro-media-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = false
+  object_lock_enabled = false
+  tags = {
+    Name           = "wpMedia"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_s3_bucket_ownership_controls" "albLogs_controls" {
   bucket = aws_s3_bucket.albLogs.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "wpMedia_controls" {
+  bucket = aws_s3_bucket.wpMedia.id
   rule {
     object_ownership = "BucketOwnerEnforced"
   }
@@ -891,6 +1094,29 @@ resource "aws_s3_bucket_policy" "aws_s3_bucket_policy_albLogs_st_wordpress-profe
   policy = data.aws_iam_policy_document.aws_s3_bucket_policy_albLogs_st_wordpress-professional_doc.json
 }
 
+data "aws_iam_policy_document" "aws_s3_bucket_policy_wpMedia_st_wordpress-professional_doc" {
+  statement {
+    sid    = "AllowCloudFrontServicePrincipalReadOnly"
+    effect = "Allow"
+    principals {
+      identifiers = ["cloudfront.amazonaws.com"]
+      type        = "Service"
+    }
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.wpMedia.arn}/*"]
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.cdnWordpress.id}"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "aws_s3_bucket_policy_wpMedia_st_wordpress-professional" {
+  bucket = aws_s3_bucket.wpMedia.id
+  policy = data.aws_iam_policy_document.aws_s3_bucket_policy_wpMedia_st_wordpress-professional_doc.json
+}
+
 resource "aws_s3_bucket_public_access_block" "albLogs_block" {
   block_public_acls       = true
   block_public_policy     = true
@@ -899,8 +1125,26 @@ resource "aws_s3_bucket_public_access_block" "albLogs_block" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_public_access_block" "wpMedia_block" {
+  block_public_acls       = true
+  block_public_policy     = true
+  bucket                  = aws_s3_bucket.wpMedia.id
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "albLogs_configuration" {
   bucket = aws_s3_bucket.albLogs.id
+  rule {
+    bucket_key_enabled = true
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "wpMedia_configuration" {
+  bucket = aws_s3_bucket.wpMedia.id
   rule {
     bucket_key_enabled = true
     apply_server_side_encryption_by_default {
@@ -917,22 +1161,30 @@ resource "aws_s3_bucket_versioning" "albLogs_versioning" {
   }
 }
 
-resource "aws_efs_access_point" "ap_asgWordpress_wpContent" {
+resource "aws_s3_bucket_versioning" "wpMedia_versioning" {
+  bucket = aws_s3_bucket.wpMedia.id
+  versioning_configuration {
+    mfa_delete = "Disabled"
+    status     = "Suspended"
+  }
+}
+
+resource "aws_efs_access_point" "ap_wordpress_wpContent" {
   file_system_id = aws_efs_file_system.wpContent.id
   posix_user {
-    gid = "48"
-    uid = "48"
+    gid = "33"
+    uid = "33"
   }
   root_directory {
-    path = "/wp-content-uploads"
+    path = "/wordpress"
     creation_info {
-      owner_gid   = "48"
-      owner_uid   = "48"
+      owner_gid   = "33"
+      owner_uid   = "33"
       permissions = "0755"
     }
   }
   tags = {
-    Name           = "ap_asgWordpress_wpContent"
+    Name           = "ap_wordpress_wpContent"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
@@ -1067,7 +1319,7 @@ data "aws_ami" "AMI_Data_Source_ltWordpress" {
   owners      = ["amazon"]
   filter {
     name   = "name"
-    values = ["al2023-ami-2023.*-kernel-6.1-arm64"]
+    values = ["al2023-ami-ecs-hvm-2023.*-kernel-6.1-arm64"]
   }
   filter {
     name   = "architecture"
@@ -1078,27 +1330,17 @@ data "aws_ami" "AMI_Data_Source_ltWordpress" {
 resource "aws_launch_template" "ltWordpress" {
   image_id               = data.aws_ami.AMI_Data_Source_ltWordpress.id
   name                   = "ltWordpress"
-  instance_type          = "t4g.micro"
+  instance_type          = "t4g.small"
   update_default_version = true
   user_data = base64encode(<<-EOFUData
 #!/bin/bash
 
 # --- BEGIN STRUCT8 VARIABLES ---
 cat << 'EOFENV' > /etc/struct8_env
+ECS_CLUSTER="${aws_ecs_cluster.wp-cluster.name}"
 NAME="asgWordpress"
 REGION="${data.aws_region.current.region}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
-AWS_ELASTICACHE_REPLICATION_GROUP_ENDPOINT_0="${aws_elasticache_replication_group.wpRedis.primary_endpoint_address}"
-AWS_ELASTICACHE_REPLICATION_GROUP_READER_ENDPOINT_0="${aws_elasticache_replication_group.wpRedis.reader_endpoint_address}"
-AWS_EFS_FILE_SYSTEM_ID_0="${aws_efs_file_system.wpContent.id}"
-AWS_SECRETSMANAGER_SECRET_NAME_0="wpSecrets"
-AWS_KMS_KEY_NAME_0="kmsWordpress"
-AWS_RDS_CLUSTER_NAME_0="${aws_rds_cluster.wp-aurora.cluster_identifier}"
-AWS_RDS_CLUSTER_ENGINE_0="${aws_rds_cluster.wp-aurora.engine}"
-AWS_RDS_CLUSTER_ENDPOINT_0="${aws_rds_cluster.wp-aurora.endpoint}"
-AWS_RDS_CLUSTER_PORT_0="${aws_rds_cluster.wp-aurora.port}"
-AWS_RDS_CLUSTER_DB_NAME_0="${aws_rds_cluster.wp-aurora.database_name}"
-AWS_RDS_CLUSTER_SECRET_ARN_0="${one(aws_rds_cluster.wp-aurora.master_user_secret[*].secret_arn)}"
 EOFENV
 cat /etc/struct8_env >> /etc/environment
 sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
@@ -1106,13 +1348,16 @@ chmod +x /etc/profile.d/struct8_vars.sh
 chmod 644 /etc/struct8_env
 # --- END STRUCT8 VARIABLES ---
 
-# --- BEGIN STRUCT8 EFS ---
-command -v mount.efs >/dev/null 2>&1 || yum install -y amazon-efs-utils >/dev/null 2>&1 || dnf install -y amazon-efs-utils >/dev/null 2>&1 || apt-get install -y amazon-efs-utils >/dev/null 2>&1 || true
-mkdir -p /mnt/efs
-mount -t efs -o tls,accesspoint=${aws_efs_access_point.ap_asgWordpress_wpContent.id} ${aws_efs_access_point.ap_asgWordpress_wpContent.file_system_id}:/ /mnt/efs
-grep -q " /mnt/efs efs " /etc/fstab || echo "${aws_efs_access_point.ap_asgWordpress_wpContent.file_system_id}:/ /mnt/efs efs _netdev,tls,accesspoint=${aws_efs_access_point.ap_asgWordpress_wpContent.id} 0 0" >> /etc/fstab
-# --- END STRUCT8 EFS ---
+# --- BEGIN STRUCT8 ECS BOOTSTRAP ---
+mkdir -p /etc/ecs
+source /etc/struct8_env
+echo "ECS_CLUSTER=$ECS_CLUSTER" >> /etc/ecs/ecs.config
+echo "ECS_ENABLE_CONTAINER_METADATA=true" >> /etc/ecs/ecs.config
+# --- END STRUCT8 ECS BOOTSTRAP ---
 
+# Tasks use awsvpc: keep them away from the instance metadata service and the instance role.
+mkdir -p /etc/ecs
+echo "ECS_AWSVPC_BLOCK_IMDS=true" >> /etc/ecs/ecs.config
 
 EOFUData
 )
@@ -1124,7 +1369,7 @@ EOFUData
       encrypted             = true
       iops                  = 3000
       throughput            = 125
-      volume_size           = 20
+      volume_size           = 30
       volume_type           = "gp3"
     }
   }
@@ -1166,9 +1411,10 @@ EOFUData
   tag_specifications {
     resource_type = "volume"
     tags = {
-    Name           = "asgWordpress"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
+    AmazonECSManaged = true
+    Name             = "asgWordpress"
+    State            = "wordpress-professional"
+    Struct8Creator   = "Contato Struct"
   }
   }
   tags = {
@@ -1179,20 +1425,18 @@ EOFUData
 }
 
 resource "aws_autoscaling_group" "asgWordpress" {
-  name                      = "asgWordpress"
-  default_instance_warmup   = 0
-  desired_capacity          = 2
-  health_check_grace_period = 600
-  health_check_type         = "ELB"
-  max_instance_lifetime     = 0
-  max_size                  = 6
-  metrics_granularity       = "1Minute"
-  min_elb_capacity          = 0
-  min_size                  = 2
-  target_group_arns         = [aws_lb_target_group.tgWordpress.arn]
-  termination_policies      = ["Default"]
-  vpc_zone_identifier       = [aws_subnet.appA.id, aws_subnet.appB.id]
-  wait_for_elb_capacity     = 0
+  name                    = "asgWordpress"
+  default_instance_warmup = 0
+  desired_capacity        = 2
+  health_check_type       = "EC2"
+  max_instance_lifetime   = 0
+  max_size                = 6
+  metrics_granularity     = "1Minute"
+  min_elb_capacity        = 0
+  min_size                = 2
+  termination_policies    = ["Default"]
+  vpc_zone_identifier     = [aws_subnet.appA.id, aws_subnet.appB.id]
+  wait_for_elb_capacity   = 0
   instance_maintenance_policy {
     max_healthy_percentage = 100
     min_healthy_percentage = 90
@@ -1203,6 +1447,11 @@ resource "aws_autoscaling_group" "asgWordpress" {
   launch_template {
     version = aws_launch_template.ltWordpress.latest_version
     id      = aws_launch_template.ltWordpress.id
+  }
+  tag {
+    key                 = "AmazonECSManaged"
+    propagate_at_launch = true
+    value               = true
   }
   tag {
     key                 = "Name"
@@ -1224,6 +1473,245 @@ resource "aws_autoscaling_group" "asgWordpress" {
 
 
 
+### CATEGORY: CONTAINERS ###
+
+resource "aws_ecs_capacity_provider" "wp-capacity" {
+  name = "wp-capacity"
+  auto_scaling_group_provider {
+    auto_scaling_group_arn         = aws_autoscaling_group.asgWordpress.arn
+    managed_draining               = "ENABLED"
+    managed_termination_protection = "DISABLED"
+    managed_scaling {
+      instance_warmup_period    = 300
+      maximum_scaling_step_size = 10000
+      minimum_scaling_step_size = 1
+      status                    = "ENABLED"
+      target_capacity           = 100
+    }
+  }
+  tags = {
+    Name           = "wp-capacity"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_ecs_cluster" "wp-cluster" {
+  name = "wp-cluster"
+  tags = {
+    Name           = "wp-cluster"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_ecs_cluster_capacity_providers" "assoc_cp_to_wp-cluster" {
+  cluster_name       = aws_ecs_cluster.wp-cluster.name
+  capacity_providers = [aws_ecs_capacity_provider.wp-capacity.name]
+}
+
+resource "aws_ecs_service" "wordpress_service" {
+  name                              = "wordpress_service"
+  cluster                           = aws_ecs_cluster.wp-cluster.id
+  desired_count                     = 2
+  enable_ecs_managed_tags           = true
+  force_delete                      = true
+  health_check_grace_period_seconds = 300
+  scheduling_strategy               = "REPLICA"
+  task_definition                   = "${aws_ecs_task_definition.wordpress.family}:${aws_ecs_task_definition.wordpress.revision}"
+  capacity_provider_strategy {
+    base              = 0
+    capacity_provider = aws_ecs_capacity_provider.wp-capacity.name
+    weight            = 1
+  }
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+  load_balancer {
+    container_name   = "wordpress"
+    container_port   = 443
+    target_group_arn = aws_lb_target_group.tgWordpress.arn
+  }
+  network_configuration {
+    assign_public_ip = false
+    security_groups  = [aws_security_group.autoscaling_group_asgWordpress_group.id, aws_security_group.ecs_task_definition_wordpress_group.id]
+    subnets          = [aws_subnet.appA.id, aws_subnet.appB.id]
+  }
+  ordered_placement_strategy {
+    field = "attribute:ecs.availability-zone"
+    type  = "spread"
+  }
+  tags = {
+    Name           = "wordpress_service"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_lb_listener_rule.ruleFromCloudFront]
+}
+
+locals {
+  container_def_wordpress_wordpress_1 = {
+    name              = "wordpress"
+    image             = "public.ecr.aws/docker/library/wordpress:7.1.2-php8.4-apache"
+    essential         = true
+    cpu               = 512
+    memory            = 768
+    memoryReservation = 512
+    stopTimeout       = 30
+    portMappings = [
+      {
+        protocol      = "tcp"
+        containerPort = 443
+        hostPort      = 443
+      }
+    ]
+    environment = [
+      {
+        name  = "WORDPRESS_DB_HOST"
+        value = tostring(aws_rds_cluster.wp-aurora.endpoint)
+      },
+      {
+        name  = "WORDPRESS_DB_NAME"
+        value = tostring(aws_rds_cluster.wp-aurora.database_name)
+      },
+      {
+        name  = "WORDPRESS_DB_USER"
+        value = "wordpress"
+      },
+      {
+        name  = "WORDPRESS_CONFIG_EXTRA"
+        value = "define('WP_HOME', 'https://wp.${data.aws_route53_zone.zoneWordpress.name}'); define('WP_SITEURL', 'https://wp.${data.aws_route53_zone.zoneWordpress.name}'); $_SERVER['HTTP_HOST'] = 'wp.${data.aws_route53_zone.zoneWordpress.name}'; define('FORCE_SSL_ADMIN', true); define('DISALLOW_FILE_EDIT', true); define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT); define('WP_REDIS_HOST', '${aws_elasticache_replication_group.wpRedis.primary_endpoint_address}'); define('WP_REDIS_PORT', 6379); define('WP_REDIS_SCHEME', 'tls'); define('AS3CF_SETTINGS', serialize(array('provider' => 'aws', 'use-server-roles' => true, 'bucket' => '${aws_s3_bucket.wpMedia.bucket}', 'region' => '${data.aws_region.current.region}', 'copy-to-s3' => true, 'enable-object-prefix' => true, 'object-prefix' => 'wp-content/media/', 'use-yearmonth-folders' => true, 'object-versioning' => true, 'delivery-provider' => 'aws', 'serve-from-s3' => true, 'enable-delivery-domain' => true, 'delivery-domain' => 'wp.${data.aws_route53_zone.zoneWordpress.name}', 'force-https' => true, 'remove-local-file' => false)));"
+      },
+      {
+        name  = "WP_DB_BOOTSTRAP"
+        value = "<?php mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); $q = chr(39); $b = chr(96); $user = getenv('WORDPRESS_DB_USER'); $m = null; for ($i = 1; $i <= 20 && $m === null; $i++) { try { $c = mysqli_init(); $c->real_connect(getenv('WORDPRESS_DB_HOST'), getenv('DB_ADMIN_USER'), getenv('DB_ADMIN_PASSWORD'), '', 3306, null, MYSQLI_CLIENT_SSL | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT); $m = $c; } catch (mysqli_sql_exception $e) { fwrite(STDERR, 'db-bootstrap: attempt ' . $i . ': ' . $e->getMessage() . PHP_EOL); sleep(10); } } if ($m === null) { exit(1); } $account = $q . $m->real_escape_string($user) . $q . '@' . $q . '%' . $q; $password = $q . $m->real_escape_string(getenv('WORDPRESS_DB_PASSWORD')) . $q; $m->query('CREATE USER IF NOT EXISTS ' . $account . ' IDENTIFIED BY ' . $password . ' REQUIRE SSL'); $m->query('ALTER USER ' . $account . ' IDENTIFIED BY ' . $password . ' REQUIRE SSL'); $m->query('GRANT ALL PRIVILEGES ON ' . $b . str_replace($b, $b . $b, getenv('WORDPRESS_DB_NAME')) . $b . '.* TO ' . $account); echo 'db-bootstrap: database user ' . $user . ' is ready' . PHP_EOL;"
+      },
+      {
+        name  = "NAME"
+        value = "wordpress"
+      },
+      {
+        name  = "REGION"
+        value = tostring(data.aws_region.current.region)
+      },
+      {
+        name  = "ACCOUNT"
+        value = tostring(data.aws_caller_identity.current.account_id)
+      },
+      {
+        name  = "AWS_ECS_CAPACITY_PROVIDER_NAME_0"
+        value = "wp-capacity"
+      },
+      {
+        name  = "AWS_EFS_FILE_SYSTEM_ID_0"
+        value = tostring(aws_efs_file_system.wpContent.id)
+      },
+      {
+        name  = "AWS_ELASTICACHE_REPLICATION_GROUP_ENDPOINT_0"
+        value = tostring(aws_elasticache_replication_group.wpRedis.primary_endpoint_address)
+      },
+      {
+        name  = "AWS_ELASTICACHE_REPLICATION_GROUP_READER_ENDPOINT_0"
+        value = tostring(aws_elasticache_replication_group.wpRedis.reader_endpoint_address)
+      },
+      {
+        name  = "AWS_RDS_CLUSTER_NAME_0"
+        value = tostring(aws_rds_cluster.wp-aurora.cluster_identifier)
+      },
+      {
+        name  = "AWS_RDS_CLUSTER_ENGINE_0"
+        value = tostring(aws_rds_cluster.wp-aurora.engine)
+      },
+      {
+        name  = "AWS_RDS_CLUSTER_ENDPOINT_0"
+        value = tostring(aws_rds_cluster.wp-aurora.endpoint)
+      },
+      {
+        name  = "AWS_RDS_CLUSTER_PORT_0"
+        value = tostring(aws_rds_cluster.wp-aurora.port)
+      },
+      {
+        name  = "AWS_RDS_CLUSTER_DB_NAME_0"
+        value = tostring(aws_rds_cluster.wp-aurora.database_name)
+      },
+      {
+        name  = "AWS_RDS_CLUSTER_SECRET_ARN_0"
+        value = tostring(one(aws_rds_cluster.wp-aurora.master_user_secret[*].secret_arn))
+      },
+      {
+        name  = "AWS_S3_BUCKET_NAME_0"
+        value = "wp-pro-media-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+      }
+    ]
+    secrets = [
+      {
+        name      = "WORDPRESS_DB_PASSWORD"
+        valueFrom = aws_secretsmanager_secret.wpSecrets.arn
+      },
+      {
+        name      = "DB_ADMIN_USER"
+        valueFrom = "${aws_rds_cluster.wp-aurora.master_user_secret[0].secret_arn}:username::"
+      },
+      {
+        name      = "DB_ADMIN_PASSWORD"
+        valueFrom = "${aws_rds_cluster.wp-aurora.master_user_secret[0].secret_arn}:password::"
+      }
+    ]
+    mountPoints = [
+      {
+        sourceVolume  = "wpContent"
+        containerPath = "/var/www/html"
+        readOnly      = false
+      }
+    ]
+    systemControls         = []
+    volumesFrom            = []
+    command                = ["sh", "-c", "set -e; mkdir -p /etc/ssl/private; openssl req -x509 -nodes -newkey rsa:2048 -days 3650 -subj /CN=wordpress -addext basicConstraints=critical,CA:FALSE -keyout /etc/ssl/private/ssl-cert-snakeoil.key -out /etc/ssl/certs/ssl-cert-snakeoil.pem; a2enmod ssl; a2ensite default-ssl; printenv WP_DB_BOOTSTRAP > /tmp/db-bootstrap.php; php /tmp/db-bootstrap.php; rm -f /tmp/db-bootstrap.php; unset WP_DB_BOOTSTRAP DB_ADMIN_USER DB_ADMIN_PASSWORD; exec docker-entrypoint.sh apache2-foreground"]
+    privileged             = false
+    readonlyRootFilesystem = false
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.logsWordpress.name
+        awslogs-region        = "us-west-2"
+        awslogs-stream-prefix = "wordpress"
+      }
+    }
+  }
+}
+
+resource "aws_ecs_task_definition" "wordpress" {
+  container_definitions    = jsonencode([local.container_def_wordpress_wordpress_1])
+  cpu                      = "512"
+  execution_role_arn       = aws_iam_role.execution_role_ecs_wordpress.arn
+  family                   = "wordpress"
+  memory                   = "768"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+  task_role_arn            = aws_iam_role.task_role_ecs_wordpress.arn
+  tags = {
+    Name           = "wordpress"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+  volume {
+    name = "wpContent"
+    efs_volume_configuration {
+      file_system_id     = aws_efs_file_system.wpContent.id
+      transit_encryption = "ENABLED"
+      authorization_config {
+        access_point_id = aws_efs_access_point.ap_wordpress_wpContent.id
+        iam             = "ENABLED"
+      }
+    }
+  }
+  depends_on = [aws_iam_role_policy_attachment.ecs_task_definition_wordpress_st_wordpress-professional_attach, aws_iam_role_policy_attachment.ecs_task_definition_wordpress_execution_st_wordpress-professional_attach]
+}
+
+
+
+
 ### CATEGORY: INTEGRATION ###
 
 resource "aws_sns_topic" "alarmsWordpress" {
@@ -1235,13 +1723,19 @@ resource "aws_sns_topic" "alarmsWordpress" {
   }
 }
 
+resource "aws_sns_topic_subscription" "Subscription1" {
+  endpoint  = "rbpmconsulting@gmail.com"
+  protocol  = "email"
+  topic_arn = aws_sns_topic.alarmsWordpress.arn
+}
+
 
 
 
 ### CATEGORY: MONITORING ###
 
 resource "aws_cloudwatch_log_group" "logsWordpress" {
-  name              = "/aws/autoscaling/asgWordpress"
+  name              = "/ecs/wordpress"
   log_group_class   = "STANDARD"
   retention_in_days = 30
   skip_destroy      = false
@@ -1250,6 +1744,242 @@ resource "aws_cloudwatch_log_group" "logsWordpress" {
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_cloudwatch_metric_alarm" "alarmDbCapacity" {
+  alarm_name          = "alarmDbCapacity"
+  metric_name         = "ServerlessDatabaseCapacity"
+  alarm_actions       = [aws_sns_topic.alarmsWordpress.arn]
+  alarm_description   = "Aurora has run at its maximum capacity (2 ACUs) for 15 minutes. If this repeats, raise the maximum capacity of the wp-aurora cluster and this threshold with it."
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  datapoints_to_alarm = 3
+  evaluation_periods  = 3
+  namespace           = "AWS/RDS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 2
+  treat_missing_data  = "notBreaching"
+  dimensions = {
+    DBClusterIdentifier = aws_rds_cluster.wp-aurora.cluster_identifier
+  }
+  tags = {
+    Name           = "alarmDbCapacity"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "alarmSite5xx" {
+  alarm_name          = "alarmSite5xx"
+  metric_name         = "HTTPCode_ELB_5XX_Count"
+  alarm_actions       = [aws_sns_topic.alarmsWordpress.arn]
+  alarm_description   = "The load balancer itself answered 5xx (502, 503 or 504) at least 10 times in 5 minutes: no healthy WordPress task, or tasks not answering."
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  datapoints_to_alarm = 1
+  evaluation_periods  = 1
+  namespace           = "AWS/ApplicationELB"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 10
+  treat_missing_data  = "notBreaching"
+  dimensions = {
+    LoadBalancer = aws_lb.alb-wp.arn_suffix
+  }
+  tags = {
+    Name           = "alarmSite5xx"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "alarmTasksCpu" {
+  alarm_name          = "alarmTasksCpu"
+  metric_name         = "CPUUtilization"
+  alarm_actions       = [aws_sns_topic.alarmsWordpress.arn]
+  alarm_description   = "Average CPU of the WordPress service above 80% for 15 minutes."
+  comparison_operator = "GreaterThanThreshold"
+  datapoints_to_alarm = 3
+  evaluation_periods  = 3
+  namespace           = "AWS/ECS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+  dimensions = {
+    ClusterName = aws_ecs_cluster.wp-cluster.name
+    ServiceName = aws_ecs_service.wordpress_service.name
+  }
+  tags = {
+    Name           = "alarmTasksCpu"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "alarmTasksMemory" {
+  alarm_name          = "alarmTasksMemory"
+  metric_name         = "MemoryUtilization"
+  alarm_actions       = [aws_sns_topic.alarmsWordpress.arn]
+  alarm_description   = "Average memory of the WordPress service above 85% of the task memory for 15 minutes."
+  comparison_operator = "GreaterThanThreshold"
+  datapoints_to_alarm = 3
+  evaluation_periods  = 3
+  namespace           = "AWS/ECS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 85
+  dimensions = {
+    ClusterName = aws_ecs_cluster.wp-cluster.name
+    ServiceName = aws_ecs_service.wordpress_service.name
+  }
+  tags = {
+    Name           = "alarmTasksMemory"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+resource "null_resource" "cleanup_wp-cluster" {
+  triggers = {
+    cluster_name = aws_ecs_cluster.wp-cluster.name
+  }
+  depends_on = [aws_ecs_cluster.wp-cluster, aws_autoscaling_group.asgWordpress, aws_ecs_capacity_provider.wp-capacity]
+  provisioner "local-exec" {
+    command = <<EOF
+
+        CLUSTER="${self.triggers.cluster_name}"
+        REGION="us-west-2"
+
+        echo "ECS cleanup: cluster $CLUSTER in $REGION"
+
+        # WHICH AUTO SCALING GROUPS. Two answers, because either source can be the
+        # one that is missing.
+        #
+        # The names the diagram declares come first, written here as literals at
+        # compile time. A destroy provisioner may only read `self`, so a reference
+        # is not available -- and a re-run is exactly when that matters: a destroy
+        # that failed half way leaves the group in the state with the ECS cluster
+        # already gone, and a cluster is what the second source needs. Measured on
+        # 2026-09-14, the third destroy of loadtest-ecs-ec2: `list-clusters` came
+        # back empty while hub-ecs-asg still held two instances.
+        #
+        # The second source covers the group the diagram cannot name as a literal
+        # -- a name built by the provider, or one the account answers.
+        ASGS="asgWordpress"
+        CI_ARNS=$(aws ecs list-container-instances --cluster "$CLUSTER" --region "$REGION" --query "containerInstanceArns[]" --output text 2>/dev/null)
+        if [ -n "$CI_ARNS" ] && [ "$CI_ARNS" != "None" ]; then
+            EC2_IDS=$(echo "$CI_ARNS" | tr '\t' '\n' | xargs -r -n 100 aws ecs describe-container-instances --cluster "$CLUSTER" --region "$REGION" --query "containerInstances[].ec2InstanceId" --output text --container-instances 2>/dev/null)
+            if [ -n "$EC2_IDS" ] && [ "$EC2_IDS" != "None" ]; then
+                DESCOBERTOS=$(echo "$EC2_IDS" | tr '\t' '\n' | xargs -r -n 50 aws autoscaling describe-auto-scaling-instances --region "$REGION" --query "AutoScalingInstances[].AutoScalingGroupName" --output text --instance-ids 2>/dev/null)
+                ASGS=$(printf '%s\n%s\n' "$ASGS" "$DESCOBERTOS" | tr '\t' '\n' | sed '/^$/d' | sort -u)
+            fi
+        fi
+        echo "ECS cleanup: auto scaling groups behind this cluster: $ASGS"
+
+        # 1. SERVICES DOWN. Terraform deletes them too, and correctly; this is
+        # the safeguard for the run where its own delete is what is stuck.
+        SERVICES=$(aws ecs list-services --cluster "$CLUSTER" --region "$REGION" --query "serviceArns[]" --output text 2>/dev/null)
+        if [ -n "$SERVICES" ] && [ "$SERVICES" != "None" ]; then
+            for SERVICE in $SERVICES; do
+                echo "ECS cleanup: scaling down $SERVICE"
+                aws ecs update-service --cluster "$CLUSTER" --region "$REGION" --service "$SERVICE" --desired-count 0 >/dev/null 2>&1
+            done
+            for SERVICE in $SERVICES; do
+                echo "ECS cleanup: deleting $SERVICE"
+                aws ecs delete-service --cluster "$CLUSTER" --region "$REGION" --service "$SERVICE" --force >/dev/null 2>&1
+            done
+        fi
+
+        # 2. TASKS STOPPED, so managed draining has nothing left to wait for.
+        TASKS=$(aws ecs list-tasks --cluster "$CLUSTER" --region "$REGION" --query "taskArns[]" --output text 2>/dev/null)
+        if [ -n "$TASKS" ] && [ "$TASKS" != "None" ]; then
+            for TASK in $TASKS; do
+                echo "ECS cleanup: stopping task $TASK"
+                aws ecs stop-task --cluster "$CLUSTER" --region "$REGION" --task "$TASK" >/dev/null 2>&1
+            done
+        fi
+
+        # 3. THE GROUPS TO ZERO, while the capacity provider still exists. This
+        # is the step the old script never had, and the only one that makes an
+        # EC2 instance leave.
+        for ASG in $ASGS; do
+            IDS=$(aws autoscaling describe-auto-scaling-groups --region "$REGION" --auto-scaling-group-names "$ASG" --query "AutoScalingGroups[0].Instances[].InstanceId" --output text 2>/dev/null)
+            if [ -n "$IDS" ] && [ "$IDS" != "None" ]; then
+                echo "$IDS" | tr '\t' '\n' | xargs -r -n 50 aws autoscaling set-instance-protection --region "$REGION" --auto-scaling-group-name "$ASG" --no-protected-from-scale-in --instance-ids >/dev/null 2>&1
+            fi
+            echo "ECS cleanup: taking $ASG to zero"
+            aws autoscaling update-auto-scaling-group --region "$REGION" --auto-scaling-group-name "$ASG" --min-size 0 --max-size 0 --desired-capacity 0 >/dev/null 2>&1
+        done
+
+        # 4. WAIT ON THE ASG'S OWN INSTANCE LIST. Five minutes, bounded, and
+        # Terraform's own 10m wait still follows -- this is not the last word.
+        # From the third round on, release whatever is parked in
+        # Terminating:Wait -- the tasks are gone by now, so the hook is holding
+        # an instance for a drain that has nothing to drain.
+        if [ -n "$ASGS" ]; then
+            DEADLINE=$(( $(date +%s) + 300 ))
+            ROUND=0
+            while [ "$(date +%s)" -lt "$DEADLINE" ]; do
+                ROUND=$(( ROUND + 1 ))
+                LEFT=0
+                for ASG in $ASGS; do
+                    COUNT=$(aws autoscaling describe-auto-scaling-groups --region "$REGION" --auto-scaling-group-names "$ASG" --query "length(AutoScalingGroups[0].Instances)" --output text 2>/dev/null)
+                    case "$COUNT" in ''|*[!0-9]*) COUNT=0 ;; esac
+                    LEFT=$(( LEFT + COUNT ))
+
+                    if [ "$COUNT" -gt 0 ] && [ "$ROUND" -ge 3 ]; then
+                        WAITING=$(aws autoscaling describe-auto-scaling-groups --region "$REGION" --auto-scaling-group-names "$ASG" --query "AutoScalingGroups[0].Instances[?LifecycleState=='Terminating:Wait'].InstanceId" --output text 2>/dev/null)
+                        if [ -n "$WAITING" ] && [ "$WAITING" != "None" ]; then
+                            HOOKS=$(aws autoscaling describe-lifecycle-hooks --region "$REGION" --auto-scaling-group-name "$ASG" --query "LifecycleHooks[?LifecycleTransition=='autoscaling:EC2_INSTANCE_TERMINATING'].LifecycleHookName" --output text 2>/dev/null)
+                            for HOOK in $HOOKS; do
+                                for ID in $WAITING; do
+                                    echo "ECS cleanup: releasing $ID from hook $HOOK on $ASG"
+                                    aws autoscaling complete-lifecycle-action --region "$REGION" --auto-scaling-group-name "$ASG" --lifecycle-hook-name "$HOOK" --instance-id "$ID" --lifecycle-action-result CONTINUE >/dev/null 2>&1
+                                done
+                            done
+                        fi
+                    fi
+                done
+
+                if [ "$LEFT" -eq 0 ]; then
+                    echo "ECS cleanup: groups are empty"
+                    break
+                fi
+                echo "ECS cleanup: $LEFT instance(s) still in the group(s)"
+                sleep 10
+            done
+        fi
+
+        # 5. DEREGISTER WHAT IS LEFT. Last, and as a tidy-up only: this is what
+        # the old script led with, and it empties the ECS list without moving a
+        # single machine.
+        CI_LEFT=$(aws ecs list-container-instances --cluster "$CLUSTER" --region "$REGION" --query "containerInstanceArns[]" --output text 2>/dev/null)
+        if [ -n "$CI_LEFT" ] && [ "$CI_LEFT" != "None" ]; then
+            for INSTANCE_ARN in $CI_LEFT; do
+                echo "ECS cleanup: deregistering $INSTANCE_ARN"
+                aws ecs deregister-container-instance --cluster "$CLUSTER" --region "$REGION" --container-instance "$INSTANCE_ARN" --force >/dev/null 2>&1
+            done
+        fi
+
+        exit 0
+        
+  EOF
+    interpreter = ["/bin/bash", "-c"]
+    when        = destroy
+  }
+}
+
+resource "random_id" "originVerify" {
+  byte_length = 8
+}
+
+resource "random_password" "wpDbPassword" {
+  length  = 16
+  special = true
 }
 
 
