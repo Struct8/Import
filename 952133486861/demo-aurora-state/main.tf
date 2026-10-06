@@ -818,7 +818,7 @@ resource "aws_db_proxy" "demo-aurora-rds-proxy" {
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_cloudwatch_log_group.LogGroup, aws_iam_role_policy_attachment.db_proxy_demo-aurora-rds-proxy_st_demo-aurora-state_attach]
+  depends_on = [aws_cloudwatch_log_group.demo-aurora-rds-proxy, aws_iam_role_policy_attachment.db_proxy_demo-aurora-rds-proxy_st_demo-aurora-state_attach]
 }
 
 resource "aws_db_proxy_target" "demo-aurora-rds-proxy_target" {
@@ -846,6 +846,7 @@ resource "aws_rds_cluster" "demo-aurora" {
   copy_tags_to_snapshot               = true
   database_insights_mode              = "standard"
   enable_http_endpoint                = true
+  enabled_cloudwatch_logs_exports     = ["instance", "postgresql", "iam-db-auth-error"]
   engine                              = "aurora-postgresql"
   engine_version                      = "16.8"
   iam_database_authentication_enabled = true
@@ -858,27 +859,29 @@ resource "aws_rds_cluster" "demo-aurora" {
   storage_encrypted                   = true
   vpc_security_group_ids              = [aws_security_group.rds_cluster_demo-aurora_group.id]
   serverlessv2_scaling_configuration {
-    max_capacity = 2
-    min_capacity = 0.5
+    max_capacity             = 1
+    min_capacity             = 0.5
+    seconds_until_auto_pause = 10
   }
   tags = {
     Name           = "demo-aurora"
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_cloudwatch_log_group.demo-aurora]
 }
 
-resource "aws_rds_cluster_instance" "demo-aurora-1" {
+resource "aws_rds_cluster_instance" "demo-aurora" {
   cluster_identifier                    = aws_rds_cluster.demo-aurora.id
   copy_tags_to_snapshot                 = true
   engine                                = aws_rds_cluster.demo-aurora.engine
-  identifier                            = "demo-aurora-1"
+  identifier                            = "demo-aurora"
   instance_class                        = "db.serverless"
   performance_insights_enabled          = true
   performance_insights_retention_period = 7
   promotion_tier                        = 1
   tags = {
-    Name           = "demo-aurora-1"
+    Name           = "demo-aurora"
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
@@ -1207,13 +1210,13 @@ resource "aws_cloudwatch_event_target" "Target3" {
 
 ### CATEGORY: MONITORING ###
 
-resource "aws_cloudwatch_log_group" "LogGroup" {
-  name              = "/aws/rds/proxy/demo-aurora-rds-proxy"
+resource "aws_cloudwatch_log_group" "demo-aurora" {
+  name              = "/aws/rds/cluster/demo-aurora/iam-db-auth-error"
   log_group_class   = "STANDARD"
   retention_in_days = 1
   skip_destroy      = false
   tags = {
-    Name           = "LogGroup"
+    Name           = "demo-aurora"
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
@@ -1250,6 +1253,18 @@ resource "aws_cloudwatch_log_group" "demo-aurora-proxy-logs" {
   skip_destroy      = false
   tags = {
     Name           = "demo-aurora-proxy-logs"
+    State          = "demo-aurora-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "demo-aurora-rds-proxy" {
+  name              = "/aws/rds/proxy/demo-aurora-rds-proxy"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "demo-aurora-rds-proxy"
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
