@@ -11,8 +11,8 @@
       ]
     }
   ],
-  "action": "apply",
-  "trigger_id": "1791288586421",
+  "action": "plan",
+  "trigger_id": "1791289117051",
   "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
