@@ -425,6 +425,12 @@ resource "aws_bedrockagentcore_harness" "agent-lab-harness" {
   memory {
     agentcore_memory_configuration {
       arn = aws_bedrockagentcore_memory.agent-lab-memory.arn
+      retrieval_config {
+        strategy_id     = aws_bedrockagentcore_memory_strategy.agent-lab-session-summaries.memory_strategy_id
+        map_block_key   = "/summaries/{actorId}/{sessionId}"
+        relevance_score = 0.2
+        top_k           = 10
+      }
     }
   }
   model {
