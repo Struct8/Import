@@ -386,6 +386,7 @@ resource "aws_bedrockagentcore_gateway" "agent-lab-gateway" {
 
 resource "aws_bedrockagentcore_gateway_target" "orders" {
   # ajuste manual · credential_provider_configuration — The compile drops the empty gateway_iam_role block that is stored on this node, and the provider requires credential_provider_configuration on a Lambda target: the gateway invokes the function with its own IAM role.
+  # ajuste manual · depends_on — CreateGatewayTarget refuses the target while the trust policy of the gateway role is still propagating (it failed 3 s after the role was created), and the provider retries only the permissions error, not this one. Waiting for the memory, which takes about 3 minutes to create, gives the role that time without making the apply longer: the harness waits for the memory anyway.
   name               = "orders"
   gateway_identifier = aws_bedrockagentcore_gateway.agent-lab-gateway.gateway_id
   credential_provider_configuration {
@@ -414,6 +415,7 @@ resource "aws_bedrockagentcore_gateway_target" "orders" {
       }
     }
   }
+  depends_on = [aws_bedrockagentcore_memory.agent-lab-memory]
 }
 
 resource "aws_bedrockagentcore_harness" "agent-lab-harness" {
