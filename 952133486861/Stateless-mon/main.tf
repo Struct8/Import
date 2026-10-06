@@ -60,6 +60,13 @@ data "aws_instance" "ec2-nat-grafana-mon" {
   }
 }
 
+data "aws_nat_gateway" "nat-regional-mon" {
+  filter {
+    name   = "tag:Name"
+    values = ["nat-regional-mon"]
+  }
+}
+
 data "aws_s3_bucket" "lgtm-tempo-blocks-mon" {
   bucket = "lgtm-tempo-blocks-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
 }
@@ -1089,6 +1096,12 @@ resource "aws_route" "route_rtb-private-mon_to_ec2-nat-grafana-mon_ipv4" {
   destination_cidr_block = "0.0.0.0/0"
 }
 
+resource "aws_route" "route_rtb-private-mon_to_nat-regional-mon_ipv4" {
+  nat_gateway_id         = data.aws_nat_gateway.nat-regional-mon.id
+  route_table_id         = aws_route_table.rtb-private-mon.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
 resource "aws_route_table" "rtb-private-mon" {
   vpc_id = data.aws_vpc.vpc-grafana-lgtm-mon.id
   tags = {
@@ -1807,8 +1820,8 @@ resource "aws_appautoscaling_policy" "alloy-scale-cpu" {
   service_namespace  = aws_appautoscaling_target.alloy-scale-target-mon.service_namespace
   target_tracking_scaling_policy_configuration {
     disable_scale_in   = false
-    scale_in_cooldown  = 60
-    scale_out_cooldown = 50
+    scale_in_cooldown  = 30
+    scale_out_cooldown = 30
     target_value       = 70
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
@@ -1824,9 +1837,9 @@ resource "aws_appautoscaling_policy" "loki-scale-cpu" {
   service_namespace  = aws_appautoscaling_target.loki-scale-target-mon.service_namespace
   target_tracking_scaling_policy_configuration {
     disable_scale_in   = false
-    scale_in_cooldown  = 60
+    scale_in_cooldown  = 30
     scale_out_cooldown = 50
-    target_value       = 70
+    target_value       = 30
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
@@ -1841,8 +1854,8 @@ resource "aws_appautoscaling_policy" "tempo-scale-cpu" {
   service_namespace  = aws_appautoscaling_target.tempo-scale-target-mon.service_namespace
   target_tracking_scaling_policy_configuration {
     disable_scale_in   = false
-    scale_in_cooldown  = 60
-    scale_out_cooldown = 50
+    scale_in_cooldown  = 30
+    scale_out_cooldown = 30
     target_value       = 70
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
