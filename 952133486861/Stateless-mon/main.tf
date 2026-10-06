@@ -60,13 +60,6 @@ data "aws_instance" "ec2-nat-grafana-mon" {
   }
 }
 
-data "aws_nat_gateway" "nat-regional-mon" {
-  filter {
-    name   = "tag:Name"
-    values = ["nat-regional-mon"]
-  }
-}
-
 data "aws_s3_bucket" "lgtm-tempo-blocks-mon" {
   bucket = "lgtm-tempo-blocks-mon-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
 }
@@ -1092,12 +1085,6 @@ resource "aws_subnet" "snet-app-1b-mon" {
 
 resource "aws_route" "route_rtb-private-mon_to_ec2-nat-grafana-mon_ipv4" {
   network_interface_id   = data.aws_instance.ec2-nat-grafana-mon.network_interface_id
-  route_table_id         = aws_route_table.rtb-private-mon.id
-  destination_cidr_block = "0.0.0.0/0"
-}
-
-resource "aws_route" "route_rtb-private-mon_to_nat-regional-mon_ipv4" {
-  nat_gateway_id         = data.aws_nat_gateway.nat-regional-mon.id
   route_table_id         = aws_route_table.rtb-private-mon.id
   destination_cidr_block = "0.0.0.0/0"
 }
