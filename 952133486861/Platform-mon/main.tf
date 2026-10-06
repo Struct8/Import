@@ -48,7 +48,7 @@ data "aws_route53_zone" "Cloudman" {
 ### EXTERNAL REFERENCES ###
 
 data "aws_s3_bucket" "flowlogs-bucket" {
-  bucket   = "flowlogs-bucket-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an-${data.aws_caller_identity.current.account_id}-us-east-1-an"
+  bucket   = "flowlogs-bucket-${data.aws_caller_identity.current.account_id}-us-east-1-an"
   provider = aws.us_east_1
 }
 
