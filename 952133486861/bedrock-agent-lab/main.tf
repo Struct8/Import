@@ -26,7 +26,107 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
+data "aws_iam_policy_document" "bedrockagentcore_gateway_agent-lab-gateway_st_bedrock-agent-lab_doc" {
+  statement {
+    sid       = "InvokeTheTargetFunction"
+    effect    = "Allow"
+    actions   = ["lambda:InvokeFunction"]
+    resources = [aws_lambda_function.agent-lab-orders-tool.arn]
+  }
+}
+
+resource "aws_iam_policy" "bedrockagentcore_gateway_agent-lab-gateway_st_bedrock-agent-lab" {
+  name        = "bedrockagentcore_gateway_agent-lab-gateway_st_bedrock-agent-lab"
+  description = "Access Policy for agent-lab-gateway"
+  policy      = data.aws_iam_policy_document.bedrockagentcore_gateway_agent-lab-gateway_st_bedrock-agent-lab_doc.json
+}
+
+data "aws_iam_policy_document" "bedrockagentcore_harness_agent_lab_orders_st_bedrock-agent-lab_doc" {
+  statement {
+    sid       = "AgentCoreGatewayAccess"
+    effect    = "Allow"
+    actions   = ["bedrock-agentcore:InvokeGateway"]
+    resources = [aws_bedrockagentcore_gateway.agent-lab-gateway.gateway_arn]
+  }
+  statement {
+    sid       = "AgentCoreMemory"
+    effect    = "Allow"
+    actions   = ["bedrock-agentcore:CreateEvent", "bedrock-agentcore:DeleteEvent", "bedrock-agentcore:GetEvent", "bedrock-agentcore:ListEvents", "bedrock-agentcore:RetrieveMemoryRecords"]
+    resources = [aws_bedrockagentcore_memory.agent_lab_memory.arn]
+  }
+  statement {
+    sid       = "AgentCoreMemoryKey"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt", "kms:DescribeKey", "kms:GenerateDataKey"]
+    resources = [aws_kms_key.agent-lab-key.arn]
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["bedrock-agentcore.${data.aws_region.current.region}.amazonaws.com"]
+    }
+  }
+  statement {
+    sid       = "CloudWatchMetricsPublish"
+    effect    = "Allow"
+    actions   = ["cloudwatch:PutMetricData"]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      variable = "cloudwatch:namespace"
+      values   = ["bedrock-agentcore"]
+    }
+  }
+  statement {
+    sid       = "EcrPublicTokenAccess"
+    effect    = "Allow"
+    actions   = ["ecr-public:GetAuthorizationToken", "logs:PutResourcePolicy", "sts:GetServiceBearerToken", "xray:GetSamplingRules", "xray:GetSamplingTargets", "xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
+  }
+  statement {
+    sid       = "AgentCoreWorkloadIdentity"
+    effect    = "Allow"
+    actions   = ["bedrock-agentcore:GetWorkloadAccessToken", "bedrock-agentcore:GetWorkloadAccessTokenForJWT"]
+    resources = ["arn:aws:bedrock-agentcore:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:workload-identity-directory/default", "arn:aws:bedrock-agentcore:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:workload-identity-directory/default/workload-identity/harness_agent_lab_orders-*"]
+  }
+  statement {
+    sid       = "BedrockModelInvocation"
+    effect    = "Allow"
+    actions   = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"]
+    resources = ["arn:aws:bedrock:${data.aws_region.current.region}::foundation-model/amazon.nova-lite-v1:0"]
+  }
+  statement {
+    sid       = "CloudWatchLogsDescribeGroups"
+    effect    = "Allow"
+    actions   = ["logs:DescribeLogGroups"]
+    resources = ["arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:*"]
+  }
+  statement {
+    sid       = "CloudWatchLogsGroup"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogGroup", "logs:DescribeLogStreams"]
+    resources = ["arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/bedrock-agentcore/runtimes/*"]
+  }
+  statement {
+    sid       = "CloudWatchLogsStream"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/bedrock-agentcore/runtimes/*:log-stream:*"]
+  }
+}
+
+resource "aws_iam_policy" "bedrockagentcore_harness_agent_lab_orders_st_bedrock-agent-lab" {
+  name        = "bedrockagentcore_harness_agent_lab_orders_st_bedrock-agent-lab"
+  description = "Access Policy for agent_lab_orders"
+  policy      = data.aws_iam_policy_document.bedrockagentcore_harness_agent_lab_orders_st_bedrock-agent-lab_doc.json
+}
+
 data "aws_iam_policy_document" "lambda_function_agent-lab-chat_st_bedrock-agent-lab_doc" {
+  statement {
+    sid       = "AllowInvokeHarness"
+    effect    = "Allow"
+    actions   = ["bedrock-agentcore:InvokeAgentRuntime", "bedrock-agentcore:InvokeHarness"]
+    resources = [aws_bedrockagentcore_harness.agent_lab_orders.arn]
+  }
   statement {
     sid       = "AllowWriteLogs"
     effect    = "Allow"
@@ -82,53 +182,8 @@ resource "aws_iam_role" "agent-lab-chat_role" {
   inline_policy {
     name = "agent-lab-chat-permissions"
     policy = <<EOF
-{"Version":"2012-10-17","Statement":[{"Sid":"InvokeTheHarness","Effect":"Allow","Action":["bedrock-agentcore:InvokeHarness","bedrock-agentcore:InvokeAgentRuntime"],"Resource":"${aws_bedrockagentcore_harness.agent-lab-harness.arn}"},{"Sid":"ApplyTheGuardrail","Effect":"Allow","Action":"bedrock:ApplyGuardrail","Resource":"${aws_bedrock_guardrail.agent-lab-guardrail.guardrail_arn}"}]}
+{"Version":"2012-10-17","Statement":[{"Sid":"ApplyTheGuardrail","Effect":"Allow","Action":"bedrock:ApplyGuardrail","Resource":"${aws_bedrock_guardrail.agent-lab-guardrail.guardrail_arn}"}]}
   EOF
-  }
-  tags = {
-    Name           = "agent-lab-chat_role"
-    State          = "bedrock-agent-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_iam_role" "agent-lab-gateway-role" {
-  # ajuste manual · assume_role_policy — No wire writes this trust policy: aws_bedrockagentcore_gateway is an uncurated type, so nothing fills the trust of the role it names in role_arn. The gateway assumes its role as bedrock-agentcore.amazonaws.com; the conditions limit that to gateways of this account and region.
-  name                  = "agent-lab-gateway-role"
-  assume_role_policy    = jsonencode({ Version = "2012-10-17", Statement = [{ Effect = "Allow", Principal = { Service = "bedrock-agentcore.amazonaws.com" }, Action = "sts:AssumeRole", Condition = { StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.current.account_id }, ArnLike = { "aws:SourceArn" = "arn:aws:bedrock-agentcore:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:gateway/*" } } }] })
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  inline_policy {
-    name = "agent-lab-gateway-permissions"
-    policy = <<EOF
-{"Version":"2012-10-17","Statement":[{"Sid":"InvokeTheOrdersTool","Effect":"Allow","Action":"lambda:InvokeFunction","Resource":"${aws_lambda_function.agent-lab-orders-tool.arn}"}]}
-  EOF
-  }
-  tags = {
-    Name           = "agent-lab-gateway-role"
-    State          = "bedrock-agent-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_iam_role" "agent-lab-harness-role" {
-  # ajuste manual · assume_role_policy — No wire writes this trust policy: aws_bedrockagentcore_harness is an uncurated type, so nothing fills the trust of the role it names in execution_role_arn. The harness assumes its execution role as bedrock-agentcore.amazonaws.com; the conditions limit that to AgentCore resources of this account and region.
-  name                  = "agent-lab-harness-role"
-  assume_role_policy    = jsonencode({ Version = "2012-10-17", Statement = [{ Effect = "Allow", Principal = { Service = "bedrock-agentcore.amazonaws.com" }, Action = "sts:AssumeRole", Condition = { StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.current.account_id }, ArnLike = { "aws:SourceArn" = "arn:aws:bedrock-agentcore:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:*" } } }] })
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  inline_policy {
-    name = "agent-lab-harness-permissions"
-    policy = <<EOF
-{"Version":"2012-10-17","Statement":[{"Sid":"InvokeNovaLite","Effect":"Allow","Action":["bedrock:InvokeModel","bedrock:InvokeModelWithResponseStream"],"Resource":"arn:aws:bedrock:${data.aws_region.current.region}::foundation-model/amazon.nova-lite-v1:0"},{"Sid":"PullTheManagedImage","Effect":"Allow","Action":["ecr-public:GetAuthorizationToken","sts:GetServiceBearerToken"],"Resource":"*"},{"Sid":"CallTheOrdersGateway","Effect":"Allow","Action":"bedrock-agentcore:InvokeGateway","Resource":"${aws_bedrockagentcore_gateway.agent-lab-gateway.gateway_arn}"},{"Sid":"UseTheMemory","Effect":"Allow","Action":["bedrock-agentcore:CreateEvent","bedrock-agentcore:DeleteEvent","bedrock-agentcore:GetEvent","bedrock-agentcore:ListEvents","bedrock-agentcore:RetrieveMemoryRecords"],"Resource":"${aws_bedrockagentcore_memory.agent-lab-memory.arn}"},{"Sid":"UseTheMemoryKey","Effect":"Allow","Action":["kms:Decrypt","kms:DescribeKey","kms:GenerateDataKey"],"Resource":"${aws_kms_key.agent-lab-key.arn}","Condition":{"StringEquals":{"kms:ViaService":"bedrock-agentcore.${data.aws_region.current.region}.amazonaws.com"}}},{"Sid":"GetWorkloadToken","Effect":"Allow","Action":["bedrock-agentcore:GetWorkloadAccessToken","bedrock-agentcore:GetWorkloadAccessTokenForJWT"],"Resource":["arn:aws:bedrock-agentcore:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:workload-identity-directory/default","arn:aws:bedrock-agentcore:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:workload-identity-directory/default/workload-identity/*"]},{"Sid":"WriteRuntimeLogs","Effect":"Allow","Action":["logs:CreateLogGroup","logs:DescribeLogStreams","logs:CreateLogStream","logs:PutLogEvents"],"Resource":["arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/bedrock-agentcore/runtimes/*","arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/bedrock-agentcore/runtimes/*:log-stream:*"]},{"Sid":"DescribeLogGroups","Effect":"Allow","Action":"logs:DescribeLogGroups","Resource":"arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:*"},{"Sid":"LogDeliveryPolicy","Effect":"Allow","Action":"logs:PutResourcePolicy","Resource":"*"},{"Sid":"Traces","Effect":"Allow","Action":["xray:PutTraceSegments","xray:PutTelemetryRecords","xray:GetSamplingRules","xray:GetSamplingTargets"],"Resource":"*"},{"Sid":"Metrics","Effect":"Allow","Action":"cloudwatch:PutMetricData","Resource":"*","Condition":{"StringEquals":{"cloudwatch:namespace":"bedrock-agentcore"}}}]}
-  EOF
-  }
-  tags = {
-    Name           = "agent-lab-harness-role"
-    State          = "bedrock-agent-lab"
-    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -154,6 +209,74 @@ resource "aws_iam_role" "agent-lab-orders-tool_role" {
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_iam_role" "role_agent-lab-gateway" {
+  name = "role_agent-lab-gateway"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "bedrock-agentcore.amazonaws.com"
+      },
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
+        },
+        "ArnLike": {
+          "aws:SourceArn": "arn:aws:bedrock-agentcore:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:gateway/*"
+        }
+      }
+    }
+  ]
+})
+  tags = {
+    Name           = "role_agent-lab-gateway"
+    State          = "bedrock-agent-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role" "role_agent_lab_orders" {
+  name = "role_agent_lab_orders"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "bedrock-agentcore.amazonaws.com"
+      },
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
+        },
+        "ArnLike": {
+          "aws:SourceArn": "arn:aws:bedrock-agentcore:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:*"
+        }
+      }
+    }
+  ]
+})
+  tags = {
+    Name           = "role_agent_lab_orders"
+    State          = "bedrock-agent-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "bedrockagentcore_gateway_agent-lab-gateway_st_bedrock-agent-lab_attach" {
+  policy_arn = aws_iam_policy.bedrockagentcore_gateway_agent-lab-gateway_st_bedrock-agent-lab.arn
+  role       = aws_iam_role.role_agent-lab-gateway.name
+}
+
+resource "aws_iam_role_policy_attachment" "bedrockagentcore_harness_agent_lab_orders_st_bedrock-agent-lab_attach" {
+  policy_arn = aws_iam_policy.bedrockagentcore_harness_agent_lab_orders_st_bedrock-agent-lab.arn
+  role       = aws_iam_role.role_agent_lab_orders.name
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_function_agent-lab-chat_st_bedrock-agent-lab_attach" {
@@ -267,13 +390,14 @@ resource "aws_lambda_function" "agent-lab-chat" {
   timeout                        = 120
   environment {
     variables = {
-    HARNESS_ARN                    = aws_bedrockagentcore_harness.agent-lab-harness.arn
-    GUARDRAIL_ID                   = aws_bedrock_guardrail.agent-lab-guardrail.guardrail_id
-    GUARDRAIL_VERSION              = aws_bedrock_guardrail.agent-lab-guardrail.version
-    NAME                           = "agent-lab-chat"
-    REGION                         = data.aws_region.current.region
-    ACCOUNT                        = data.aws_caller_identity.current.account_id
-    AWS_LAMBDA_FUNCTION_URL_NAME_0 = "agent-lab-chat-url"
+    HARNESS_ARN                        = aws_bedrockagentcore_harness.agent_lab_orders.arn
+    GUARDRAIL_ID                       = aws_bedrock_guardrail.agent-lab-guardrail.guardrail_id
+    GUARDRAIL_VERSION                  = aws_bedrock_guardrail.agent-lab-guardrail.version
+    NAME                               = "agent-lab-chat"
+    REGION                             = data.aws_region.current.region
+    ACCOUNT                            = data.aws_caller_identity.current.account_id
+    AWS_LAMBDA_FUNCTION_URL_NAME_0     = "agent-lab-chat-url"
+    AWS_BEDROCKAGENTCORE_HARNESS_ARN_0 = aws_bedrockagentcore_harness.agent_lab_orders.arn
   }
   }
   tags = {
@@ -323,21 +447,20 @@ resource "aws_lambda_function_url" "agent-lab-chat-url" {
   authorization_type = "NONE"
 }
 
-resource "aws_lambda_permission" "agent-lab-chat-url-invoke" {
+resource "aws_lambda_permission" "perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat" {
+  function_name          = aws_lambda_function.agent-lab-chat.function_name
+  statement_id           = "perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat"
+  principal              = "*"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_url_auth_type = "NONE"
+}
+
+resource "aws_lambda_permission" "perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat_invoke" {
   function_name            = aws_lambda_function.agent-lab-chat.function_name
-  statement_id             = "FunctionURLInvokeAllowPublicAccess"
+  statement_id             = "perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat_invoke"
   principal                = "*"
   action                   = "lambda:InvokeFunction"
   invoked_via_function_url = true
-}
-
-resource "aws_lambda_permission" "agent-lab-chat-url-public" {
-  function_name            = aws_lambda_function.agent-lab-chat.function_name
-  statement_id             = "FunctionURLAllowPublicAccess"
-  principal                = "*"
-  action                   = "lambda:InvokeFunctionUrl"
-  function_url_auth_type   = "NONE"
-  invoked_via_function_url = false
 }
 
 
@@ -376,17 +499,16 @@ resource "aws_bedrockagentcore_gateway" "agent-lab-gateway" {
   authorizer_type = "AWS_IAM"
   exception_level = "DEBUG"
   protocol_type   = "MCP"
-  role_arn        = aws_iam_role.agent-lab-gateway-role.arn
+  role_arn        = aws_iam_role.role_agent-lab-gateway.arn
   tags = {
     Name           = "agent-lab-gateway"
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_iam_role_policy_attachment.bedrockagentcore_gateway_agent-lab-gateway_st_bedrock-agent-lab_attach]
 }
 
 resource "aws_bedrockagentcore_gateway_target" "orders" {
-  # ajuste manual · credential_provider_configuration — The compile drops the empty gateway_iam_role block that is stored on this node, and the provider requires credential_provider_configuration on a Lambda target: the gateway invokes the function with its own IAM role.
-  # ajuste manual · depends_on — CreateGatewayTarget refuses the target while the trust policy of the gateway role is still propagating (it failed 3 s after the role was created), and the provider retries only the permissions error, not this one. Waiting for the memory, which takes about 3 minutes to create, gives the role that time without making the apply longer: the harness waits for the memory anyway.
   name               = "orders"
   gateway_identifier = aws_bedrockagentcore_gateway.agent-lab-gateway.gateway_id
   credential_provider_configuration {
@@ -415,22 +537,21 @@ resource "aws_bedrockagentcore_gateway_target" "orders" {
       }
     }
   }
-  depends_on = [aws_bedrockagentcore_memory.agent-lab-memory]
+  depends_on = [terraform_data.agent-lab-gateway_role_propagation]
 }
 
-resource "aws_bedrockagentcore_harness" "agent-lab-harness" {
-  # ajuste manual · system_prompt[*].text — The compile rewrites this text on an uncurated type: it removes the space after each comma and wraps the part between the first and last comma in ${...}, which Terraform would read as an expression. Written as a quoted expression so it reaches the file unchanged.
+resource "aws_bedrockagentcore_harness" "agent_lab_orders" {
   harness_name       = "agent_lab_orders"
-  allowed_tools      = ["@orders_gateway"]
-  execution_role_arn = aws_iam_role.agent-lab-harness-role.arn
+  allowed_tools      = ["@agent-lab-gateway"]
+  execution_role_arn = aws_iam_role.role_agent_lab_orders.arn
   max_iterations     = 10
   max_tokens         = 4096
   timeout_seconds    = 90
   memory {
     agentcore_memory_configuration {
-      arn = aws_bedrockagentcore_memory.agent-lab-memory.arn
+      arn = aws_bedrockagentcore_memory.agent_lab_memory.arn
       retrieval_config {
-        strategy_id     = aws_bedrockagentcore_memory_strategy.agent-lab-session-summaries.memory_strategy_id
+        strategy_id     = aws_bedrockagentcore_memory_strategy.session_summaries.memory_strategy_id
         map_block_key   = "/summaries/{actorId}/"
         relevance_score = 0.2
         top_k           = 10
@@ -448,12 +569,12 @@ resource "aws_bedrockagentcore_harness" "agent-lab-harness" {
     text = "You are the order assistant of Bean Lab Coffee, a fictional coffee roaster used in a lab. Answer questions about orders. To learn the status of an order, call the get_order_status tool with the order id, even when the user context mentions that order, since its status may have changed. The user context, when present, summarizes this customer's earlier conversations: use it to answer questions about them and to find an order id the customer already gave. Never make up order details; if the tool says an order was not found, say so. Use only an order id that the question or the user context gives, never one you guess; when neither gives one, ask the customer for it. Keep answers short."
   }
   tags = {
-    Name           = "agent-lab-harness"
+    Name           = "agent_lab_orders"
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
   }
   tool {
-    name = "orders_gateway"
+    name = "agent-lab-gateway"
     type = "agentcore_gateway"
     config {
       agentcore_gateway {
@@ -464,24 +585,25 @@ resource "aws_bedrockagentcore_harness" "agent-lab-harness" {
       }
     }
   }
+  depends_on = [aws_iam_role_policy_attachment.bedrockagentcore_harness_agent_lab_orders_st_bedrock-agent-lab_attach]
 }
 
-resource "aws_bedrockagentcore_memory" "agent-lab-memory" {
+resource "aws_bedrockagentcore_memory" "agent_lab_memory" {
   name                  = "agent_lab_memory"
   encryption_key_arn    = aws_kms_key.agent-lab-key.arn
   event_expiry_duration = 30
   tags = {
-    Name           = "agent-lab-memory"
+    Name           = "agent_lab_memory"
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
   }
 }
 
-resource "aws_bedrockagentcore_memory_strategy" "agent-lab-session-summaries" {
-  memory_id  = aws_bedrockagentcore_memory.agent-lab-memory.id
-  name       = "session_summaries"
-  namespaces = ["/summaries/{actorId}/{sessionId}"]
-  type       = "SUMMARIZATION"
+resource "aws_bedrockagentcore_memory_strategy" "session_summaries" {
+  memory_id           = aws_bedrockagentcore_memory.agent_lab_memory.id
+  name                = "session_summaries"
+  namespace_templates = ["/summaries/{actorId}/{sessionId}"]
+  type                = "SUMMARIZATION"
 }
 
 
@@ -510,6 +632,18 @@ resource "aws_cloudwatch_log_group" "agent-lab-orders-tool-logs" {
     Name           = "agent-lab-orders-tool-logs"
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+resource "terraform_data" "agent-lab-gateway_role_propagation" {
+  triggers_replace = [aws_iam_role.role_agent-lab-gateway.unique_id]
+  provisioner "local-exec" {
+    command = "sleep 30"
   }
 }
 
