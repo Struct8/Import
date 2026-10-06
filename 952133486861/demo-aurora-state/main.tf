@@ -442,13 +442,13 @@ resource "aws_iam_role_policy_attachment" "lambda_function_demo-aurora-proxy_st_
 
 ### CATEGORY: NETWORK ###
 
-resource "aws_vpc" "aurora-access-patterns-lab" {
+resource "aws_vpc" "aurora-serverless-access-patterns-lab" {
   cidr_block           = "10.8.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
   instance_tenancy     = "default"
   tags = {
-    Name           = "aurora-access-patterns-lab"
+    Name           = "aurora-serverless-access-patterns-lab"
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
@@ -456,7 +456,7 @@ resource "aws_vpc" "aurora-access-patterns-lab" {
 
 resource "aws_vpc_endpoint" "ep-cloudwatch_LOGS" {
   service_name        = "com.amazonaws.${data.aws_region.current.region}.logs"
-  vpc_id              = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id              = aws_vpc.aurora-serverless-access-patterns-lab.id
   ip_address_type     = "ipv4"
   private_dns_enabled = true
   security_group_ids  = [aws_security_group.sg_vpce_ep-cloudwatch.id]
@@ -472,7 +472,7 @@ resource "aws_vpc_endpoint" "ep-cloudwatch_LOGS" {
 
 resource "aws_vpc_endpoint" "ep-secret-manager_SECRETSMANAGER" {
   service_name        = "com.amazonaws.${data.aws_region.current.region}.secretsmanager"
-  vpc_id              = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id              = aws_vpc.aurora-serverless-access-patterns-lab.id
   ip_address_type     = "ipv4"
   private_dns_enabled = true
   security_group_ids  = [aws_security_group.sg_vpce_ep-secret-manager.id]
@@ -487,7 +487,7 @@ resource "aws_vpc_endpoint" "ep-secret-manager_SECRETSMANAGER" {
 }
 
 resource "aws_subnet" "demo-aurora-private-a" {
-  vpc_id                  = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id                  = aws_vpc.aurora-serverless-access-patterns-lab.id
   availability_zone       = "us-west-2a"
   cidr_block              = "10.8.0.0/24"
   map_public_ip_on_launch = false
@@ -499,7 +499,7 @@ resource "aws_subnet" "demo-aurora-private-a" {
 }
 
 resource "aws_subnet" "demo-aurora-private-b" {
-  vpc_id                  = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id                  = aws_vpc.aurora-serverless-access-patterns-lab.id
   availability_zone       = "us-west-2b"
   cidr_block              = "10.8.1.0/24"
   map_public_ip_on_launch = false
@@ -511,7 +511,7 @@ resource "aws_subnet" "demo-aurora-private-b" {
 }
 
 resource "aws_subnet" "demo-public-a" {
-  vpc_id                  = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id                  = aws_vpc.aurora-serverless-access-patterns-lab.id
   availability_zone       = "us-west-2a"
   cidr_block              = "10.8.10.0/24"
   map_public_ip_on_launch = true
@@ -523,7 +523,7 @@ resource "aws_subnet" "demo-public-a" {
 }
 
 resource "aws_internet_gateway" "demo-igw" {
-  vpc_id = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id = aws_vpc.aurora-serverless-access-patterns-lab.id
   tags = {
     Name           = "demo-igw"
     State          = "demo-aurora-state"
@@ -538,7 +538,7 @@ resource "aws_route" "route_demo-public-rt_to_demo-igw_ipv4" {
 }
 
 resource "aws_route_table" "demo-public-rt" {
-  vpc_id = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id = aws_vpc.aurora-serverless-access-patterns-lab.id
   tags = {
     Name           = "demo-public-rt"
     State          = "demo-aurora-state"
@@ -553,7 +553,7 @@ resource "aws_route_table_association" "aws_route_table_association_demo_public_
 
 resource "aws_security_group" "db_proxy_demo-aurora-rds-proxy_group" {
   name                   = "db_proxy_demo-aurora-rds-proxy_group"
-  vpc_id                 = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "db_proxy_demo-aurora-rds-proxy_group"
@@ -564,7 +564,7 @@ resource "aws_security_group" "db_proxy_demo-aurora-rds-proxy_group" {
 
 resource "aws_security_group" "demo-aurora-direct" {
   name                   = "demo-aurora-direct"
-  vpc_id                 = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "demo-aurora-direct"
@@ -575,7 +575,7 @@ resource "aws_security_group" "demo-aurora-direct" {
 
 resource "aws_security_group" "demo-aurora-iam" {
   name                   = "demo-aurora-iam"
-  vpc_id                 = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "demo-aurora-iam"
@@ -586,7 +586,7 @@ resource "aws_security_group" "demo-aurora-iam" {
 
 resource "aws_security_group" "demo-aurora-proxy" {
   name                   = "demo-aurora-proxy"
-  vpc_id                 = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "demo-aurora-proxy"
@@ -597,7 +597,7 @@ resource "aws_security_group" "demo-aurora-proxy" {
 
 resource "aws_security_group" "instance_demo-pgweb_group" {
   name                   = "instance_demo-pgweb_group"
-  vpc_id                 = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
   description            = "pgweb web UI"
   revoke_rules_on_delete = false
   tags = {
@@ -609,7 +609,7 @@ resource "aws_security_group" "instance_demo-pgweb_group" {
 
 resource "aws_security_group" "rds_cluster_demo-aurora_group" {
   name                   = "rds_cluster_demo-aurora_group"
-  vpc_id                 = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "rds_cluster_demo-aurora_group"
@@ -620,7 +620,7 @@ resource "aws_security_group" "rds_cluster_demo-aurora_group" {
 
 resource "aws_security_group" "sg_vpce_ep-cloudwatch" {
   name        = "vpce-sg-ep-cloudwatch"
-  vpc_id      = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id      = aws_vpc.aurora-serverless-access-patterns-lab.id
   description = "Auto-generated SG for ep-cloudwatch"
   tags = {
     Name           = "ep-cloudwatch"
@@ -632,7 +632,7 @@ resource "aws_security_group" "sg_vpce_ep-cloudwatch" {
 
 resource "aws_security_group" "sg_vpce_ep-secret-manager" {
   name        = "vpce-sg-ep-secret-manager"
-  vpc_id      = aws_vpc.aurora-access-patterns-lab.id
+  vpc_id      = aws_vpc.aurora-serverless-access-patterns-lab.id
   description = "Auto-generated SG for ep-secret-manager"
   tags = {
     Name           = "ep-secret-manager"
