@@ -126,6 +126,9 @@ resource "aws_iam_role" "role_kb_bedrock-kb-lab1" {
     }
   ]
 })
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
   tags = {
     Name           = "role_kb_bedrock-kb-lab1"
     State          = "bedrock-lab1"
@@ -151,7 +154,7 @@ resource "aws_iam_role_policy_attachment" "lambda_function_bedrock-rag-handler_s
 resource "aws_s3_bucket" "bedrock-documents" {
   bucket              = "bedrock-documents-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
   bucket_namespace    = "account-regional"
-  force_destroy       = false
+  force_destroy       = true
   object_lock_enabled = false
   tags = {
     Name           = "bedrock-documents"
@@ -326,8 +329,10 @@ resource "aws_bedrock_guardrail" "lab1-guardrail" {
   }
   sensitive_information_policy_config {
     pii_entities_config {
-      action = "ANONYMIZE"
-      type   = "EMAIL"
+      action        = "ANONYMIZE"
+      input_action  = "ANONYMIZE"
+      output_action = "ANONYMIZE"
+      type          = "EMAIL"
     }
   }
   tags = {
