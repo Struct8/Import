@@ -56,7 +56,16 @@ data "aws_ec2_managed_prefix_list" "cloudfront_origin_facing_ipv6" {
 ### EXTERNAL REFERENCES ###
 
 data "aws_kms_key" "kmsWordpress" {
-  key_id = "alias/kmsWordpress-uZat7k9H"
+  key_id = "alias/kmsWordpress-xnA-aVKz"
+}
+
+data "aws_secretsmanager_secret" "wpSecrets" {
+  name = "wpSecrets"
+}
+
+data "aws_ssm_parameter" "wpAdminPassword" {
+  name            = "wpAdminPassword"
+  with_decryption = false
 }
 
 
@@ -122,7 +131,24 @@ data "aws_iam_policy_document" "ecs_task_definition_wordpress_execution_st_wordp
     sid       = "AllowSecretAccess"
     effect    = "Allow"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [aws_secretsmanager_secret.wpSecrets.arn]
+    resources = [data.aws_secretsmanager_secret.wpSecrets.arn]
+  }
+  statement {
+    sid       = "AllowReadParam"
+    effect    = "Allow"
+    actions   = ["ssm:GetParameter", "ssm:GetParameters"]
+    resources = [data.aws_ssm_parameter.wpAdminPassword.arn]
+  }
+  statement {
+    sid       = "AllowSecureStringDecrypt"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = ["*"]
+    condition {
+      test     = "StringLike"
+      values   = ["ssm.*.amazonaws.com"]
+      variable = "kms:ViaService"
+    }
   }
 }
 
@@ -203,6 +229,9 @@ resource "aws_iam_role" "execution_role_ecs_wordpress" {
     }
   ]
 })
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
   tags = {
     Name           = "execution_role_ecs_wordpress"
     State          = "wordpress-professional"
@@ -248,6 +277,9 @@ resource "aws_iam_role" "task_role_ecs_wordpress" {
     }
   ]
 })
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
   tags = {
     Name           = "task_role_ecs_wordpress"
     State          = "wordpress-professional"
@@ -273,24 +305,6 @@ resource "aws_iam_role_policy_attachment" "ecs_task_definition_wordpress_st_word
 resource "aws_iam_role_policy_attachment" "service_role_AmazonEC2ContainerServiceforEC2Role_to_asgWordpress_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
   role       = aws_iam_role.asgWordpress_role.name
-}
-
-resource "aws_secretsmanager_secret" "wpSecrets" {
-  kms_key_id              = data.aws_kms_key.kmsWordpress.id
-  name                    = "wpSecrets"
-  description             = "Password of the WordPress database user. Terraform generates it, and each WordPress task creates or updates that user at startup with the Aurora master credentials."
-  recovery_window_in_days = 0
-  tags = {
-    Name           = "wpSecrets"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "wpSecrets_version" {
-  secret_id      = aws_secretsmanager_secret.wpSecrets.id
-  secret_string  = random_password.wpDbPassword.result
-  version_stages = ["AWSCURRENT"]
 }
 
 resource "aws_acm_certificate" "certAlb" {
@@ -912,7 +926,6 @@ resource "aws_lb_target_group" "tgWordpress" {
 }
 
 resource "aws_cloudfront_distribution" "cdnWordpress" {
-  # ajuste manual · origin[origin_id=originAlb].domain_name — The generator always writes the load balancer's own DNS name as the origin and ignores a typed domain_name. CloudFront validates the origin certificate against this name, and only origin.wp.<zone> is on certAlb, so HTTPS to the load balancer needs it here.
   aliases         = ["wp.cloudman.pro"]
   enabled         = true
   http_version    = "http2and3"
@@ -961,7 +974,7 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
     origin_id                = "originMedia"
   }
   origin {
-    domain_name = "origin.wp.${data.aws_route53_zone.zoneWordpress.name}"
+    domain_name = "origin.wp.cloudman.pro"
     origin_id   = "originAlb"
     custom_header {
       name  = "X-Origin-Verify"
@@ -1024,7 +1037,7 @@ resource "aws_s3_bucket" "wpMedia" {
   force_destroy       = true
   object_lock_enabled = false
   tags = {
-    "Struct8:Backup:wpDailyBackup-63da29a7" = true
+    "Struct8:Backup:wpDailyBackup-uZbC08JN" = true
     Name                                    = "wpMedia"
     State                                   = "wordpress-professional"
     Struct8Creator                          = "Contato Struct"
@@ -1168,7 +1181,7 @@ resource "aws_efs_file_system" "wpContent" {
   encrypted       = true
   throughput_mode = "elastic"
   tags = {
-    "Struct8:Backup:wpDailyBackup-63da29a7" = true
+    "Struct8:Backup:wpDailyBackup-uZbC08JN" = true
     Name                                    = "wpContent"
     State                                   = "wordpress-professional"
     Struct8Creator                          = "Contato Struct"
@@ -1227,7 +1240,7 @@ resource "aws_rds_cluster" "wp-aurora" {
     seconds_until_auto_pause = 300
   }
   tags = {
-    "Struct8:Backup:wpDailyBackup-63da29a7" = true
+    "Struct8:Backup:wpDailyBackup-uZbC08JN" = true
     Name                                    = "wp-aurora"
     State                                   = "wordpress-professional"
     Struct8Creator                          = "Contato Struct"
@@ -1568,7 +1581,7 @@ resource "aws_ecs_service" "wordpress_service" {
 locals {
   container_def_wordpress_wordpress_1 = {
     name              = "wordpress"
-    image             = "public.ecr.aws/docker/library/wordpress:7.1.2-php8.4-apache"
+    image             = "public.ecr.aws/docker/library/wordpress:latest"
     essential         = true
     cpu               = 512
     memory            = 768
@@ -1601,6 +1614,170 @@ locals {
       {
         name  = "WP_DB_BOOTSTRAP"
         value = "<?php mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); $q = chr(39); $b = chr(96); $user = getenv('WORDPRESS_DB_USER'); $m = null; for ($i = 1; $i <= 20 && $m === null; $i++) { try { $c = mysqli_init(); $c->real_connect(getenv('WORDPRESS_DB_HOST'), getenv('DB_ADMIN_USER'), getenv('DB_ADMIN_PASSWORD'), '', 3306, null, MYSQLI_CLIENT_SSL | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT); $m = $c; } catch (mysqli_sql_exception $e) { fwrite(STDERR, 'db-bootstrap: attempt ' . $i . ': ' . $e->getMessage() . PHP_EOL); sleep(10); } } if ($m === null) { exit(1); } $account = $q . $m->real_escape_string($user) . $q . '@' . $q . '%' . $q; $password = $q . $m->real_escape_string(getenv('WORDPRESS_DB_PASSWORD')) . $q; $m->query('CREATE USER IF NOT EXISTS ' . $account . ' IDENTIFIED BY ' . $password . ' REQUIRE SSL'); $m->query('ALTER USER ' . $account . ' IDENTIFIED BY ' . $password . ' REQUIRE SSL'); $m->query('GRANT ALL PRIVILEGES ON ' . $b . str_replace($b, $b . $b, getenv('WORDPRESS_DB_NAME')) . $b . '.* TO ' . $account); echo 'db-bootstrap: database user ' . $user . ' is ready' . PHP_EOL;"
+      },
+      {
+        name  = "WP_AUTO_SETUP"
+        value = "true"
+      },
+      {
+        name  = "WP_DEMO_CONTENT"
+        value = "true"
+      },
+      {
+        name  = "WP_SITE_URL"
+        value = "https://wp.${data.aws_route53_zone.zoneWordpress.name}"
+      },
+      {
+        name  = "WP_SITE_TITLE"
+        value = "My WordPress site"
+      },
+      {
+        name  = "WP_ADMIN_USER"
+        value = "wpadmin"
+      },
+      {
+        name  = "WP_ADMIN_EMAIL"
+        value = "admin@${data.aws_route53_zone.zoneWordpress.name}"
+      },
+      {
+        name  = "WP_LOCALE"
+        value = "en_US"
+      },
+      {
+        name  = "WP_TIMEZONE"
+        value = "UTC"
+      },
+      {
+        name = "WP_AUTO_SETUP_SCRIPT"
+        value = <<EOF
+#!/bin/bash
+# First start of the WordPress Professional template.
+#
+# The task runs this on every start, before Apache, and it works once per site:
+# it installs WordPress, the language, the two plugins this template already
+# configures in WORDPRESS_CONFIG_EXTRA (Redis Object Cache and WP Offload Media
+# Lite) and, with WP_DEMO_CONTENT=true, sample pages and posts. A marker on the
+# EFS volume ends every later start in under a second.
+#
+# WP_AUTO_SETUP=false turns it off, and the site starts on the WordPress
+# installation screen. A site somebody installed before this ran is left alone.
+
+log() { echo "wp-setup: $*"; }
+
+case "$WP_AUTO_SETUP" in
+  false|False|FALSE|0|no|off) log "WP_AUTO_SETUP is off: nothing to do"; exit 0 ;;
+esac
+
+SITE=/var/www/html
+DONE=$SITE/.struct8-setup-done
+STARTED=$SITE/.struct8-setup-started
+LOCK=$SITE/.struct8-setup-lock
+WPCLI=/tmp/wp-cli.phar
+
+if [ -e "$DONE" ]; then log "site already set up"; exit 0; fi
+
+# Two tasks start together on a new site and share the volume. mkdir is atomic
+# there, so one of them installs and the other waits for the marker.
+waited=0
+until mkdir "$LOCK" 2>/dev/null; do
+  if [ -e "$DONE" ]; then log "set up by another task"; exit 0; fi
+  if [ "$waited" -ge 240 ]; then
+    log "the setup lock is 4 minutes old: taking it over"
+    rmdir "$LOCK" 2>/dev/null
+    waited=0
+  else
+    sleep 5
+    waited=$((waited + 5))
+  fi
+done
+trap 'rmdir "$LOCK" 2>/dev/null' EXIT
+if [ -e "$DONE" ]; then log "set up by another task"; exit 0; fi
+
+cd "$SITE" || exit 1
+if ! command -v docker-ensure-installed.sh >/dev/null 2>&1; then
+  log "this image has no docker-ensure-installed.sh: finish the installation at /wp-admin/install.php"
+  exit 0
+fi
+# Copies WordPress to the volume and writes wp-config.php from the WORDPRESS_*
+# variables without starting Apache, so the installation screen is never served.
+docker-ensure-installed.sh true || exit 1
+
+retry() {
+  n=1
+  until "$@"; do
+    if [ "$n" -ge 12 ]; then return 1; fi
+    log "attempt $n of 12 failed: trying again in 10 seconds"
+    n=$((n + 1))
+    sleep 10
+  done
+}
+
+retry curl -fsSL -o "$WPCLI" https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar || { log "could not download WP-CLI"; exit 1; }
+wp() { php "$WPCLI" --allow-root --path="$SITE" "$@"; }
+
+if wp core is-installed >/dev/null 2>&1; then
+  if [ ! -e "$STARTED" ]; then
+    log "WordPress was installed before this setup ran: leaving the site as it is"
+    touch "$DONE"
+    exit 0
+  fi
+else
+  if [ -z "$WP_ADMIN_PASSWORD" ]; then log "WP_ADMIN_PASSWORD is empty"; exit 1; fi
+  touch "$STARTED"
+  wp core install --url="$WP_SITE_URL" --title="$WP_SITE_TITLE" --admin_user="$WP_ADMIN_USER" \
+    --admin_password="$WP_ADMIN_PASSWORD" --admin_email="$WP_ADMIN_EMAIL" --skip-email || exit 1
+  log "WordPress installed: the administrator is $WP_ADMIN_USER"
+fi
+
+if [ -n "$WP_LOCALE" ] && [ "$WP_LOCALE" != "en_US" ]; then
+  retry wp language core install "$WP_LOCALE" --activate || log "language $WP_LOCALE was not installed"
+fi
+if [ -n "$WP_TIMEZONE" ]; then
+  wp option update timezone_string "$WP_TIMEZONE" || log "time zone $WP_TIMEZONE was refused"
+fi
+wp rewrite structure '/%postname%/' || log "permalinks were not set"
+
+for plugin in redis-cache amazon-s3-and-cloudfront; do
+  retry wp plugin install "$plugin" --activate || log "plugin $plugin was not installed"
+done
+wp plugin auto-updates enable redis-cache amazon-s3-and-cloudfront || log "plugin auto-updates were not turned on"
+wp redis enable || log "the Redis object cache was not enabled"
+
+case "$WP_DEMO_CONTENT" in
+  true|True|TRUE|1|yes|on) demo=yes ;;
+  *) demo=no ;;
+esac
+if [ "$demo" = yes ] && ! wp option get struct8_demo_content >/dev/null 2>&1; then
+  # Core blocks only: they render in whichever default theme WordPress ships.
+  p() { printf '<!-- wp:paragraph -->\n<p>%s</p>\n<!-- /wp:paragraph -->\n\n' "$1"; }
+  h() { printf '<!-- wp:heading -->\n<h2 class="wp-block-heading">%s</h2>\n<!-- /wp:heading -->\n\n' "$1"; }
+  add() { wp post create --post_type="$1" --post_status=publish --post_title="$2" --post_content="$3" --porcelain; }
+
+  # The "Hello world!" post and the "Sample Page" of a new installation.
+  wp post delete 1 2 --force >/dev/null 2>&1
+
+  home=$(add page "Home" "$(h 'Welcome')$(p 'This site runs WordPress on AWS. Amazon ECS serves it, Aurora keeps the database, ElastiCache holds the object cache, and CloudFront delivers the pages and the media stored in Amazon S3.')$(p 'Everything here is sample content. Edit or delete it in the WordPress dashboard.')")
+  add page "About" "$(p 'Tell your visitors who you are and what this site is for.')" >/dev/null
+  add page "Contact" "$(p 'Replace this text with the ways to reach you.')" >/dev/null
+  blog=$(add page "Blog" "")
+  add post "Welcome to your new site" "$(p 'This is a sample post. Posts appear on the Blog page and in the feed of the site.')" >/dev/null
+  add post "Your media is served from Amazon S3" "$(p 'Images and files uploaded to the media library are copied to an S3 bucket by WP Offload Media Lite and delivered by CloudFront under /wp-content/media/.')" >/dev/null
+  add post "Next steps" "$(p 'Change the site title and the theme under Appearance. Replace the sample pages with your own. Change the administrator password after the first login.')" >/dev/null
+
+  if [ -n "$home" ] && [ -n "$blog" ]; then
+    wp option update show_on_front page >/dev/null
+    wp option update page_on_front "$home" >/dev/null
+    wp option update page_for_posts "$blog" >/dev/null
+  fi
+  wp option add struct8_demo_content 1 >/dev/null
+  log "demo content created"
+fi
+
+chown -R www-data:www-data "$SITE/wp-content" 2>/dev/null
+touch "$DONE"
+rm -f "$STARTED" "$WPCLI"
+log "done"
+        EOF
       },
       {
         name  = "NAME"
@@ -1662,7 +1839,7 @@ locals {
     secrets = [
       {
         name      = "WORDPRESS_DB_PASSWORD"
-        valueFrom = aws_secretsmanager_secret.wpSecrets.arn
+        valueFrom = data.aws_secretsmanager_secret.wpSecrets.arn
       },
       {
         name      = "DB_ADMIN_USER"
@@ -1671,6 +1848,10 @@ locals {
       {
         name      = "DB_ADMIN_PASSWORD"
         valueFrom = "${aws_rds_cluster.wp-aurora.master_user_secret[0].secret_arn}:password::"
+      },
+      {
+        name      = "WP_ADMIN_PASSWORD"
+        valueFrom = data.aws_ssm_parameter.wpAdminPassword.arn
       }
     ]
     mountPoints = [
@@ -1682,7 +1863,7 @@ locals {
     ]
     systemControls         = []
     volumesFrom            = []
-    command                = ["sh", "-c", "set -e; mkdir -p /etc/ssl/private; openssl req -x509 -nodes -newkey rsa:2048 -days 3650 -subj /CN=wordpress -addext basicConstraints=critical,CA:FALSE -keyout /etc/ssl/private/ssl-cert-snakeoil.key -out /etc/ssl/certs/ssl-cert-snakeoil.pem; a2enmod ssl; a2ensite default-ssl; printenv WP_DB_BOOTSTRAP > /tmp/db-bootstrap.php; php /tmp/db-bootstrap.php; rm -f /tmp/db-bootstrap.php; unset WP_DB_BOOTSTRAP DB_ADMIN_USER DB_ADMIN_PASSWORD; exec docker-entrypoint.sh apache2-foreground"]
+    command                = ["sh", "-c", "set -e; mkdir -p /etc/ssl/private; openssl req -x509 -nodes -newkey rsa:2048 -days 3650 -subj /CN=wordpress -addext basicConstraints=critical,CA:FALSE -keyout /etc/ssl/private/ssl-cert-snakeoil.key -out /etc/ssl/certs/ssl-cert-snakeoil.pem; a2enmod ssl; a2ensite default-ssl; printenv WP_DB_BOOTSTRAP > /tmp/db-bootstrap.php; php /tmp/db-bootstrap.php; rm -f /tmp/db-bootstrap.php; if printenv WP_AUTO_SETUP_SCRIPT > /tmp/wp-auto-setup.sh; then bash /tmp/wp-auto-setup.sh; fi; rm -f /tmp/wp-auto-setup.sh; unset WP_DB_BOOTSTRAP WP_AUTO_SETUP_SCRIPT WP_ADMIN_PASSWORD DB_ADMIN_USER DB_ADMIN_PASSWORD; exec docker-entrypoint.sh apache2-foreground"]
     privileged             = false
     readonlyRootFilesystem = false
     logConfiguration = {
@@ -1990,11 +2171,6 @@ resource "null_resource" "cleanup_wp-cluster" {
 
 resource "random_id" "originVerify" {
   byte_length = 8
-}
-
-resource "random_password" "wpDbPassword" {
-  length  = 16
-  special = true
 }
 
 
