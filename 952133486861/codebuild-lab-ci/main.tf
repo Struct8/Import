@@ -3,6 +3,9 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+    time = {
+      source = "hashicorp/time"
+    }
   }
 
   backend "s3" {
@@ -689,7 +692,7 @@ resource "aws_codebuild_project" "codebuild-lab-pr-check" {
     State          = "codebuild-lab-ci"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-pr-check_st_codebuild-lab-ci_attach]
+  depends_on = [aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-pr-check_st_codebuild-lab-ci_attach, time_sleep.codebuild-lab-pr-check_role_propagation]
 }
 
 resource "aws_codebuild_project" "codebuild-lab-release" {
@@ -785,7 +788,7 @@ resource "aws_codebuild_project" "codebuild-lab-release" {
     State          = "codebuild-lab-ci"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-release_st_codebuild-lab-ci_attach]
+  depends_on = [aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-release_st_codebuild-lab-ci_attach, time_sleep.codebuild-lab-release_role_propagation]
 }
 
 resource "aws_codebuild_project" "codebuild-lab-runner" {
@@ -847,7 +850,7 @@ resource "aws_codebuild_project" "codebuild-lab-runner" {
     State          = "codebuild-lab-ci"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-runner_st_codebuild-lab-ci_attach]
+  depends_on = [aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-runner_st_codebuild-lab-ci_attach, time_sleep.codebuild-lab-runner_role_propagation]
 }
 
 resource "aws_codebuild_webhook" "codebuild-lab-pr-check_webhook" {
@@ -890,6 +893,35 @@ resource "aws_codebuild_webhook" "codebuild-lab-runner_webhook" {
       pattern                 = "WORKFLOW_JOB_QUEUED"
       type                    = "EVENT"
     }
+  }
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+resource "time_sleep" "codebuild-lab-pr-check_role_propagation" {
+  create_duration = "30s"
+  triggers = {
+    policy_attachment = aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-pr-check_st_codebuild-lab-ci_attach.id
+    policy            = aws_iam_policy.codebuild_project_codebuild-lab-pr-check_st_codebuild-lab-ci.policy
+  }
+}
+
+resource "time_sleep" "codebuild-lab-release_role_propagation" {
+  create_duration = "30s"
+  triggers = {
+    policy_attachment = aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-release_st_codebuild-lab-ci_attach.id
+    policy            = aws_iam_policy.codebuild_project_codebuild-lab-release_st_codebuild-lab-ci.policy
+  }
+}
+
+resource "time_sleep" "codebuild-lab-runner_role_propagation" {
+  create_duration = "30s"
+  triggers = {
+    policy_attachment = aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-runner_st_codebuild-lab-ci_attach.id
+    policy            = aws_iam_policy.codebuild_project_codebuild-lab-runner_st_codebuild-lab-ci.policy
   }
 }
 
