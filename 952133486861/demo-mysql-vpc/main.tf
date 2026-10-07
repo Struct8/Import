@@ -146,18 +146,54 @@ resource "aws_security_group_rule" "rule_db_instance_demo_mysql_group_egress_all
 
 ### CATEGORY: DATABASE ###
 
+data "aws_resourcegroupstaggingapi_resources" "option_group_demo-mysql-options" {
+  resource_type_filters = ["rds:og"]
+  lifecycle {
+    postcondition {
+      condition     = length(self.resource_tag_mapping_list) > 0
+      error_message = "No RDS option group tagged Name=demo-mysql-options exists in this region. Apply the state that creates it before this one."
+    }
+    postcondition {
+      condition     = length(self.resource_tag_mapping_list) < 2
+      error_message = "More than one RDS option group is tagged Name=demo-mysql-options in this region, and this state cannot tell which one to use. Leave one group with that name."
+    }
+  }
+  tag_filter {
+    key    = "Name"
+    values = ["demo-mysql-options"]
+  }
+}
+
+data "aws_resourcegroupstaggingapi_resources" "parameter_group_demo-mysql-params" {
+  resource_type_filters = ["rds:pg"]
+  lifecycle {
+    postcondition {
+      condition     = length(self.resource_tag_mapping_list) > 0
+      error_message = "No RDS DB parameter group tagged Name=demo-mysql-params exists in this region. Apply the state that creates it before this one."
+    }
+    postcondition {
+      condition     = length(self.resource_tag_mapping_list) < 2
+      error_message = "More than one RDS DB parameter group is tagged Name=demo-mysql-params in this region, and this state cannot tell which one to use. Leave one group with that name."
+    }
+  }
+  tag_filter {
+    key    = "Name"
+    values = ["demo-mysql-params"]
+  }
+}
+
 resource "aws_db_instance" "demo-mysql" {
   db_name                         = "appdb"
   db_subnet_group_name            = aws_db_subnet_group.subnet_group_demo-mysql.name
   kms_key_id                      = aws_kms_key.demo-mysql-kms.arn
-  option_group_name               = aws_db_option_group.demo-mysql-options.name
-  parameter_group_name            = aws_db_parameter_group.demo-mysql-params.name
+  option_group_name               = element(split(":", data.aws_resourcegroupstaggingapi_resources.option_group_demo-mysql-options.resource_tag_mapping_list[0].resource_arn), 6)
+  parameter_group_name            = element(split(":", data.aws_resourcegroupstaggingapi_resources.parameter_group_demo-mysql-params.resource_tag_mapping_list[0].resource_arn), 6)
   allocated_storage               = 20
   availability_zone               = aws_subnet.demo-mysql-private-a.availability_zone
   backup_retention_period         = 7
   backup_window                   = "03:00-04:00"
   copy_tags_to_snapshot           = true
-  enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
+  enabled_cloudwatch_logs_exports = ["error", "slowquery", "audit", "general"]
   engine                          = "mysql"
   engine_lifecycle_support        = "open-source-rds-extended-support-disabled"
   engine_version                  = "8.4"
@@ -179,61 +215,7 @@ resource "aws_db_instance" "demo-mysql" {
     State          = "demo-mysql-vpc"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_cloudwatch_log_group.demo-mysql-logs, aws_iam_role_policy_attachment.service_role_AmazonRDSEnhancedMonitoringRole_to_demo-mysql_attach]
-}
-
-resource "aws_db_option_group" "demo-mysql-options" {
-  engine_name              = "mysql"
-  major_engine_version     = "8.4"
-  name_prefix              = "demo-mysql-options"
-  option_group_description = "Option group MySQL 8.0 da demo com plugin de auditoria MariaDB."
-  skip_destroy             = false
-  lifecycle {
-    create_before_destroy = false
-  }
-  option {
-    option_name = "MARIADB_AUDIT_PLUGIN"
-  }
-  tags = {
-    Name           = "demo-mysql-options"
-    State          = "demo-mysql-vpc"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_db_parameter_group" "demo-mysql-params" {
-  description  = "Parametros MySQL 8.0 para a demo: utf8mb4, limite de conexoes e slow query log habilitado."
-  family       = "mysql8.4"
-  name_prefix  = "demo-mysql-params"
-  skip_destroy = false
-  lifecycle {
-    create_before_destroy = true
-  }
-  parameter {
-    name  = "character_set_server"
-    value = "utf8mb4"
-  }
-  parameter {
-    name  = "collation_server"
-    value = "utf8mb4_unicode_ci"
-  }
-  parameter {
-    name  = "max_connections"
-    value = "200"
-  }
-  parameter {
-    name  = "slow_query_log"
-    value = "1"
-  }
-  parameter {
-    name  = "long_query_time"
-    value = "2"
-  }
-  tags = {
-    Name           = "demo-mysql-params"
-    State          = "demo-mysql-vpc"
-    Struct8Creator = "Contato Struct"
-  }
+  depends_on = [aws_cloudwatch_log_group.mysql-logs-error, aws_cloudwatch_log_group.mysql-logs-slowquery, aws_cloudwatch_log_group.mysql-logs-audit, aws_cloudwatch_log_group.mysql-logs-general, aws_cloudwatch_log_group.mysql-logs-monitoring, aws_iam_role_policy_attachment.service_role_AmazonRDSEnhancedMonitoringRole_to_demo-mysql_attach]
 }
 
 resource "aws_db_subnet_group" "subnet_group_demo-mysql" {
@@ -251,13 +233,61 @@ resource "aws_db_subnet_group" "subnet_group_demo-mysql" {
 
 ### CATEGORY: MONITORING ###
 
-resource "aws_cloudwatch_log_group" "demo-mysql-logs" {
-  name              = "RDSOSMetrics"
+resource "aws_cloudwatch_log_group" "mysql-logs-audit" {
+  name              = "/aws/rds/instance/demo-mysql/audit"
   log_group_class   = "STANDARD"
   retention_in_days = 1
   skip_destroy      = false
   tags = {
-    Name           = "demo-mysql-logs"
+    Name           = "mysql-logs-audit"
+    State          = "demo-mysql-vpc"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "mysql-logs-error" {
+  name              = "/aws/rds/instance/demo-mysql/error"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "mysql-logs-error"
+    State          = "demo-mysql-vpc"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "mysql-logs-general" {
+  name              = "/aws/rds/instance/demo-mysql/general"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "mysql-logs-general"
+    State          = "demo-mysql-vpc"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "mysql-logs-monitoring" {
+  name              = "RDSOSMetrics"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = true
+  tags = {
+    Name           = "mysql-logs-monitoring"
+    State          = "demo-mysql-vpc"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "mysql-logs-slowquery" {
+  name              = "/aws/rds/instance/demo-mysql/slowquery"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "mysql-logs-slowquery"
     State          = "demo-mysql-vpc"
     Struct8Creator = "Contato Struct"
   }
