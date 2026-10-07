@@ -42,4 +42,39 @@ resource "aws_db_option_group" "demo-mysql-options" {
   }
 }
 
+resource "aws_db_parameter_group" "demo-mysql-params" {
+  description  = "Parametros MySQL 8.0 para a demo: utf8mb4, limite de conexoes e slow query log habilitado."
+  family       = "mysql8.4"
+  name_prefix  = "demo-mysql-params"
+  skip_destroy = false
+  lifecycle {
+    create_before_destroy = true
+  }
+  parameter {
+    name  = "character_set_server"
+    value = "utf8mb4"
+  }
+  parameter {
+    name  = "collation_server"
+    value = "utf8mb4_unicode_ci"
+  }
+  parameter {
+    name  = "max_connections"
+    value = "200"
+  }
+  parameter {
+    name  = "slow_query_log"
+    value = "1"
+  }
+  parameter {
+    name  = "long_query_time"
+    value = "2"
+  }
+  tags = {
+    Name           = "demo-mysql-params"
+    State          = "State"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 
