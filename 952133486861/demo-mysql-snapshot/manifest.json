@@ -1,7 +1,7 @@
 {
   "external_repositories": [],
-  "action": "destroy",
-  "trigger_id": "1791405356729",
+  "action": "apply",
+  "trigger_id": "1791416541862",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -13,29 +13,11 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "DESTROY ALL: State",
+      "stage_name": "Manual Trigger: demo-mysql-snapshot",
       "parallel_execution": false,
       "states": [
         {
           "path": "952133486861/demo-mysql-snapshot",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
-            "secret_name": "AUTH_AWS_952133486861"
-          }
-        },
-        {
-          "path": "952133486861/demo-mysql-vpc",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
-            "secret_name": "AUTH_AWS_952133486861"
-          }
-        },
-        {
-          "path": "952133486861/State",
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
