@@ -188,7 +188,7 @@ resource "aws_db_instance" "demo-mysql" {
     State          = "rds-main"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_cloudwatch_log_group.mysql-logs-monitoring, aws_cloudwatch_log_group.mysql-logs-error, aws_cloudwatch_log_group.mysql-logs-slowquery, aws_cloudwatch_log_group.mysql-logs-audit, aws_cloudwatch_log_group.mysql-logs-general, aws_iam_role_policy_attachment.service_role_AmazonRDSEnhancedMonitoringRole_to_demo-mysql_attach]
+  depends_on = [aws_cloudwatch_log_group.mysql-logs-error, aws_cloudwatch_log_group.mysql-logs-slowquery, aws_cloudwatch_log_group.mysql-logs-audit, aws_cloudwatch_log_group.mysql-logs-general, aws_cloudwatch_log_group.mysql-logs-monitoring, aws_iam_role_policy_attachment.service_role_AmazonRDSEnhancedMonitoringRole_to_demo-mysql_attach]
 }
 
 resource "aws_db_subnet_group" "subnet_group_demo-mysql" {
@@ -246,7 +246,7 @@ resource "aws_cloudwatch_log_group" "mysql-logs-monitoring" {
   name              = "RDSOSMetrics"
   log_group_class   = "STANDARD"
   retention_in_days = 1
-  skip_destroy      = true
+  skip_destroy      = false
   tags = {
     Name           = "mysql-logs-monitoring"
     State          = "rds-main"
