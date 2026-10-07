@@ -1,7 +1,7 @@
 {
   "external_repositories": [],
   "action": "apply",
-  "trigger_id": "1791400131731",
+  "trigger_id": "1791415893499",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -13,11 +13,29 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "Manual Trigger: codebuild-lab-connection",
+      "stage_name": "APPLY ALL: codebuild-lab-connection",
       "parallel_execution": false,
       "states": [
         {
           "path": "952133486861/codebuild-lab-connection",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        },
+        {
+          "path": "952133486861/codebuild-lab-ci",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        },
+        {
+          "path": "952133486861/codebuild-lab-integration",
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
