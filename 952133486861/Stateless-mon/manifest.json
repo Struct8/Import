@@ -1,7 +1,18 @@
 {
-  "external_repositories": [],
-  "action": "apply",
-  "trigger_id": "1791330646077",
+  "external_repositories": [
+    {
+      "repo_name": "struct8-templates",
+      "org": "Struct8",
+      "branch": "main",
+      "target_dir": ".external_modules/struct8-templates",
+      "folders": [
+        "templates/ec2-nat-private/v1/user_data",
+        "templates/vpc-otel-load-generator/v1/user_data"
+      ]
+    }
+  ],
+  "action": "destroy",
+  "trigger_id": "1791338098055",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -13,11 +24,29 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "Manual Trigger: Stateless-mon",
+      "stage_name": "DESTROY ALL: Platform",
       "parallel_execution": false,
       "states": [
         {
           "path": "952133486861/Stateless-mon",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        },
+        {
+          "path": "952133486861/StateFul-mon",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        },
+        {
+          "path": "952133486861/Platform-mon",
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
