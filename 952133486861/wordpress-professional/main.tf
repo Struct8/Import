@@ -46,8 +46,17 @@ data "aws_cloudfront_cache_policy" "policy_cachingoptimized" {
   name = "Managed-CachingOptimized"
 }
 
-data "aws_ec2_managed_prefix_list" "cloudfront_origin_facing" {
-  name = "com.amazonaws.global.cloudfront.origin-facing"
+data "aws_ec2_managed_prefix_list" "cloudfront_origin_facing_ipv6" {
+  name = "com.amazonaws.global.ipv6.cloudfront.origin-facing"
+}
+
+
+
+
+### EXTERNAL REFERENCES ###
+
+data "aws_kms_key" "kmsWordpress" {
+  key_id = "alias/kmsWordpress-uZat7k9H"
 }
 
 
@@ -60,6 +69,16 @@ resource "aws_iam_instance_profile" "asgWordpress_profile" {
   role = aws_iam_role.asgWordpress_role.name
   tags = {
     Name           = "asgWordpress_profile"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_instance_profile" "nat-instance_profile" {
+  name = "nat-instance_profile"
+  role = aws_iam_role.nat-instance_role.name
+  tags = {
+    Name           = "nat-instance_profile"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
@@ -91,7 +110,7 @@ data "aws_iam_policy_document" "ecs_task_definition_wordpress_execution_st_wordp
     sid       = "AllowDecryptInjectedSecrets"
     effect    = "Allow"
     actions   = ["kms:Decrypt"]
-    resources = [aws_kms_key.kmsWordpress.arn]
+    resources = [data.aws_kms_key.kmsWordpress.arn]
   }
   statement {
     sid       = "AllowRDSSecretAccesswpaurora"
@@ -191,6 +210,30 @@ resource "aws_iam_role" "execution_role_ecs_wordpress" {
   }
 }
 
+resource "aws_iam_role" "nat-instance_role" {
+  name = "nat-instance_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "nat-instance_role"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role" "task_role_ecs_wordpress" {
   name = "task_role_ecs_wordpress"
   assume_role_policy = jsonencode({
@@ -232,22 +275,8 @@ resource "aws_iam_role_policy_attachment" "service_role_AmazonEC2ContainerServic
   role       = aws_iam_role.asgWordpress_role.name
 }
 
-resource "aws_kms_key" "kmsWordpress" {
-  bypass_policy_lockout_safety_check = false
-  deletion_window_in_days            = 30
-  enable_key_rotation                = true
-  is_enabled                         = true
-  multi_region                       = false
-  rotation_period_in_days            = 365
-  tags = {
-    Name           = "kmsWordpress"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_secretsmanager_secret" "wpSecrets" {
-  kms_key_id              = aws_kms_key.kmsWordpress.id
+  kms_key_id              = data.aws_kms_key.kmsWordpress.id
   name                    = "wpSecrets"
   description             = "Password of the WordPress database user. Terraform generates it, and each WordPress task creates or updates that user at startup with the Aurora master credentials."
   recovery_window_in_days = 0
@@ -313,10 +342,11 @@ resource "aws_acm_certificate_validation" "Validation_certWordpress" {
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "wordpress-professional" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  instance_tenancy     = "default"
+  assign_generated_ipv6_cidr_block = true
+  cidr_block                       = "10.0.0.0/16"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
+  instance_tenancy                 = "default"
   tags = {
     Name           = "wordpress-professional"
     State          = "wordpress-professional"
@@ -342,53 +372,13 @@ resource "aws_vpc_endpoint" "vpce-s3_S3" {
   }
 }
 
-resource "aws_vpc_endpoint" "vpceLogs_LOGS" {
-  service_name        = "com.amazonaws.${data.aws_region.current.region}.logs"
-  vpc_id              = aws_vpc.wordpress-professional.id
-  ip_address_type     = "ipv4"
-  private_dns_enabled = true
-  security_group_ids  = [aws_security_group.sg_vpce_vpceLogs.id]
-  subnet_ids          = [aws_subnet.appB.id, aws_subnet.appA.id]
-  vpc_endpoint_type   = "Interface"
-  tags = {
-    Name           = "vpceLogs"
-    DifName        = "vpceLogs_LOGS"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
-  }
-  timeouts {
-    create = "10m"
-    delete = "10m"
-    update = "10m"
-  }
-}
-
-resource "aws_vpc_endpoint" "vpceSecrets_SECRETSMANAGER" {
-  service_name        = "com.amazonaws.${data.aws_region.current.region}.secretsmanager"
-  vpc_id              = aws_vpc.wordpress-professional.id
-  ip_address_type     = "ipv4"
-  private_dns_enabled = true
-  security_group_ids  = [aws_security_group.sg_vpce_vpceSecrets.id]
-  subnet_ids          = [aws_subnet.appB.id, aws_subnet.appA.id]
-  vpc_endpoint_type   = "Interface"
-  tags = {
-    Name           = "vpceSecrets"
-    DifName        = "vpceSecrets_SECRETSMANAGER"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
-  }
-  timeouts {
-    create = "10m"
-    delete = "10m"
-    update = "10m"
-  }
-}
-
 resource "aws_subnet" "appA" {
-  vpc_id                  = aws_vpc.wordpress-professional.id
-  availability_zone       = "us-west-2a"
-  cidr_block              = "10.0.11.0/24"
-  map_public_ip_on_launch = false
+  vpc_id                          = aws_vpc.wordpress-professional.id
+  assign_ipv6_address_on_creation = true
+  availability_zone               = "us-west-2a"
+  cidr_block                      = "10.0.11.0/24"
+  ipv6_cidr_block                 = cidrsubnet(aws_vpc.wordpress-professional.ipv6_cidr_block, 8, 11)
+  map_public_ip_on_launch         = false
   tags = {
     Name           = "appA"
     State          = "wordpress-professional"
@@ -397,10 +387,12 @@ resource "aws_subnet" "appA" {
 }
 
 resource "aws_subnet" "appB" {
-  vpc_id                  = aws_vpc.wordpress-professional.id
-  availability_zone       = "us-west-2b"
-  cidr_block              = "10.0.12.0/24"
-  map_public_ip_on_launch = false
+  vpc_id                          = aws_vpc.wordpress-professional.id
+  assign_ipv6_address_on_creation = true
+  availability_zone               = "us-west-2b"
+  cidr_block                      = "10.0.12.0/24"
+  ipv6_cidr_block                 = cidrsubnet(aws_vpc.wordpress-professional.ipv6_cidr_block, 8, 12)
+  map_public_ip_on_launch         = false
   tags = {
     Name           = "appB"
     State          = "wordpress-professional"
@@ -436,6 +428,7 @@ resource "aws_subnet" "pubA" {
   vpc_id                  = aws_vpc.wordpress-professional.id
   availability_zone       = "us-west-2a"
   cidr_block              = "10.0.1.0/24"
+  ipv6_cidr_block         = cidrsubnet(aws_vpc.wordpress-professional.ipv6_cidr_block, 8, 1)
   map_public_ip_on_launch = true
   tags = {
     Name           = "pubA"
@@ -448,6 +441,7 @@ resource "aws_subnet" "pubB" {
   vpc_id                  = aws_vpc.wordpress-professional.id
   availability_zone       = "us-west-2b"
   cidr_block              = "10.0.2.0/24"
+  ipv6_cidr_block         = cidrsubnet(aws_vpc.wordpress-professional.ipv6_cidr_block, 8, 2)
   map_public_ip_on_launch = true
   tags = {
     Name           = "pubB"
@@ -465,16 +459,13 @@ resource "aws_internet_gateway" "igw-wp" {
   }
 }
 
-resource "aws_nat_gateway" "nat-wp" {
-  vpc_id            = aws_vpc.wordpress-professional.id
-  availability_mode = "regional"
-  connectivity_type = "public"
+resource "aws_egress_only_internet_gateway" "eigw-wp" {
+  vpc_id = aws_vpc.wordpress-professional.id
   tags = {
-    Name           = "nat-wp"
+    Name           = "eigw-wp"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_internet_gateway.igw-wp]
 }
 
 resource "aws_route" "route_rt-public-wp_to_igw-wp_ipv4" {
@@ -483,8 +474,20 @@ resource "aws_route" "route_rt-public-wp_to_igw-wp_ipv4" {
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route" "route_rtPrivate_to_nat-wp_ipv4" {
-  nat_gateway_id         = aws_nat_gateway.nat-wp.id
+resource "aws_route" "route_rt-public-wp_to_igw-wp_ipv6" {
+  gateway_id                  = aws_internet_gateway.igw-wp.id
+  route_table_id              = aws_route_table.rt-public-wp.id
+  destination_ipv6_cidr_block = "::/0"
+}
+
+resource "aws_route" "route_rtPrivate_to_eigw-wp_ipv6" {
+  egress_only_gateway_id      = aws_egress_only_internet_gateway.eigw-wp.id
+  route_table_id              = aws_route_table.rtPrivate.id
+  destination_ipv6_cidr_block = "::/0"
+}
+
+resource "aws_route" "route_rtPrivate_to_nat-instance_ipv4" {
+  network_interface_id   = aws_instance.nat-instance.primary_network_interface_id
   route_table_id         = aws_route_table.rtPrivate.id
   destination_cidr_block = "0.0.0.0/0"
 }
@@ -526,17 +529,6 @@ resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_cdnWordpress_
   }
 }
 
-resource "aws_route53_record" "alias_a_aws_lb_alb-wp_origin_wp_cloudman_pro" {
-  name    = "origin.wp.cloudman.pro"
-  zone_id = data.aws_route53_zone.zoneWordpress.zone_id
-  type    = "A"
-  alias {
-    name                   = aws_lb.alb-wp.dns_name
-    zone_id                = aws_lb.alb-wp.zone_id
-    evaluate_target_health = true
-  }
-}
-
 resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_cdnWordpress_wp_cloudman_pro" {
   name    = "wp.cloudman.pro"
   zone_id = data.aws_route53_zone.zoneWordpress.zone_id
@@ -545,6 +537,17 @@ resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_cdnWordpre
     name                   = aws_cloudfront_distribution.cdnWordpress.domain_name
     zone_id                = aws_cloudfront_distribution.cdnWordpress.hosted_zone_id
     evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "alias_aaaa_aws_lb_alb-wp_origin_wp_cloudman_pro" {
+  name    = "origin.wp.cloudman.pro"
+  zone_id = data.aws_route53_zone.zoneWordpress.zone_id
+  type    = "AAAA"
+  alias {
+    name                   = aws_lb.alb-wp.dns_name
+    zone_id                = aws_lb.alb-wp.zone_id
+    evaluate_target_health = true
   }
 }
 
@@ -642,6 +645,17 @@ resource "aws_security_group" "elasticache_replication_group_wpRedis_group" {
   }
 }
 
+resource "aws_security_group" "instance_nat-instance_group" {
+  name                   = "instance_nat-instance_group"
+  vpc_id                 = aws_vpc.wordpress-professional.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "instance_nat-instance_group"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_security_group" "lb_alb-wp_group" {
   name                   = "lb_alb-wp_group"
   vpc_id                 = aws_vpc.wordpress-professional.id
@@ -664,35 +678,11 @@ resource "aws_security_group" "rds_cluster_wp-aurora_group" {
   }
 }
 
-resource "aws_security_group" "sg_vpce_vpceLogs" {
-  name        = "vpce-sg-vpcelogs"
-  vpc_id      = aws_vpc.wordpress-professional.id
-  description = "Auto-generated SG for vpceLogs"
-  tags = {
-    Name           = "vpceLogs"
-    DifName        = "sg_vpce_vpceLogs"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_security_group" "sg_vpce_vpceSecrets" {
-  name        = "vpce-sg-vpcesecrets"
-  vpc_id      = aws_vpc.wordpress-professional.id
-  description = "Auto-generated SG for vpceSecrets"
-  tags = {
-    Name           = "vpceSecrets"
-    DifName        = "sg_vpce_vpceSecrets"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_security_group_rule" "rule_alb_cloudfront_wp_cloudfront_tcp_443" {
+resource "aws_security_group_rule" "rule_alb_cloudfront_wp_cloudfront_ipv6_tcp_443" {
   security_group_id = aws_security_group.alb-cloudfront-wp.id
-  description       = "HTTPS from CloudFront"
+  description       = "HTTPS from CloudFront over IPv6"
   from_port         = 443
-  prefix_list_ids   = [data.aws_ec2_managed_prefix_list.cloudfront_origin_facing.id]
+  prefix_list_ids   = [data.aws_ec2_managed_prefix_list.cloudfront_origin_facing_ipv6.id]
   protocol          = "tcp"
   to_port           = 443
   type              = "ingress"
@@ -711,6 +701,7 @@ resource "aws_security_group_rule" "rule_autoscaling_group_asgWordpress_group_eg
   security_group_id = aws_security_group.autoscaling_group_asgWordpress_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
@@ -720,6 +711,7 @@ resource "aws_security_group_rule" "rule_ecs_task_definition_wordpress_group_egr
   security_group_id = aws_security_group.ecs_task_definition_wordpress_group.id
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
+  ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
@@ -773,6 +765,25 @@ resource "aws_security_group_rule" "rule_elasticache_replication_group_wpRedis_g
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "rule_instance_nat_instance_group_egress_all_protocols" {
+  security_group_id = aws_security_group.instance_nat-instance_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_instance_nat_instance_group_ingress_all_protocols" {
+  security_group_id = aws_security_group.instance_nat-instance_group.id
+  cidr_blocks       = ["10.0.11.0/24", "10.0.12.0/24"]
+  description       = "NAT: all traffic from the private app subnets to be routed out"
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "rule_lb_alb_wp_group_egress_all_protocols" {
   security_group_id = aws_security_group.lb_alb-wp_group.id
   cidr_blocks       = ["0.0.0.0/0"]
@@ -801,52 +812,13 @@ resource "aws_security_group_rule" "rule_rds_cluster_wp_aurora_group_egress_all_
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "rule_sg_vpce_vpceLogs_egress_all_protocols" {
-  security_group_id = aws_security_group.sg_vpce_vpceLogs.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  description       = "Allow all outbound traffic"
-  from_port         = 0
-  protocol          = "-1"
-  to_port           = 0
-  type              = "egress"
-}
-
-resource "aws_security_group_rule" "rule_sg_vpce_vpceLogs_ingress_tcp_443" {
-  security_group_id = aws_security_group.sg_vpce_vpceLogs.id
-  cidr_blocks       = ["10.0.0.0/16"]
-  description       = "Allow HTTPS from VPC"
-  from_port         = 443
-  protocol          = "tcp"
-  to_port           = 443
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_sg_vpce_vpceSecrets_egress_all_protocols" {
-  security_group_id = aws_security_group.sg_vpce_vpceSecrets.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  description       = "Allow all outbound traffic"
-  from_port         = 0
-  protocol          = "-1"
-  to_port           = 0
-  type              = "egress"
-}
-
-resource "aws_security_group_rule" "rule_sg_vpce_vpceSecrets_ingress_tcp_443" {
-  security_group_id = aws_security_group.sg_vpce_vpceSecrets.id
-  cidr_blocks       = ["10.0.0.0/16"]
-  description       = "Allow HTTPS from VPC"
-  from_port         = 443
-  protocol          = "tcp"
-  to_port           = 443
-  type              = "ingress"
-}
-
 resource "aws_lb" "alb-wp" {
   name                             = "albWordpress"
   drop_invalid_header_fields       = true
   enable_cross_zone_load_balancing = true
   enable_http2                     = true
   idle_timeout                     = 60
+  ip_address_type                  = "dualstack-without-public-ipv4"
   load_balancer_type               = "application"
   preserve_host_header             = true
   security_groups                  = [aws_security_group.alb-cloudfront-wp.id, aws_security_group.lb_alb-wp_group.id]
@@ -998,6 +970,7 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
     custom_origin_config {
       http_port              = 80
       https_port             = 443
+      ip_address_type        = "ipv6"
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
@@ -1051,9 +1024,10 @@ resource "aws_s3_bucket" "wpMedia" {
   force_destroy       = false
   object_lock_enabled = false
   tags = {
-    Name           = "wpMedia"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
+    "Struct8:Backup:wpDailyBackup-63da29a7" = true
+    Name                                    = "wpMedia"
+    State                                   = "wordpress-professional"
+    Struct8Creator                          = "Contato Struct"
   }
 }
 
@@ -1165,7 +1139,7 @@ resource "aws_s3_bucket_versioning" "wpMedia_versioning" {
   bucket = aws_s3_bucket.wpMedia.id
   versioning_configuration {
     mfa_delete = "Disabled"
-    status     = "Suspended"
+    status     = "Enabled"
   }
 }
 
@@ -1194,9 +1168,10 @@ resource "aws_efs_file_system" "wpContent" {
   encrypted       = true
   throughput_mode = "elastic"
   tags = {
-    Name           = "wpContent"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
+    "Struct8:Backup:wpDailyBackup-63da29a7" = true
+    Name                                    = "wpContent"
+    State                                   = "wordpress-professional"
+    Struct8Creator                          = "Contato Struct"
   }
 }
 
@@ -1230,7 +1205,7 @@ resource "aws_db_subnet_group" "subnet_group_wp-aurora" {
 resource "aws_rds_cluster" "wp-aurora" {
   database_name               = "wordpress"
   db_subnet_group_name        = aws_db_subnet_group.subnet_group_wp-aurora.name
-  kms_key_id                  = aws_kms_key.kmsWordpress.arn
+  kms_key_id                  = data.aws_kms_key.kmsWordpress.arn
   apply_immediately           = true
   backup_retention_period     = 7
   cluster_identifier          = "wp-aurora"
@@ -1252,24 +1227,10 @@ resource "aws_rds_cluster" "wp-aurora" {
     seconds_until_auto_pause = 300
   }
   tags = {
-    Name           = "wp-aurora"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_rds_cluster_instance" "wp-aurora-reader" {
-  cluster_identifier                    = aws_rds_cluster.wp-aurora.id
-  copy_tags_to_snapshot                 = true
-  engine                                = aws_rds_cluster.wp-aurora.engine
-  identifier                            = "wp-aurora-reader"
-  instance_class                        = "db.serverless"
-  performance_insights_retention_period = 7
-  promotion_tier                        = 2
-  tags = {
-    Name           = "wp-aurora-reader"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
+    "Struct8:Backup:wpDailyBackup-63da29a7" = true
+    Name                                    = "wp-aurora"
+    State                                   = "wordpress-professional"
+    Struct8Creator                          = "Contato Struct"
   }
 }
 
@@ -1289,7 +1250,7 @@ resource "aws_rds_cluster_instance" "wp-aurora-writer" {
 }
 
 resource "aws_elasticache_replication_group" "wpRedis" {
-  kms_key_id                 = aws_kms_key.kmsWordpress.arn
+  kms_key_id                 = data.aws_kms_key.kmsWordpress.arn
   replication_group_id       = "wp-object-cache"
   at_rest_encryption_enabled = true
   automatic_failover_enabled = true
@@ -1313,6 +1274,51 @@ resource "aws_elasticache_replication_group" "wpRedis" {
 
 
 ### CATEGORY: COMPUTE ###
+
+data "local_file" "UserData_nat-instance" {
+  filename = "${path.module}/.external_modules/struct8-templates/templates/ec2-nat-private/v1/user_data/Nat.sh"
+}
+
+data "aws_ami" "AMI_Data_Source_nat-instance" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-kernel-6.1-arm64"]
+  }
+}
+
+resource "aws_instance" "nat-instance" {
+  subnet_id                   = aws_subnet.pubA.id
+  ami                         = data.aws_ami.AMI_Data_Source_nat-instance.id
+  associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.nat-instance_profile.name
+  instance_type               = "t4g.nano"
+  source_dest_check           = false
+  user_data_base64 = base64encode(<<-EOFUData
+#!/bin/bash
+
+${data.local_file.UserData_nat-instance.content}
+EOFUData
+)
+  vpc_security_group_ids = [aws_security_group.instance_nat-instance_group.id]
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+  root_block_device {
+    encrypted   = true
+    iops        = 3000
+    throughput  = 125
+    volume_size = 8
+    volume_type = "gp3"
+  }
+  tags = {
+    Name           = "nat-instance"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
 
 data "aws_ami" "AMI_Data_Source_ltWordpress" {
   most_recent = true
