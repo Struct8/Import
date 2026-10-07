@@ -1,24 +1,7 @@
 {
-  "external_repositories": [
-    {
-      "repo_name": "struct8-templates",
-      "org": "Struct8",
-      "branch": "main",
-      "target_dir": ".external_modules/struct8-templates",
-      "folders": [
-        "templates/cloudfront-lambda-edge-showcase/v1/functions/api-regular",
-        "templates/cloudfront-lambda-edge-showcase/v1/edge/abtest-viewer-response",
-        "templates/cloudfront-lambda-edge-showcase/v1/edge/security-headers-origin-response",
-        "templates/cloudfront-lambda-edge-showcase/v1/edge/rewrite-origin-request",
-        "templates/cloudfront-lambda-edge-showcase/v1/edge/auth-viewer-request",
-        "templates/cloudfront-lambda-edge-showcase/v1/lab",
-        "templates/cloudfront-lambda-edge-showcase/v1/lab/public",
-        "templates/cloudfront-lambda-edge-showcase/v1/lab/private"
-      ]
-    }
-  ],
-  "action": "destroy",
-  "trigger_id": "1789070560499",
+  "external_repositories": [],
+  "action": "apply",
+  "trigger_id": "1791401938139",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
