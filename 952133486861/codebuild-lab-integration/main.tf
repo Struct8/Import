@@ -3,6 +3,9 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+    time = {
+      source = "hashicorp/time"
+    }
   }
 
   backend "s3" {
@@ -323,6 +326,16 @@ resource "aws_security_group_rule" "rule_codebuild_project_codebuild_lab_integra
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "rule_codebuild_project_codebuild_lab_integration_group_egress_tcp_5432" {
+  security_group_id = aws_security_group.codebuild_project_codebuild-lab-integration_group.id
+  cidr_blocks       = ["10.6.0.0/24", "10.6.1.0/24"]
+  description       = "PostgreSQL to the database subnets"
+  from_port         = 5432
+  protocol          = "tcp"
+  to_port           = 5432
+  type              = "egress"
+}
+
 resource "aws_security_group_rule" "rule_codebuild_project_codebuild_lab_integration_group_to_db_instance_codebuild_lab_orders_db_group_tcp_5432" {
   security_group_id        = aws_security_group.db_instance_codebuild-lab-orders-db_group.id
   source_security_group_id = aws_security_group.codebuild_project_codebuild-lab-integration_group.id
@@ -527,7 +540,20 @@ resource "aws_codebuild_project" "codebuild-lab-integration" {
     security_group_ids = [aws_security_group.codebuild_project_codebuild-lab-integration_group.id]
     subnets            = [aws_subnet.codebuild-lab-build-a.id, aws_subnet.codebuild-lab-build-b.id]
   }
-  depends_on = [aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-integration_st_codebuild-lab-integration_attach]
+  depends_on = [aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-integration_st_codebuild-lab-integration_attach, time_sleep.codebuild-lab-integration_role_propagation]
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+resource "time_sleep" "codebuild-lab-integration_role_propagation" {
+  create_duration = "30s"
+  triggers = {
+    policy_attachment = aws_iam_role_policy_attachment.codebuild_project_codebuild-lab-integration_st_codebuild-lab-integration_attach.id
+    policy            = aws_iam_policy.codebuild_project_codebuild-lab-integration_st_codebuild-lab-integration.policy
+  }
 }
 
 
