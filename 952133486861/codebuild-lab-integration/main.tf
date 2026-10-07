@@ -313,12 +313,13 @@ resource "aws_security_group" "db_instance_codebuild-lab-orders-db_group" {
   }
 }
 
-resource "aws_security_group_rule" "rule_codebuild_project_codebuild_lab_integration_group_egress_all_protocols" {
+resource "aws_security_group_rule" "rule_codebuild_project_codebuild_lab_integration_group_egress_tcp_443" {
   security_group_id = aws_security_group.codebuild_project_codebuild-lab-integration_group.id
   cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 0
-  protocol          = "-1"
-  to_port           = 0
+  description       = "HTTPS to the internet through the NAT"
+  from_port         = 443
+  protocol          = "tcp"
+  to_port           = 443
   type              = "egress"
 }
 
