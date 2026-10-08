@@ -204,8 +204,10 @@ resource "aws_iam_role_policy_attachment" "scheduler_schedule_efs-writer-every-5
 ### CATEGORY: NETWORK ###
 
 resource "aws_vpc" "aws-backup-lab" {
-  cidr_block       = "10.21.0.0/16"
-  instance_tenancy = "default"
+  cidr_block           = "10.21.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  instance_tenancy     = "default"
   tags = {
     Name           = "aws-backup-lab"
     State          = "aws-backup-lab"
