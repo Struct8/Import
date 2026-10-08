@@ -297,10 +297,10 @@ resource "aws_lambda_function" "bedrock-rag-handler" {
     AWS_LAMBDA_FUNCTION_URL_NAME_0                   = "bedrock-rag-url"
     AWS_BEDROCK_INFERENCE_PROFILE_ARN_0              = aws_bedrock_inference_profile.bedrock-rag-answer-model.arn
     AWS_BEDROCKAGENT_KNOWLEDGE_BASE_ID_0             = aws_bedrockagent_knowledge_base.bedrock-kb-lab.id
-    AWS_BEDROCKAGENT_DATA_SOURCE_ID_0                = aws_bedrockagent_data_source.bedrock-rag-documents.data_source_id
-    AWS_BEDROCKAGENT_DATA_SOURCE_KNOWLEDGE_BASE_ID_0 = aws_bedrockagent_data_source.bedrock-rag-documents.knowledge_base_id
     AWS_BEDROCK_GUARDRAIL_GUARDRAIL_ID_0             = aws_bedrock_guardrail.lab-guardrail.guardrail_id
     AWS_BEDROCK_GUARDRAIL_GUARDRAIL_VERSION_0        = aws_bedrock_guardrail.lab-guardrail.version
+    AWS_BEDROCKAGENT_DATA_SOURCE_ID_0                = aws_bedrockagent_data_source.bedrock-rag-documents.data_source_id
+    AWS_BEDROCKAGENT_DATA_SOURCE_KNOWLEDGE_BASE_ID_0 = aws_bedrockagent_data_source.bedrock-rag-documents.knowledge_base_id
   }
   }
   tags = {
@@ -386,8 +386,9 @@ resource "aws_bedrock_inference_profile" "bedrock-rag-answer-model" {
 }
 
 resource "aws_bedrockagent_data_source" "bedrock-rag-documents" {
-  knowledge_base_id = aws_bedrockagent_knowledge_base.bedrock-kb-lab1.id
-  name              = "bedrock-rag-documents"
+  knowledge_base_id    = aws_bedrockagent_knowledge_base.bedrock-kb-lab.id
+  name                 = "bedrock-rag-documents"
+  data_deletion_policy = "DELETE"
   data_source_configuration {
     type = "S3"
     s3_configuration {
