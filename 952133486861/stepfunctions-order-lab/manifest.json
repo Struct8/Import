@@ -12,13 +12,14 @@
         "templates/stepfunctions-order-lab/v1/lambda/order-charge",
         "templates/stepfunctions-order-lab/v1/lambda/order-release",
         "templates/stepfunctions-order-lab/v1/lambda/order-pack-item",
-        "templates/stepfunctions-order-lab/v1/lambda/order-approval-inbox"
+        "templates/stepfunctions-order-lab/v1/lambda/order-approval-inbox",
+        "templates/stepfunctions-order-lab/v1/stepfunctions"
       ]
     }
   ],
   "action": "plan",
-  "trigger_id": "1791476459104",
-  "triggered_by": "Contato Struct",
+  "trigger_id": "1791479566685",
+  "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
