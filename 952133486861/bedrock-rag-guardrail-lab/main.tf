@@ -257,7 +257,7 @@ resource "aws_s3vectors_index" "bedrock-kb-index" {
 }
 
 resource "aws_s3vectors_vector_bucket" "bedrock-vectors" {
-  vector_bucket_name = "bedrock-rag-lab-vectors"
+  vector_bucket_name = "bedrock-vectors"
   force_destroy      = false
   tags = {
     Name           = "bedrock-vectors"
@@ -387,7 +387,7 @@ resource "aws_bedrock_inference_profile" "bedrock-rag-answer-model" {
 
 resource "aws_bedrockagent_data_source" "bedrock-rag-documents" {
   knowledge_base_id = aws_bedrockagent_knowledge_base.bedrock-kb-lab1.id
-  name              = "documents"
+  name              = "bedrock-rag-documents"
   data_source_configuration {
     type = "S3"
     s3_configuration {
