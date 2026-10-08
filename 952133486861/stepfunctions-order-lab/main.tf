@@ -577,7 +577,6 @@ resource "aws_lambda_function" "order-approval-inbox" {
   architectures                  = ["arm64"]
   filename                       = data.archive_file.archive_struct8-templates_order-approval-inbox.output_path
   handler                        = "index.handler"
-  layers                         = ["arn:aws:lambda:us-west-2:615299751070:layer:AWSOpenTelemetryDistroJs:16"]
   memory_size                    = 128
   publish                        = false
   reserved_concurrent_executions = -1
@@ -587,14 +586,11 @@ resource "aws_lambda_function" "order-approval-inbox" {
   timeout                        = 10
   environment {
     variables = {
-    AWS_LAMBDA_EXEC_WRAPPER              = "/opt/otel-instrument"
-    OTEL_AWS_LAMBDA_FAST_START           = true
-    OTEL_AWS_APPLICATION_SIGNALS_ENABLED = false
-    NAME                                 = "order-approval-inbox"
-    REGION                               = data.aws_region.current.region
-    ACCOUNT                              = data.aws_caller_identity.current.account_id
-    AWS_DYNAMODB_TABLE_NAME_0            = "order-lab-data"
-    AWS_XRAY_GROUP_NAME_0                = "order-lab-traces"
+    NAME                      = "order-approval-inbox"
+    REGION                    = data.aws_region.current.region
+    ACCOUNT                   = data.aws_caller_identity.current.account_id
+    AWS_DYNAMODB_TABLE_NAME_0 = "order-lab-data"
+    AWS_XRAY_GROUP_NAME_0     = "order-lab-traces"
   }
   }
   tags = {
@@ -656,7 +652,6 @@ resource "aws_lambda_function" "order-console" {
   architectures                  = ["arm64"]
   filename                       = data.archive_file.archive_struct8-templates_order-console.output_path
   handler                        = "index.handler"
-  layers                         = ["arn:aws:lambda:us-west-2:615299751070:layer:AWSOpenTelemetryDistroJs:16"]
   memory_size                    = 256
   publish                        = false
   reserved_concurrent_executions = -1
@@ -666,17 +661,14 @@ resource "aws_lambda_function" "order-console" {
   timeout                        = 15
   environment {
     variables = {
-    AWS_LAMBDA_EXEC_WRAPPER              = "/opt/otel-instrument"
-    OTEL_AWS_LAMBDA_FAST_START           = true
-    OTEL_AWS_APPLICATION_SIGNALS_ENABLED = false
-    NAME                                 = "order-console"
-    REGION                               = data.aws_region.current.region
-    ACCOUNT                              = data.aws_caller_identity.current.account_id
-    AWS_LAMBDA_FUNCTION_URL_NAME_0       = "order-console-url"
-    AWS_DYNAMODB_TABLE_NAME_0            = "order-lab-data"
-    AWS_SFN_STATE_MACHINE_ARN_0          = aws_sfn_state_machine.order-workflow.arn
-    AWS_SQS_QUEUE_NAME_0                 = "order-notifications"
-    AWS_XRAY_GROUP_NAME_0                = "order-lab-traces"
+    NAME                           = "order-console"
+    REGION                         = data.aws_region.current.region
+    ACCOUNT                        = data.aws_caller_identity.current.account_id
+    AWS_LAMBDA_FUNCTION_URL_NAME_0 = "order-console-url"
+    AWS_DYNAMODB_TABLE_NAME_0      = "order-lab-data"
+    AWS_SFN_STATE_MACHINE_ARN_0    = aws_sfn_state_machine.order-workflow.arn
+    AWS_SQS_QUEUE_NAME_0           = "order-notifications"
+    AWS_XRAY_GROUP_NAME_0          = "order-lab-traces"
   }
   }
   tags = {
@@ -738,7 +730,6 @@ resource "aws_lambda_function" "order-release" {
   architectures                  = ["arm64"]
   filename                       = data.archive_file.archive_struct8-templates_order-release.output_path
   handler                        = "index.handler"
-  layers                         = ["arn:aws:lambda:us-west-2:615299751070:layer:AWSOpenTelemetryDistroJs:16"]
   memory_size                    = 128
   publish                        = false
   reserved_concurrent_executions = -1
@@ -748,14 +739,11 @@ resource "aws_lambda_function" "order-release" {
   timeout                        = 10
   environment {
     variables = {
-    AWS_LAMBDA_EXEC_WRAPPER              = "/opt/otel-instrument"
-    OTEL_AWS_LAMBDA_FAST_START           = true
-    OTEL_AWS_APPLICATION_SIGNALS_ENABLED = false
-    NAME                                 = "order-release"
-    REGION                               = data.aws_region.current.region
-    ACCOUNT                              = data.aws_caller_identity.current.account_id
-    AWS_DYNAMODB_TABLE_NAME_0            = "order-lab-data"
-    AWS_XRAY_GROUP_NAME_0                = "order-lab-traces"
+    NAME                      = "order-release"
+    REGION                    = data.aws_region.current.region
+    ACCOUNT                   = data.aws_caller_identity.current.account_id
+    AWS_DYNAMODB_TABLE_NAME_0 = "order-lab-data"
+    AWS_XRAY_GROUP_NAME_0     = "order-lab-traces"
   }
   }
   tags = {
@@ -780,7 +768,6 @@ resource "aws_lambda_function" "order-reserve" {
   architectures                  = ["arm64"]
   filename                       = data.archive_file.archive_struct8-templates_order-reserve.output_path
   handler                        = "index.handler"
-  layers                         = ["arn:aws:lambda:us-west-2:615299751070:layer:AWSOpenTelemetryDistroJs:16"]
   memory_size                    = 128
   publish                        = false
   reserved_concurrent_executions = -1
@@ -790,14 +777,11 @@ resource "aws_lambda_function" "order-reserve" {
   timeout                        = 10
   environment {
     variables = {
-    AWS_LAMBDA_EXEC_WRAPPER              = "/opt/otel-instrument"
-    OTEL_AWS_LAMBDA_FAST_START           = true
-    OTEL_AWS_APPLICATION_SIGNALS_ENABLED = false
-    NAME                                 = "order-reserve"
-    REGION                               = data.aws_region.current.region
-    ACCOUNT                              = data.aws_caller_identity.current.account_id
-    AWS_DYNAMODB_TABLE_NAME_0            = "order-lab-data"
-    AWS_XRAY_GROUP_NAME_0                = "order-lab-traces"
+    NAME                      = "order-reserve"
+    REGION                    = data.aws_region.current.region
+    ACCOUNT                   = data.aws_caller_identity.current.account_id
+    AWS_DYNAMODB_TABLE_NAME_0 = "order-lab-data"
+    AWS_XRAY_GROUP_NAME_0     = "order-lab-traces"
   }
   }
   tags = {
