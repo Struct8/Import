@@ -69,7 +69,7 @@ data "aws_iam_policy_document" "lambda_function_bedrock-rag-handler_st_bedrock-r
   statement {
     sid       = "AllowInvokeInferenceProfile"
     effect    = "Allow"
-    actions   = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"]
+    actions   = ["bedrock:GetInferenceProfile", "bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"]
     resources = [aws_bedrock_inference_profile.bedrock-rag-answer-model.arn]
   }
   statement {
