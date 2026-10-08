@@ -20,7 +20,7 @@
     }
   ],
   "action": "destroy",
-  "trigger_id": "1791309624460",
+  "trigger_id": "1791483711964",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -32,11 +32,20 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "Manual Trigger: demo-aurora-state",
+      "stage_name": "DESTROY ALL: aurora-params-state",
       "parallel_execution": false,
       "states": [
         {
           "path": "952133486861/demo-aurora-state",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        },
+        {
+          "path": "952133486861/aurora-params-state",
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
