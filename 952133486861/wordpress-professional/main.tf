@@ -1380,7 +1380,7 @@ resource "aws_elasticache_replication_group" "wpRedis" {
   cluster_mode               = "disabled"
   description                = "WordPress object cache for wp_options, postmeta and transients."
   engine_version             = "7.1"
-  node_type                  = "cache.t4g.small"
+  node_type                  = "cache.t4g.micro"
   num_cache_clusters         = 2
   security_group_ids         = [aws_security_group.elasticache_replication_group_wpRedis_group.id]
   snapshot_retention_limit   = 7
@@ -1608,6 +1608,36 @@ resource "aws_autoscaling_group" "asgWordpress" {
   }
 }
 
+resource "aws_appautoscaling_policy" "scalingWordpress-cpu" {
+  name               = "scalingWordpress-cpu"
+  resource_id        = aws_appautoscaling_target.scalingWordpress.resource_id
+  policy_type        = "TargetTrackingScaling"
+  scalable_dimension = aws_appautoscaling_target.scalingWordpress.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.scalingWordpress.service_namespace
+  target_tracking_scaling_policy_configuration {
+    disable_scale_in   = false
+    scale_in_cooldown  = 300
+    scale_out_cooldown = 60
+    target_value       = 60
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+  }
+}
+
+resource "aws_appautoscaling_target" "scalingWordpress" {
+  resource_id        = "service/${aws_ecs_cluster.wp-cluster.name}/${aws_ecs_service.wordpress_service.name}"
+  max_capacity       = 12
+  min_capacity       = 2
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+  tags = {
+    Name           = "scalingWordpress"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 
 
 
@@ -1665,6 +1695,9 @@ resource "aws_ecs_service" "wordpress_service" {
   deployment_circuit_breaker {
     enable   = true
     rollback = true
+  }
+  lifecycle {
+    ignore_changes = [desired_count]
   }
   load_balancer {
     container_name   = "wordpress"
