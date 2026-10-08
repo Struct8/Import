@@ -80,23 +80,6 @@ resource "aws_iam_policy" "scheduler_schedule_efs-writer-every-5-min_st_aws-back
   policy      = data.aws_iam_policy_document.scheduler_schedule_efs-writer-every-5-min_st_aws-backup-lab_doc.json
 }
 
-resource "aws_iam_role" "backup-lab-hourly_backup_role" {
-  name = "backup-lab-hourly-8ee55440-backup"
-  assume_role_policy = jsonencode({
-  Version = "2012-10-17"
-  Statement = [{
-    Effect    = "Allow"
-    Principal = { Service = "backup.amazonaws.com" }
-    Action    = "sts:AssumeRole"
-  }]
-})
-  tags = {
-    Name           = "backup-lab-hourly_backup_role"
-    State          = "aws-backup-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_iam_role" "efs-writer-every-5-min_role" {
   name = "efs-writer-every-5-min_role"
   assume_role_policy = jsonencode({
@@ -145,6 +128,30 @@ resource "aws_iam_role" "execution_role_ecs_efs-writer" {
   }
 }
 
+resource "aws_iam_role" "role_backup_backup-lab-hourly" {
+  name = "role_backup_backup-lab-hourly"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "backup.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "role_backup_backup-lab-hourly"
+    State          = "aws-backup-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role" "task_role_ecs_efs-writer" {
   name = "task_role_ecs_efs-writer"
   assume_role_policy = jsonencode({
@@ -169,26 +176,6 @@ resource "aws_iam_role" "task_role_ecs_efs-writer" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "backup-lab-hourly_backup_role_backup" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
-  role       = aws_iam_role.backup-lab-hourly_backup_role.name
-}
-
-resource "aws_iam_role_policy_attachment" "backup-lab-hourly_backup_role_restores" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForRestores"
-  role       = aws_iam_role.backup-lab-hourly_backup_role.name
-}
-
-resource "aws_iam_role_policy_attachment" "backup-lab-hourly_backup_role_s3_backup" {
-  policy_arn = "arn:aws:iam::aws:policy/AWSBackupServiceRolePolicyForS3Backup"
-  role       = aws_iam_role.backup-lab-hourly_backup_role.name
-}
-
-resource "aws_iam_role_policy_attachment" "backup-lab-hourly_backup_role_s3_restore" {
-  policy_arn = "arn:aws:iam::aws:policy/AWSBackupServiceRolePolicyForS3Restore"
-  role       = aws_iam_role.backup-lab-hourly_backup_role.name
-}
-
 resource "aws_iam_role_policy_attachment" "ecs_task_definition_efs-writer_execution_st_aws-backup-lab_attach" {
   policy_arn = aws_iam_policy.ecs_task_definition_efs-writer_execution_st_aws-backup-lab.arn
   role       = aws_iam_role.execution_role_ecs_efs-writer.name
@@ -197,6 +184,26 @@ resource "aws_iam_role_policy_attachment" "ecs_task_definition_efs-writer_execut
 resource "aws_iam_role_policy_attachment" "ecs_task_definition_efs-writer_st_aws-backup-lab_attach" {
   policy_arn = aws_iam_policy.ecs_task_definition_efs-writer_st_aws-backup-lab.arn
   role       = aws_iam_role.task_role_ecs_efs-writer.name
+}
+
+resource "aws_iam_role_policy_attachment" "role_backup_backup-lab-hourly_backup" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+  role       = aws_iam_role.role_backup_backup-lab-hourly.name
+}
+
+resource "aws_iam_role_policy_attachment" "role_backup_backup-lab-hourly_restores" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForRestores"
+  role       = aws_iam_role.role_backup_backup-lab-hourly.name
+}
+
+resource "aws_iam_role_policy_attachment" "role_backup_backup-lab-hourly_s3_backup" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSBackupServiceRolePolicyForS3Backup"
+  role       = aws_iam_role.role_backup_backup-lab-hourly.name
+}
+
+resource "aws_iam_role_policy_attachment" "role_backup_backup-lab-hourly_s3_restore" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSBackupServiceRolePolicyForS3Restore"
+  role       = aws_iam_role.role_backup_backup-lab-hourly.name
 }
 
 resource "aws_iam_role_policy_attachment" "scheduler_schedule_efs-writer-every-5-min_st_aws-backup-lab_attach" {
@@ -464,7 +471,7 @@ resource "aws_backup_selection" "backup-lab-hourly_selection" {
       value = true
     }
   }
-  iam_role_arn = aws_iam_role.backup-lab-hourly_backup_role.arn
+  iam_role_arn = aws_iam_role.role_backup_backup-lab-hourly.arn
 }
 
 resource "aws_backup_vault" "backup-lab-vault" {
