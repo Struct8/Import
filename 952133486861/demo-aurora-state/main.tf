@@ -24,6 +24,16 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### RENAMES ###
+
+moved {
+  from = aws_cloudwatch_log_group.demo-aurora
+  to   = aws_cloudwatch_log_group.demo-aurora-instance
+}
+
+
+
+
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "demo-pgweb_profile" {
@@ -208,7 +218,7 @@ data "aws_iam_policy_document" "Debug_debug_permissions" {
     sid       = "PinnedDocumentOnly"
     effect    = "Allow"
     actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-n2L5m9CkjzH7IUewAgbOZ"]
   }
   statement {
     sid       = "ReadOwnResults"
@@ -226,12 +236,6 @@ data "aws_iam_policy_document" "Debug_debug_permissions" {
       values   = ["n2L5m9CkjzH7IUewAgbOZ"]
       variable = "aws:ResourceTag/Struct8Debug"
     }
-  }
-  statement {
-    sid       = "RunShellScriptDocument"
-    effect    = "Allow"
-    actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
   }
 }
 
@@ -837,8 +841,27 @@ resource "aws_db_subnet_group" "subnet_group_demo-aurora" {
   }
 }
 
+data "aws_resourcegroupstaggingapi_resources" "cluster_parameter_group_demo-aurora-cluster-params" {
+  resource_type_filters = ["rds:cluster-pg"]
+  lifecycle {
+    postcondition {
+      condition     = length(self.resource_tag_mapping_list) > 0
+      error_message = "No RDS DB cluster parameter group tagged Name=demo-aurora-cluster-params exists in this region. Apply the state that creates it before this one."
+    }
+    postcondition {
+      condition     = length(self.resource_tag_mapping_list) < 2
+      error_message = "More than one RDS DB cluster parameter group is tagged Name=demo-aurora-cluster-params in this region, and this state cannot tell which one to use. Leave one group with that name."
+    }
+  }
+  tag_filter {
+    key    = "Name"
+    values = ["demo-aurora-cluster-params"]
+  }
+}
+
 resource "aws_rds_cluster" "demo-aurora" {
   database_name                       = "appdb"
+  db_cluster_parameter_group_name     = element(split(":", data.aws_resourcegroupstaggingapi_resources.cluster_parameter_group_demo-aurora-cluster-params.resource_tag_mapping_list[0].resource_arn), 6)
   db_subnet_group_name                = aws_db_subnet_group.subnet_group_demo-aurora.name
   apply_immediately                   = true
   backup_retention_period             = 7
@@ -846,7 +869,7 @@ resource "aws_rds_cluster" "demo-aurora" {
   copy_tags_to_snapshot               = true
   database_insights_mode              = "standard"
   enable_http_endpoint                = true
-  enabled_cloudwatch_logs_exports     = ["instance", "postgresql", "iam-db-auth-error"]
+  enabled_cloudwatch_logs_exports     = ["iam-db-auth-error", "instance", "postgresql"]
   engine                              = "aurora-postgresql"
   engine_version                      = "16.8"
   iam_database_authentication_enabled = true
@@ -867,10 +890,29 @@ resource "aws_rds_cluster" "demo-aurora" {
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_cloudwatch_log_group.demo-aurora]
+  depends_on = [aws_cloudwatch_log_group.demo-aurora-auth, aws_cloudwatch_log_group.demo-aurora-instance, aws_cloudwatch_log_group.demo-aurora-postgres]
+}
+
+data "aws_resourcegroupstaggingapi_resources" "parameter_group_demo-aurora-instance-params" {
+  resource_type_filters = ["rds:pg"]
+  lifecycle {
+    postcondition {
+      condition     = length(self.resource_tag_mapping_list) > 0
+      error_message = "No RDS DB parameter group tagged Name=demo-aurora-instance-params exists in this region. Apply the state that creates it before this one."
+    }
+    postcondition {
+      condition     = length(self.resource_tag_mapping_list) < 2
+      error_message = "More than one RDS DB parameter group is tagged Name=demo-aurora-instance-params in this region, and this state cannot tell which one to use. Leave one group with that name."
+    }
+  }
+  tag_filter {
+    key    = "Name"
+    values = ["demo-aurora-instance-params"]
+  }
 }
 
 resource "aws_rds_cluster_instance" "demo-aurora" {
+  db_parameter_group_name               = element(split(":", data.aws_resourcegroupstaggingapi_resources.parameter_group_demo-aurora-instance-params.resource_tag_mapping_list[0].resource_arn), 6)
   cluster_identifier                    = aws_rds_cluster.demo-aurora.id
   copy_tags_to_snapshot                 = true
   engine                                = aws_rds_cluster.demo-aurora.engine
@@ -909,7 +951,7 @@ resource "aws_instance" "demo-pgweb" {
   ami                         = data.aws_ami.AMI_Data_Source_demo-pgweb.id
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.demo-pgweb_profile.name
-  instance_type               = "t3.small"
+  instance_type               = "t3.micro"
   user_data_base64 = base64encode(<<-EOFUData
 #!/bin/bash
 
@@ -1209,13 +1251,13 @@ resource "aws_cloudwatch_event_target" "Target3" {
 
 ### CATEGORY: MONITORING ###
 
-resource "aws_cloudwatch_log_group" "demo-aurora" {
+resource "aws_cloudwatch_log_group" "demo-aurora-auth" {
   name              = "/aws/rds/cluster/demo-aurora/iam-db-auth-error"
   log_group_class   = "STANDARD"
   retention_in_days = 1
   skip_destroy      = false
   tags = {
-    Name           = "demo-aurora"
+    Name           = "demo-aurora-auth"
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
@@ -1245,6 +1287,30 @@ resource "aws_cloudwatch_log_group" "demo-aurora-iam-logs" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "demo-aurora-instance" {
+  name              = "/aws/rds/cluster/demo-aurora/instance"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "demo-aurora-instance"
+    State          = "demo-aurora-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "demo-aurora-postgres" {
+  name              = "/aws/rds/cluster/demo-aurora/postgresql"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "demo-aurora-postgres"
+    State          = "demo-aurora-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_cloudwatch_log_group" "demo-aurora-proxy-logs" {
   name              = "/aws/lambda/demo-aurora-proxy"
   log_group_class   = "STANDARD"
@@ -1267,6 +1333,57 @@ resource "aws_cloudwatch_log_group" "demo-aurora-rds-proxy" {
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
+}
+
+
+
+
+### CATEGORY: CONFIG ###
+
+resource "aws_ssm_document" "Struct8Probe-Debug" {
+  name = "Struct8Probe-n2L5m9CkjzH7IUewAgbOZ"
+  content = <<EOF
+{
+  "schemaVersion": "2.2",
+  "description": "Struct8 network probe. The command text is fixed here; the caller supplies only a target and a port.",
+  "parameters": {
+    "target": {
+      "type": "String",
+      "description": "Hostname or IP address to probe.",
+      "interpolationType": "ENV_VAR",
+      "allowedPattern": "^[A-Za-z0-9._-]{1,253}$"
+    },
+    "port": {
+      "type": "String",
+      "description": "TCP port to test.",
+      "default": "443",
+      "interpolationType": "ENV_VAR",
+      "allowedPattern": "^[0-9]{1,5}$"
+    }
+  },
+  "mainSteps": [
+    {
+      "action": "aws:runShellScript",
+      "name": "struct8Probe",
+      "inputs": {
+        "timeoutSeconds": "60",
+        "runCommand": [
+          "if [ -z \"$SSM_target\" ]; then export SSM_target=\"{{target}}\"; fi",
+          "if [ -z \"$SSM_port\" ]; then export SSM_port=\"{{port}}\"; fi",
+          "echo '--- resolve ---'",
+          "getent hosts \"$SSM_target\" || echo \"no DNS answer\"",
+          "echo '--- icmp ---'",
+          "ping -c 3 -W 2 \"$SSM_target\" || echo \"no ICMP reply (often filtered, not conclusive)\"",
+          "echo '--- tcp ---'",
+          "if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$SSM_target\" \"$SSM_port\" 2>/dev/null; then echo \"port $SSM_port open\"; else echo \"port $SSM_port closed or filtered\"; fi"
+        ]
+      }
+    }
+  ]
+}
+  EOF
+  document_format = "JSON"
+  document_type   = "Command"
 }
 
 
