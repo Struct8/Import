@@ -129,6 +129,9 @@ resource "aws_iam_role" "execution_role_ecs_efs-writer" {
     }
   ]
 })
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
   tags = {
     Name           = "execution_role_ecs_efs-writer"
     State          = "aws-backup-lab"
@@ -150,6 +153,9 @@ resource "aws_iam_role" "task_role_ecs_efs-writer" {
     }
   ]
 })
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
   tags = {
     Name           = "task_role_ecs_efs-writer"
     State          = "aws-backup-lab"
@@ -197,18 +203,18 @@ resource "aws_iam_role_policy_attachment" "scheduler_schedule_efs-writer-every-5
 
 ### CATEGORY: NETWORK ###
 
-resource "aws_vpc" "VPC" {
+resource "aws_vpc" "aws-backup-lab" {
   cidr_block       = "10.21.0.0/16"
   instance_tenancy = "default"
   tags = {
-    Name           = "VPC"
+    Name           = "aws-backup-lab"
     State          = "aws-backup-lab"
     Struct8Creator = "Contato Struct"
   }
 }
 
 resource "aws_subnet" "pubA1" {
-  vpc_id                  = aws_vpc.VPC.id
+  vpc_id                  = aws_vpc.aws-backup-lab.id
   availability_zone       = "us-west-2a"
   cidr_block              = "10.21.1.0/24"
   map_public_ip_on_launch = true
@@ -220,7 +226,7 @@ resource "aws_subnet" "pubA1" {
 }
 
 resource "aws_internet_gateway" "igw-backup-lab" {
-  vpc_id = aws_vpc.VPC.id
+  vpc_id = aws_vpc.aws-backup-lab.id
   tags = {
     Name           = "igw-backup-lab"
     State          = "aws-backup-lab"
@@ -235,7 +241,7 @@ resource "aws_route" "route_rt-public-backup-lab_to_igw-backup-lab_ipv4" {
 }
 
 resource "aws_route_table" "rt-public-backup-lab" {
-  vpc_id = aws_vpc.VPC.id
+  vpc_id = aws_vpc.aws-backup-lab.id
   tags = {
     Name           = "rt-public-backup-lab"
     State          = "aws-backup-lab"
@@ -250,7 +256,7 @@ resource "aws_route_table_association" "aws_route_table_association_pubA1_rt_pub
 
 resource "aws_security_group" "ecs_task_definition_efs-writer_group" {
   name                   = "ecs_task_definition_efs-writer_group"
-  vpc_id                 = aws_vpc.VPC.id
+  vpc_id                 = aws_vpc.aws-backup-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "ecs_task_definition_efs-writer_group"
@@ -261,7 +267,7 @@ resource "aws_security_group" "ecs_task_definition_efs-writer_group" {
 
 resource "aws_security_group" "efs_file_system_lab-data_group" {
   name                   = "efs_file_system_lab-data_group"
-  vpc_id                 = aws_vpc.VPC.id
+  vpc_id                 = aws_vpc.aws-backup-lab.id
   revoke_rules_on_delete = false
   tags = {
     Name           = "efs_file_system_lab-data_group"
