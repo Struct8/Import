@@ -40,6 +40,12 @@ resource "aws_iam_policy" "ecs_task_definition_efs-writer_execution_st_aws-backu
 
 data "aws_iam_policy_document" "ecs_task_definition_efs-writer_st_aws-backup-lab_doc" {
   statement {
+    sid       = "AllowPutAndCountItems"
+    effect    = "Allow"
+    actions   = ["dynamodb:PutItem", "dynamodb:Scan"]
+    resources = [aws_dynamodb_table.lab-orders.arn, "${aws_dynamodb_table.lab-orders.arn}/*"]
+  }
+  statement {
     sid       = "AllowEFSBasicAccess"
     effect    = "Allow"
     actions   = ["elasticfilesystem:ClientMount", "elasticfilesystem:ClientRootAccess", "elasticfilesystem:ClientWrite"]
@@ -495,27 +501,6 @@ resource "aws_dynamodb_table" "lab-orders" {
   }
 }
 
-resource "aws_dynamodb_table_item" "order-1" {
-  table_name = aws_dynamodb_table.lab-orders.name
-  hash_key   = aws_dynamodb_table.lab-orders.hash_key
-  item       = "{\"order_id\":{\"S\":\"1001\"},\"customer\":{\"S\":\"Ana\"},\"status\":{\"S\":\"SHIPPED\"},\"total\":{\"N\":\"129.90\"}}"
-  range_key  = aws_dynamodb_table.lab-orders.range_key
-}
-
-resource "aws_dynamodb_table_item" "order-2" {
-  table_name = aws_dynamodb_table.lab-orders.name
-  hash_key   = aws_dynamodb_table.lab-orders.hash_key
-  item       = "{\"order_id\":{\"S\":\"1002\"},\"customer\":{\"S\":\"Bruno\"},\"status\":{\"S\":\"PROCESSING\"},\"total\":{\"N\":\"54.00\"}}"
-  range_key  = aws_dynamodb_table.lab-orders.range_key
-}
-
-resource "aws_dynamodb_table_item" "order-3" {
-  table_name = aws_dynamodb_table.lab-orders.name
-  hash_key   = aws_dynamodb_table.lab-orders.hash_key
-  item       = "{\"order_id\":{\"S\":\"1003\"},\"customer\":{\"S\":\"Carla\"},\"status\":{\"S\":\"DELIVERED\"},\"total\":{\"N\":\"310.50\"}}"
-  range_key  = aws_dynamodb_table.lab-orders.range_key
-}
-
 
 
 
@@ -533,7 +518,7 @@ resource "aws_ecs_cluster" "backup-lab-cluster" {
 locals {
   container_def_efs-writer_efs-writer_1 = {
     name      = "efs-writer"
-    image     = "public.ecr.aws/docker/library/busybox:latest"
+    image     = "public.ecr.aws/aws-cli/aws-cli:latest"
     essential = true
     cpu       = 256
     memory    = 512
@@ -553,6 +538,10 @@ locals {
       {
         name  = "AWS_EFS_FILE_SYSTEM_ID_0"
         value = tostring(aws_efs_file_system.lab-data.id)
+      },
+      {
+        name  = "AWS_DYNAMODB_TABLE_NAME_0"
+        value = "lab-orders"
       }
     ]
     mountPoints = [
@@ -564,7 +553,8 @@ locals {
     ]
     systemControls         = []
     volumesFrom            = []
-    command                = ["sh", "-c", "set -e; D=/mnt/efs/writer; mkdir -p $D; TS=$(date -u +%Y%m%dT%H%M%SZ); echo \"efs-writer run at $TS\" > $D/$TS.txt; echo $TS >> /mnt/efs/runs.log; echo \"files in $D: $(ls $D | wc -l)\"; echo \"root of the file system:\"; ls -la /mnt/efs"]
+    command                = ["set -e; T=$AWS_DYNAMODB_TABLE_NAME_0; test -n \"$T\" || { echo \"AWS_DYNAMODB_TABLE_NAME_0 is not set\"; exit 1; }; D=/mnt/efs/writer; mkdir -p $D; TS=$(date -u +%Y%m%dT%H%M%SZ); echo \"efs-writer run at $TS\" > $D/$TS.txt; echo $TS >> /mnt/efs/runs.log; N=$(ls $D | wc -l); echo \"files in $D: $N\"; CUST=$(echo alice bruno carla diego | cut -d' ' -f$((RANDOM % 4 + 1))); AMT=$(printf '%d.%02d' $((RANDOM % 900 + 10)) $((RANDOM % 100))); aws dynamodb put-item --table-name \"$T\" --item \"{\\\"order_id\\\":{\\\"S\\\":\\\"run-$TS\\\"},\\\"customer\\\":{\\\"S\\\":\\\"$CUST\\\"},\\\"amount\\\":{\\\"N\\\":\\\"$AMT\\\"},\\\"created_at\\\":{\\\"S\\\":\\\"$TS\\\"},\\\"efs_files\\\":{\\\"N\\\":\\\"$N\\\"}}\"; echo \"item run-$TS written to $T: $CUST $AMT\"; echo \"items in $T: $(aws dynamodb scan --table-name \"$T\" --select COUNT --query Count --output text)\"; echo \"root of the file system:\"; ls -la /mnt/efs"]
+    entryPoint             = ["/bin/bash", "-c"]
     privileged             = false
     readonlyRootFilesystem = false
     logConfiguration = {
