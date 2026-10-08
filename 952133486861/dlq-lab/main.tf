@@ -75,6 +75,12 @@ data "aws_iam_policy_document" "lambda_function_dlq-lab-notifier_st_dlq-lab_doc"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["${aws_cloudwatch_log_group.dlq-lab-notifier-logs.arn}:*"]
   }
+  statement {
+    sid       = "AllowFailureDestination"
+    effect    = "Allow"
+    actions   = ["sqs:SendMessage"]
+    resources = [aws_sqs_queue.dlq-lab-notifier-failed.arn]
+  }
 }
 
 resource "aws_iam_policy" "lambda_function_dlq-lab-notifier_st_dlq-lab" {
@@ -95,12 +101,6 @@ data "aws_iam_policy_document" "lambda_function_dlq-lab-producer_st_dlq-lab_doc"
     effect    = "Allow"
     actions   = ["sns:Publish"]
     resources = [aws_sns_topic.dlq-lab-orders.arn]
-  }
-  statement {
-    sid       = "AllowSQSActions"
-    effect    = "Allow"
-    actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage", "sqs:SendMessage"]
-    resources = [aws_sqs_queue.dlq-lab-orders-queue.arn]
   }
 }
 
@@ -294,29 +294,30 @@ resource "aws_lambda_event_source_mapping" "dlq-lab-orders-esm" {
   }
 }
 
-data "archive_file" "archive_struct8-templates_dlq-lab-consumer" {
-  output_path = "${path.module}/struct8-templates_dlq-lab-consumer.zip"
-  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/sqs-sns-dlq-lab/v1/lambda/consumer"
+data "archive_file" "archive_struct8-hub_dlq-lab-consumer" {
+  output_path = "${path.module}/struct8-hub_dlq-lab-consumer.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-hub/prebuilt"
   type        = "zip"
 }
 
 resource "aws_lambda_function" "dlq-lab-consumer" {
   function_name                  = "dlq-lab-consumer"
   architectures                  = ["arm64"]
-  filename                       = data.archive_file.archive_struct8-templates_dlq-lab-consumer.output_path
+  filename                       = data.archive_file.archive_struct8-hub_dlq-lab-consumer.output_path
   handler                        = "index.handler"
   memory_size                    = 256
   publish                        = false
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.dlq-lab-consumer_role.arn
   runtime                        = "nodejs22.x"
-  source_code_hash               = data.archive_file.archive_struct8-templates_dlq-lab-consumer.output_base64sha256
+  source_code_hash               = data.archive_file.archive_struct8-hub_dlq-lab-consumer.output_base64sha256
   timeout                        = 10
   environment {
     variables = {
-    NAME    = "dlq-lab-consumer"
-    REGION  = data.aws_region.current.region
-    ACCOUNT = data.aws_caller_identity.current.account_id
+    HUB_FAULTS = "on"
+    NAME       = "dlq-lab-consumer"
+    REGION     = data.aws_region.current.region
+    ACCOUNT    = data.aws_caller_identity.current.account_id
   }
   }
   tags = {
@@ -327,33 +328,33 @@ resource "aws_lambda_function" "dlq-lab-consumer" {
   depends_on = [aws_iam_role_policy_attachment.lambda_function_dlq-lab-consumer_st_dlq-lab_attach]
 }
 
-data "archive_file" "archive_struct8-templates_dlq-lab-legacy-notifier" {
-  output_path = "${path.module}/struct8-templates_dlq-lab-legacy-notifier.zip"
-  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/sqs-sns-dlq-lab/v1/lambda/consumer"
+data "archive_file" "archive_struct8-hub_dlq-lab-legacy-notifier" {
+  output_path = "${path.module}/struct8-hub_dlq-lab-legacy-notifier.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-hub/prebuilt"
   type        = "zip"
 }
 
 resource "aws_lambda_function" "dlq-lab-legacy-notifier" {
   function_name                  = "dlq-lab-legacy-notifier"
   architectures                  = ["arm64"]
-  filename                       = data.archive_file.archive_struct8-templates_dlq-lab-legacy-notifier.output_path
+  filename                       = data.archive_file.archive_struct8-hub_dlq-lab-legacy-notifier.output_path
   handler                        = "index.handler"
   memory_size                    = 256
   publish                        = false
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.dlq-lab-legacy-notifier_role.arn
   runtime                        = "nodejs22.x"
-  source_code_hash               = data.archive_file.archive_struct8-templates_dlq-lab-legacy-notifier.output_base64sha256
+  source_code_hash               = data.archive_file.archive_struct8-hub_dlq-lab-legacy-notifier.output_base64sha256
   timeout                        = 10
   dead_letter_config {
     target_arn = aws_sqs_queue.dlq-lab-legacy-dlq.arn
   }
   environment {
     variables = {
-    NAME                 = "dlq-lab-legacy-notifier"
-    REGION               = data.aws_region.current.region
-    ACCOUNT              = data.aws_caller_identity.current.account_id
-    AWS_SQS_QUEUE_NAME_0 = "dlq-lab-legacy-dlq"
+    HUB_FAULTS = "on"
+    NAME       = "dlq-lab-legacy-notifier"
+    REGION     = data.aws_region.current.region
+    ACCOUNT    = data.aws_caller_identity.current.account_id
   }
   }
   tags = {
@@ -364,26 +365,27 @@ resource "aws_lambda_function" "dlq-lab-legacy-notifier" {
   depends_on = [aws_iam_role_policy_attachment.lambda_function_dlq-lab-legacy-notifier_st_dlq-lab_attach]
 }
 
-data "archive_file" "archive_struct8-templates_dlq-lab-notifier" {
-  output_path = "${path.module}/struct8-templates_dlq-lab-notifier.zip"
-  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/sqs-sns-dlq-lab/v1/lambda/consumer"
+data "archive_file" "archive_struct8-hub_dlq-lab-notifier" {
+  output_path = "${path.module}/struct8-hub_dlq-lab-notifier.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-hub/prebuilt"
   type        = "zip"
 }
 
 resource "aws_lambda_function" "dlq-lab-notifier" {
   function_name                  = "dlq-lab-notifier"
   architectures                  = ["arm64"]
-  filename                       = data.archive_file.archive_struct8-templates_dlq-lab-notifier.output_path
+  filename                       = data.archive_file.archive_struct8-hub_dlq-lab-notifier.output_path
   handler                        = "index.handler"
   memory_size                    = 256
   publish                        = false
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.dlq-lab-notifier_role.arn
   runtime                        = "nodejs22.x"
-  source_code_hash               = data.archive_file.archive_struct8-templates_dlq-lab-notifier.output_base64sha256
+  source_code_hash               = data.archive_file.archive_struct8-hub_dlq-lab-notifier.output_base64sha256
   timeout                        = 10
   environment {
     variables = {
+    HUB_FAULTS                                     = "on"
     NAME                                           = "dlq-lab-notifier"
     REGION                                         = data.aws_region.current.region
     ACCOUNT                                        = data.aws_caller_identity.current.account_id
@@ -398,23 +400,23 @@ resource "aws_lambda_function" "dlq-lab-notifier" {
   depends_on = [aws_iam_role_policy_attachment.lambda_function_dlq-lab-notifier_st_dlq-lab_attach]
 }
 
-data "archive_file" "archive_struct8-templates_dlq-lab-producer" {
-  output_path = "${path.module}/struct8-templates_dlq-lab-producer.zip"
-  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/sqs-sns-dlq-lab/v1/lambda/producer"
+data "archive_file" "archive_struct8-hub_dlq-lab-producer" {
+  output_path = "${path.module}/struct8-hub_dlq-lab-producer.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-hub/prebuilt"
   type        = "zip"
 }
 
 resource "aws_lambda_function" "dlq-lab-producer" {
   function_name                  = "dlq-lab-producer"
   architectures                  = ["arm64"]
-  filename                       = data.archive_file.archive_struct8-templates_dlq-lab-producer.output_path
+  filename                       = data.archive_file.archive_struct8-hub_dlq-lab-producer.output_path
   handler                        = "index.handler"
   memory_size                    = 256
   publish                        = false
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.dlq-lab-producer_role.arn
   runtime                        = "nodejs22.x"
-  source_code_hash               = data.archive_file.archive_struct8-templates_dlq-lab-producer.output_base64sha256
+  source_code_hash               = data.archive_file.archive_struct8-hub_dlq-lab-producer.output_base64sha256
   timeout                        = 10
   environment {
     variables = {
@@ -422,7 +424,6 @@ resource "aws_lambda_function" "dlq-lab-producer" {
     REGION                         = data.aws_region.current.region
     ACCOUNT                        = data.aws_caller_identity.current.account_id
     AWS_SNS_TOPIC_NAME_0           = "dlq-lab-orders"
-    AWS_SQS_QUEUE_NAME_0           = "dlq-lab-orders-queue"
     AWS_LAMBDA_FUNCTION_URL_NAME_0 = "dlq-lab-producer-url"
   }
   }
@@ -546,6 +547,7 @@ resource "aws_sqs_queue" "dlq-lab-orders-queue" {
   max_message_size                  = 262144
   message_retention_seconds         = 345600
   receive_wait_time_seconds         = 0
+  redrive_policy                    = jsonencode({ deadLetterTargetArn = aws_sqs_queue.dlq-lab-orders-dlq.arn, maxReceiveCount = 3 })
   sqs_managed_sse_enabled           = true
   visibility_timeout_seconds        = 60
   tags = {
