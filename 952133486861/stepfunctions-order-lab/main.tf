@@ -34,10 +34,10 @@ data "aws_iam_policy_document" "lambda_function_order-approval-inbox_st_stepfunc
     resources = ["${aws_cloudwatch_log_group.order-approval-inbox-logs.arn}:*"]
   }
   statement {
-    sid       = "AllowDynamoDBCRUD"
+    sid       = "AllowDynamoDBUpdate"
     effect    = "Allow"
-    actions   = ["dynamodb:BatchGetItem", "dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
-    resources = [aws_dynamodb_table.order-lab-data.arn, "${aws_dynamodb_table.order-lab-data.arn}/*"]
+    actions   = ["dynamodb:UpdateItem"]
+    resources = [aws_dynamodb_table.order-lab-data.arn]
   }
   statement {
     sid       = "AllowEventSourceRead"
@@ -88,33 +88,33 @@ data "aws_iam_policy_document" "lambda_function_order-console_st_stepfunctions-o
     resources = ["${aws_cloudwatch_log_group.order-console-logs.arn}:*"]
   }
   statement {
-    sid       = "AllowDynamoDBCRUD"
+    sid       = "AllowDynamoDBReadWrite"
     effect    = "Allow"
-    actions   = ["dynamodb:BatchGetItem", "dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
-    resources = [aws_dynamodb_table.order-lab-data.arn, "${aws_dynamodb_table.order-lab-data.arn}/*"]
+    actions   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
+    resources = [aws_dynamodb_table.order-lab-data.arn]
   }
   statement {
     sid       = "AllowStartExecution"
     effect    = "Allow"
-    actions   = ["states:StartExecution", "states:StartSyncExecution"]
+    actions   = ["states:StartExecution"]
     resources = [aws_sfn_state_machine.order-workflow.arn]
   }
   statement {
-    sid       = "AllowSQSActions"
+    sid       = "AllowReadAndDeleteNotifications"
     effect    = "Allow"
-    actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage", "sqs:SendMessage"]
+    actions   = ["sqs:DeleteMessage", "sqs:ReceiveMessage"]
     resources = [aws_sqs_queue.order-notifications.arn]
   }
   statement {
     sid       = "AllowCompleteCallbackTasks"
     effect    = "Allow"
-    actions   = ["states:SendTaskFailure", "states:SendTaskHeartbeat", "states:SendTaskSuccess", "xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    actions   = ["states:SendTaskFailure", "states:SendTaskSuccess", "xray:PutTelemetryRecords", "xray:PutTraceSegments"]
     resources = ["*"]
   }
   statement {
     sid       = "AllowFollowExecutions"
     effect    = "Allow"
-    actions   = ["states:DescribeExecution", "states:GetExecutionHistory", "states:StopExecution"]
+    actions   = ["states:DescribeExecution", "states:GetExecutionHistory"]
     resources = ["arn:aws:states:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:execution:${aws_sfn_state_machine.order-workflow.name}:*"]
   }
 }
@@ -154,10 +154,10 @@ data "aws_iam_policy_document" "lambda_function_order-release_st_stepfunctions-o
     resources = ["${aws_cloudwatch_log_group.order-release-logs.arn}:*"]
   }
   statement {
-    sid       = "AllowDynamoDBCRUD"
+    sid       = "AllowDynamoDBUpdate"
     effect    = "Allow"
-    actions   = ["dynamodb:BatchGetItem", "dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
-    resources = [aws_dynamodb_table.order-lab-data.arn, "${aws_dynamodb_table.order-lab-data.arn}/*"]
+    actions   = ["dynamodb:UpdateItem"]
+    resources = [aws_dynamodb_table.order-lab-data.arn]
   }
   statement {
     sid       = "AllowSendTracesToXRay"
@@ -181,10 +181,10 @@ data "aws_iam_policy_document" "lambda_function_order-reserve_st_stepfunctions-o
     resources = ["${aws_cloudwatch_log_group.order-reserve-logs.arn}:*"]
   }
   statement {
-    sid       = "AllowDynamoDBCRUD"
+    sid       = "AllowDynamoDBUpdate"
     effect    = "Allow"
-    actions   = ["dynamodb:BatchGetItem", "dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
-    resources = [aws_dynamodb_table.order-lab-data.arn, "${aws_dynamodb_table.order-lab-data.arn}/*"]
+    actions   = ["dynamodb:UpdateItem"]
+    resources = [aws_dynamodb_table.order-lab-data.arn]
   }
   statement {
     sid       = "AllowSendTracesToXRay"
@@ -229,10 +229,10 @@ data "aws_iam_policy_document" "sfn_state_machine_order-workflow_st_stepfunction
     resources = ["${aws_cloudwatch_log_group.order-workflow-logs.arn}:*"]
   }
   statement {
-    sid       = "AllowDynamoDBCRUD"
+    sid       = "AllowDynamoDBWrite"
     effect    = "Allow"
-    actions   = ["dynamodb:BatchGetItem", "dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
-    resources = [aws_dynamodb_table.order-lab-data.arn, "${aws_dynamodb_table.order-lab-data.arn}/*"]
+    actions   = ["dynamodb:PutItem", "dynamodb:UpdateItem"]
+    resources = [aws_dynamodb_table.order-lab-data.arn]
   }
   statement {
     sid       = "AllowLambdaInvoke"
@@ -271,9 +271,9 @@ data "aws_iam_policy_document" "sfn_state_machine_order-workflow_st_stepfunction
     resources = [aws_sns_topic.order-events.arn]
   }
   statement {
-    sid       = "AllowSQSActions"
+    sid       = "AllowSendApprovalRequest"
     effect    = "Allow"
-    actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage", "sqs:SendMessage"]
+    actions   = ["sqs:SendMessage"]
     resources = [aws_sqs_queue.order-approvals.arn]
   }
   statement {
@@ -577,6 +577,7 @@ resource "aws_lambda_function" "order-approval-inbox" {
   architectures                  = ["arm64"]
   filename                       = data.archive_file.archive_struct8-templates_order-approval-inbox.output_path
   handler                        = "index.handler"
+  layers                         = ["arn:aws:lambda:us-west-2:615299751070:layer:AWSOpenTelemetryDistroJs:16"]
   memory_size                    = 128
   publish                        = false
   reserved_concurrent_executions = -1
@@ -586,11 +587,14 @@ resource "aws_lambda_function" "order-approval-inbox" {
   timeout                        = 10
   environment {
     variables = {
-    NAME                      = "order-approval-inbox"
-    REGION                    = data.aws_region.current.region
-    ACCOUNT                   = data.aws_caller_identity.current.account_id
-    AWS_DYNAMODB_TABLE_NAME_0 = "order-lab-data"
-    AWS_XRAY_GROUP_NAME_0     = "order-lab-traces"
+    AWS_LAMBDA_EXEC_WRAPPER              = "/opt/otel-instrument"
+    OTEL_AWS_LAMBDA_FAST_START           = true
+    OTEL_AWS_APPLICATION_SIGNALS_ENABLED = false
+    NAME                                 = "order-approval-inbox"
+    REGION                               = data.aws_region.current.region
+    ACCOUNT                              = data.aws_caller_identity.current.account_id
+    AWS_DYNAMODB_TABLE_NAME_0            = "order-lab-data"
+    AWS_XRAY_GROUP_NAME_0                = "order-lab-traces"
   }
   }
   tags = {
@@ -652,6 +656,7 @@ resource "aws_lambda_function" "order-console" {
   architectures                  = ["arm64"]
   filename                       = data.archive_file.archive_struct8-templates_order-console.output_path
   handler                        = "index.handler"
+  layers                         = ["arn:aws:lambda:us-west-2:615299751070:layer:AWSOpenTelemetryDistroJs:16"]
   memory_size                    = 256
   publish                        = false
   reserved_concurrent_executions = -1
@@ -661,14 +666,17 @@ resource "aws_lambda_function" "order-console" {
   timeout                        = 15
   environment {
     variables = {
-    NAME                           = "order-console"
-    REGION                         = data.aws_region.current.region
-    ACCOUNT                        = data.aws_caller_identity.current.account_id
-    AWS_LAMBDA_FUNCTION_URL_NAME_0 = "order-console-url"
-    AWS_DYNAMODB_TABLE_NAME_0      = "order-lab-data"
-    AWS_SFN_STATE_MACHINE_ARN_0    = aws_sfn_state_machine.order-workflow.arn
-    AWS_SQS_QUEUE_NAME_0           = "order-notifications"
-    AWS_XRAY_GROUP_NAME_0          = "order-lab-traces"
+    AWS_LAMBDA_EXEC_WRAPPER              = "/opt/otel-instrument"
+    OTEL_AWS_LAMBDA_FAST_START           = true
+    OTEL_AWS_APPLICATION_SIGNALS_ENABLED = false
+    NAME                                 = "order-console"
+    REGION                               = data.aws_region.current.region
+    ACCOUNT                              = data.aws_caller_identity.current.account_id
+    AWS_LAMBDA_FUNCTION_URL_NAME_0       = "order-console-url"
+    AWS_DYNAMODB_TABLE_NAME_0            = "order-lab-data"
+    AWS_SFN_STATE_MACHINE_ARN_0          = aws_sfn_state_machine.order-workflow.arn
+    AWS_SQS_QUEUE_NAME_0                 = "order-notifications"
+    AWS_XRAY_GROUP_NAME_0                = "order-lab-traces"
   }
   }
   tags = {
@@ -730,6 +738,7 @@ resource "aws_lambda_function" "order-release" {
   architectures                  = ["arm64"]
   filename                       = data.archive_file.archive_struct8-templates_order-release.output_path
   handler                        = "index.handler"
+  layers                         = ["arn:aws:lambda:us-west-2:615299751070:layer:AWSOpenTelemetryDistroJs:16"]
   memory_size                    = 128
   publish                        = false
   reserved_concurrent_executions = -1
@@ -739,11 +748,14 @@ resource "aws_lambda_function" "order-release" {
   timeout                        = 10
   environment {
     variables = {
-    NAME                      = "order-release"
-    REGION                    = data.aws_region.current.region
-    ACCOUNT                   = data.aws_caller_identity.current.account_id
-    AWS_DYNAMODB_TABLE_NAME_0 = "order-lab-data"
-    AWS_XRAY_GROUP_NAME_0     = "order-lab-traces"
+    AWS_LAMBDA_EXEC_WRAPPER              = "/opt/otel-instrument"
+    OTEL_AWS_LAMBDA_FAST_START           = true
+    OTEL_AWS_APPLICATION_SIGNALS_ENABLED = false
+    NAME                                 = "order-release"
+    REGION                               = data.aws_region.current.region
+    ACCOUNT                              = data.aws_caller_identity.current.account_id
+    AWS_DYNAMODB_TABLE_NAME_0            = "order-lab-data"
+    AWS_XRAY_GROUP_NAME_0                = "order-lab-traces"
   }
   }
   tags = {
@@ -768,6 +780,7 @@ resource "aws_lambda_function" "order-reserve" {
   architectures                  = ["arm64"]
   filename                       = data.archive_file.archive_struct8-templates_order-reserve.output_path
   handler                        = "index.handler"
+  layers                         = ["arn:aws:lambda:us-west-2:615299751070:layer:AWSOpenTelemetryDistroJs:16"]
   memory_size                    = 128
   publish                        = false
   reserved_concurrent_executions = -1
@@ -777,11 +790,14 @@ resource "aws_lambda_function" "order-reserve" {
   timeout                        = 10
   environment {
     variables = {
-    NAME                      = "order-reserve"
-    REGION                    = data.aws_region.current.region
-    ACCOUNT                   = data.aws_caller_identity.current.account_id
-    AWS_DYNAMODB_TABLE_NAME_0 = "order-lab-data"
-    AWS_XRAY_GROUP_NAME_0     = "order-lab-traces"
+    AWS_LAMBDA_EXEC_WRAPPER              = "/opt/otel-instrument"
+    OTEL_AWS_LAMBDA_FAST_START           = true
+    OTEL_AWS_APPLICATION_SIGNALS_ENABLED = false
+    NAME                                 = "order-reserve"
+    REGION                               = data.aws_region.current.region
+    ACCOUNT                              = data.aws_caller_identity.current.account_id
+    AWS_DYNAMODB_TABLE_NAME_0            = "order-lab-data"
+    AWS_XRAY_GROUP_NAME_0                = "order-lab-traces"
   }
   }
   tags = {
