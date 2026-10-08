@@ -3,9 +3,6 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
-    tls = {
-      source = "hashicorp/tls"
-    }
   }
 
   backend "s3" {
@@ -174,7 +171,7 @@ data "aws_ami" "AMI_Data_Source_windows-lab" {
 }
 
 resource "aws_instance" "windows-lab" {
-  key_name                    = aws_key_pair.windows-lab-key.key_name
+  key_name                    = aws_cloudformation_stack.windows-lab-key.outputs["KeyName"]
   subnet_id                   = aws_subnet.pubA2.id
   ami                         = data.aws_ami.AMI_Data_Source_windows-lab.id
   associate_public_ip_address = false
@@ -202,41 +199,19 @@ resource "aws_instance" "windows-lab" {
   }
 }
 
-resource "aws_key_pair" "windows-lab-key" {
-  key_name   = "windows-lab-key"
-  public_key = tls_private_key.windows-lab-key.public_key_openssh
-  tags = {
-    Name           = "windows-lab-key"
-    State          = "ec2-windows-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-
-
-
-### CATEGORY: CONFIG ###
-
-resource "aws_ssm_parameter" "windows-lab-key_private_key" {
-  name        = "/ec2/keypair/${aws_key_pair.windows-lab-key.key_pair_id}"
-  description = "Private key of the EC2 key pair ${aws_key_pair.windows-lab-key.key_name}, in PEM"
-  type        = "SecureString"
-  value       = tls_private_key.windows-lab-key.private_key_pem
-  tags = {
-    Name           = "windows-lab-key_private_key"
-    State          = "ec2-windows-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 
 
 
 ### CATEGORY: MISC ###
 
-resource "tls_private_key" "windows-lab-key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
+resource "aws_cloudformation_stack" "windows-lab-key" {
+  name          = "struct8-keypair-windows-lab-key"
+  template_body = jsonencode({ Resources = { KeyPair = { Type = "AWS::EC2::KeyPair", Properties = { KeyName = "windows-lab-key", KeyType = "rsa", KeyFormat = "pem" } } }, Outputs = { KeyName = { Value = { Ref = "KeyPair" } }, KeyPairId = { Value = { "Fn::GetAtt" = ["KeyPair", "KeyPairId"] } } } })
+  tags = {
+    Name           = "windows-lab-key"
+    State          = "ec2-windows-lab"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 
