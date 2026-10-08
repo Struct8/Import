@@ -169,7 +169,7 @@ data "aws_ami" "AMI_Data_Source_windows-lab" {
   owners      = ["amazon"]
   filter {
     name   = "name"
-    values = ["Windows_Server-2022-English-Full-SQL_2019_Standard-*"]
+    values = ["Windows_Server-2025-English-Full-Base-*"]
   }
 }
 
