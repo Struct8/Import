@@ -45,6 +45,12 @@ data "aws_iam_policy_document" "lambda_function_order-approval-inbox_st_stepfunc
     actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage"]
     resources = [aws_sqs_queue.order-approvals.arn]
   }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "lambda_function_order-approval-inbox_st_stepfunctions-order-lab" {
@@ -59,6 +65,12 @@ data "aws_iam_policy_document" "lambda_function_order-charge_st_stepfunctions-or
     effect    = "Allow"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["${aws_cloudwatch_log_group.order-charge-logs.arn}:*"]
+  }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
   }
 }
 
@@ -96,7 +108,7 @@ data "aws_iam_policy_document" "lambda_function_order-console_st_stepfunctions-o
   statement {
     sid       = "AllowCompleteCallbackTasks"
     effect    = "Allow"
-    actions   = ["states:SendTaskFailure", "states:SendTaskHeartbeat", "states:SendTaskSuccess"]
+    actions   = ["states:SendTaskFailure", "states:SendTaskHeartbeat", "states:SendTaskSuccess", "xray:PutTelemetryRecords", "xray:PutTraceSegments"]
     resources = ["*"]
   }
   statement {
@@ -120,6 +132,12 @@ data "aws_iam_policy_document" "lambda_function_order-pack-item_st_stepfunctions
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["${aws_cloudwatch_log_group.order-pack-item-logs.arn}:*"]
   }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "lambda_function_order-pack-item_st_stepfunctions-order-lab" {
@@ -140,6 +158,12 @@ data "aws_iam_policy_document" "lambda_function_order-release_st_stepfunctions-o
     effect    = "Allow"
     actions   = ["dynamodb:BatchGetItem", "dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
     resources = [aws_dynamodb_table.order-lab-data.arn, "${aws_dynamodb_table.order-lab-data.arn}/*"]
+  }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
   }
 }
 
@@ -162,6 +186,12 @@ data "aws_iam_policy_document" "lambda_function_order-reserve_st_stepfunctions-o
     actions   = ["dynamodb:BatchGetItem", "dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
     resources = [aws_dynamodb_table.order-lab-data.arn, "${aws_dynamodb_table.order-lab-data.arn}/*"]
   }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "lambda_function_order-reserve_st_stepfunctions-order-lab" {
@@ -176,6 +206,12 @@ data "aws_iam_policy_document" "lambda_function_order-validate_st_stepfunctions-
     effect    = "Allow"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["${aws_cloudwatch_log_group.order-validate-logs.arn}:*"]
+  }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
   }
 }
 
@@ -554,12 +590,16 @@ resource "aws_lambda_function" "order-approval-inbox" {
     REGION                    = data.aws_region.current.region
     ACCOUNT                   = data.aws_caller_identity.current.account_id
     AWS_DYNAMODB_TABLE_NAME_0 = "order-lab-data"
+    AWS_XRAY_GROUP_NAME_0     = "order-lab-traces"
   }
   }
   tags = {
     Name           = "order-approval-inbox"
     State          = "stepfunctions-order-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_order-approval-inbox_st_stepfunctions-order-lab_attach]
 }
@@ -584,15 +624,19 @@ resource "aws_lambda_function" "order-charge" {
   timeout                        = 10
   environment {
     variables = {
-    NAME    = "order-charge"
-    REGION  = data.aws_region.current.region
-    ACCOUNT = data.aws_caller_identity.current.account_id
+    NAME                  = "order-charge"
+    REGION                = data.aws_region.current.region
+    ACCOUNT               = data.aws_caller_identity.current.account_id
+    AWS_XRAY_GROUP_NAME_0 = "order-lab-traces"
   }
   }
   tags = {
     Name           = "order-charge"
     State          = "stepfunctions-order-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_order-charge_st_stepfunctions-order-lab_attach]
 }
@@ -624,12 +668,16 @@ resource "aws_lambda_function" "order-console" {
     AWS_DYNAMODB_TABLE_NAME_0      = "order-lab-data"
     AWS_SFN_STATE_MACHINE_ARN_0    = aws_sfn_state_machine.order-workflow.arn
     AWS_SQS_QUEUE_NAME_0           = "order-notifications"
+    AWS_XRAY_GROUP_NAME_0          = "order-lab-traces"
   }
   }
   tags = {
     Name           = "order-console"
     State          = "stepfunctions-order-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_order-console_st_stepfunctions-order-lab_attach]
 }
@@ -654,15 +702,19 @@ resource "aws_lambda_function" "order-pack-item" {
   timeout                        = 10
   environment {
     variables = {
-    NAME    = "order-pack-item"
-    REGION  = data.aws_region.current.region
-    ACCOUNT = data.aws_caller_identity.current.account_id
+    NAME                  = "order-pack-item"
+    REGION                = data.aws_region.current.region
+    ACCOUNT               = data.aws_caller_identity.current.account_id
+    AWS_XRAY_GROUP_NAME_0 = "order-lab-traces"
   }
   }
   tags = {
     Name           = "order-pack-item"
     State          = "stepfunctions-order-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_order-pack-item_st_stepfunctions-order-lab_attach]
 }
@@ -691,12 +743,16 @@ resource "aws_lambda_function" "order-release" {
     REGION                    = data.aws_region.current.region
     ACCOUNT                   = data.aws_caller_identity.current.account_id
     AWS_DYNAMODB_TABLE_NAME_0 = "order-lab-data"
+    AWS_XRAY_GROUP_NAME_0     = "order-lab-traces"
   }
   }
   tags = {
     Name           = "order-release"
     State          = "stepfunctions-order-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_order-release_st_stepfunctions-order-lab_attach]
 }
@@ -725,12 +781,16 @@ resource "aws_lambda_function" "order-reserve" {
     REGION                    = data.aws_region.current.region
     ACCOUNT                   = data.aws_caller_identity.current.account_id
     AWS_DYNAMODB_TABLE_NAME_0 = "order-lab-data"
+    AWS_XRAY_GROUP_NAME_0     = "order-lab-traces"
   }
   }
   tags = {
     Name           = "order-reserve"
     State          = "stepfunctions-order-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_order-reserve_st_stepfunctions-order-lab_attach]
 }
@@ -755,15 +815,19 @@ resource "aws_lambda_function" "order-validate" {
   timeout                        = 10
   environment {
     variables = {
-    NAME    = "order-validate"
-    REGION  = data.aws_region.current.region
-    ACCOUNT = data.aws_caller_identity.current.account_id
+    NAME                  = "order-validate"
+    REGION                = data.aws_region.current.region
+    ACCOUNT               = data.aws_caller_identity.current.account_id
+    AWS_XRAY_GROUP_NAME_0 = "order-lab-traces"
   }
   }
   tags = {
     Name           = "order-validate"
     State          = "stepfunctions-order-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_order-validate_st_stepfunctions-order-lab_attach]
 }
@@ -852,13 +916,14 @@ resource "aws_sqs_queue_policy" "aws_sqs_queue_policy_order-notifications_st_ste
 }
 
 resource "aws_sns_topic" "order-events" {
-  name = "order-events"
+  name           = "order-events"
+  tracing_config = "Active"
   tags = {
     Name           = "order-events"
     State          = "stepfunctions-order-lab"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_sqs_queue_policy.aws_sqs_queue_policy_order-notifications_st_stepfunctions-order-lab]
+  depends_on = [aws_sqs_queue_policy.aws_sqs_queue_policy_order-notifications_st_stepfunctions-order-lab, aws_xray_resource_policy.aws_xray_resource_policy_st_stepfunctions-order-lab_eefa8817da]
 }
 
 data "aws_iam_policy_document" "aws_sns_topic_policy_order-events_st_stepfunctions-order-lab_doc" {
@@ -953,6 +1018,9 @@ resource "aws_sfn_state_machine" "order-workflow" {
     }
     aws_sqs_queue = {
       "order-approvals" = aws_sqs_queue.order-approvals
+    }
+    aws_xray_group = {
+      "order-lab-traces" = aws_xray_group.order-lab-traces
     }
   })
   role_arn = aws_iam_role.order-workflow_role.arn
@@ -1094,6 +1162,44 @@ resource "aws_cloudwatch_metric_alarm" "order-executions-failed" {
     Struct8Creator = "Contato Struct"
   }
   depends_on = [aws_sns_topic_policy.aws_sns_topic_policy_order-events_st_stepfunctions-order-lab]
+}
+
+resource "aws_xray_group" "order-lab-traces" {
+  group_name        = "order-lab-traces"
+  filter_expression = "service(\"order-approval-inbox\") OR service(\"order-charge\") OR service(\"order-console\") OR service(\"order-events\") OR service(\"order-pack-item\") OR service(\"order-release\") OR service(\"order-reserve\") OR service(\"order-validate\") OR service(\"order-workflow\")"
+  tags = {
+    Name           = "order-lab-traces"
+    State          = "stepfunctions-order-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+data "aws_iam_policy_document" "aws_xray_resource_policy_st_stepfunctions-order-lab_eefa8817da_doc" {
+  statement {
+    sid    = "AllowSNSToSendTracesToXRay"
+    effect = "Allow"
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+    actions   = ["xray:GetSamplingRules", "xray:GetSamplingTargets", "xray:PutTraceSegments"]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      values   = [data.aws_caller_identity.current.account_id]
+      variable = "aws:SourceAccount"
+    }
+    condition {
+      test     = "StringLike"
+      values   = ["arn:aws:sns:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:*"]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+resource "aws_xray_resource_policy" "aws_xray_resource_policy_st_stepfunctions-order-lab_eefa8817da" {
+  policy_name     = "aws_xray_resource_policy_st_stepfunctions-order-lab_eefa8817da"
+  policy_document = data.aws_iam_policy_document.aws_xray_resource_policy_st_stepfunctions-order-lab_eefa8817da_doc.json
 }
 
 
