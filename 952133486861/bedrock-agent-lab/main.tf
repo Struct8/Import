@@ -6,6 +6,9 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+    time = {
+      source = "hashicorp/time"
+    }
   }
 
   backend "s3" {
@@ -122,6 +125,12 @@ resource "aws_iam_policy" "bedrockagentcore_harness_agent_lab_orders_st_bedrock-
 
 data "aws_iam_policy_document" "lambda_function_agent-lab-chat_st_bedrock-agent-lab_doc" {
   statement {
+    sid       = "AllowApplyGuardrail"
+    effect    = "Allow"
+    actions   = ["bedrock:ApplyGuardrail"]
+    resources = [aws_bedrock_guardrail.agent-lab-guardrail.guardrail_arn]
+  }
+  statement {
     sid       = "AllowInvokeHarness"
     effect    = "Allow"
     actions   = ["bedrock-agentcore:InvokeAgentRuntime", "bedrock-agentcore:InvokeHarness"]
@@ -179,12 +188,6 @@ resource "aws_iam_role" "agent-lab-chat_role" {
   force_detach_policies = false
   max_session_duration  = 3600
   path                  = "/"
-  inline_policy {
-    name = "agent-lab-chat-permissions"
-    policy = <<EOF
-{"Version":"2012-10-17","Statement":[{"Sid":"ApplyTheGuardrail","Effect":"Allow","Action":"bedrock:ApplyGuardrail","Resource":"${aws_bedrock_guardrail.agent-lab-guardrail.guardrail_arn}"}]}
-  EOF
-  }
 }
 
 resource "aws_iam_role" "agent-lab-orders-tool_role" {
@@ -390,14 +393,13 @@ resource "aws_lambda_function" "agent-lab-chat" {
   timeout                        = 120
   environment {
     variables = {
-    HARNESS_ARN                        = aws_bedrockagentcore_harness.agent_lab_orders.arn
-    GUARDRAIL_ID                       = aws_bedrock_guardrail.agent-lab-guardrail.guardrail_id
-    GUARDRAIL_VERSION                  = aws_bedrock_guardrail.agent-lab-guardrail.version
-    NAME                               = "agent-lab-chat"
-    REGION                             = data.aws_region.current.region
-    ACCOUNT                            = data.aws_caller_identity.current.account_id
-    AWS_LAMBDA_FUNCTION_URL_NAME_0     = "agent-lab-chat-url"
-    AWS_BEDROCKAGENTCORE_HARNESS_ARN_0 = aws_bedrockagentcore_harness.agent_lab_orders.arn
+    NAME                                      = "agent-lab-chat"
+    REGION                                    = data.aws_region.current.region
+    ACCOUNT                                   = data.aws_caller_identity.current.account_id
+    AWS_LAMBDA_FUNCTION_URL_NAME_0            = "agent-lab-chat-url"
+    AWS_BEDROCKAGENTCORE_HARNESS_ARN_0        = aws_bedrockagentcore_harness.agent_lab_orders.arn
+    AWS_BEDROCK_GUARDRAIL_GUARDRAIL_ID_0      = aws_bedrock_guardrail.agent-lab-guardrail.guardrail_id
+    AWS_BEDROCK_GUARDRAIL_GUARDRAIL_VERSION_0 = aws_bedrock_guardrail.agent-lab-guardrail.version
   }
   }
   tags = {
@@ -537,7 +539,7 @@ resource "aws_bedrockagentcore_gateway_target" "orders" {
       }
     }
   }
-  depends_on = [terraform_data.agent-lab-gateway_role_propagation]
+  depends_on = [time_sleep.agent-lab-gateway_role_propagation]
 }
 
 resource "aws_bedrockagentcore_harness" "agent_lab_orders" {
@@ -640,10 +642,10 @@ resource "aws_cloudwatch_log_group" "agent-lab-orders-tool-logs" {
 
 ### CATEGORY: MISC ###
 
-resource "terraform_data" "agent-lab-gateway_role_propagation" {
-  triggers_replace = [aws_iam_role.role_agent-lab-gateway.unique_id]
-  provisioner "local-exec" {
-    command = "sleep 30"
+resource "time_sleep" "agent-lab-gateway_role_propagation" {
+  create_duration = "30s"
+  triggers = {
+    role = aws_iam_role.role_agent-lab-gateway.unique_id
   }
 }
 
