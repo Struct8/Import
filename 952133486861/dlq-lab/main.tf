@@ -660,7 +660,7 @@ resource "aws_sns_topic_subscription" "Subscription4" {
 }
 
 resource "aws_sns_topic_subscription" "dlq-lab-alerts-email" {
-  endpoint  = "contato@struct8.com"
+  endpoint  = "contact@struct8.com"
   protocol  = "email"
   topic_arn = aws_sns_topic.dlq-lab-alerts.arn
 }
