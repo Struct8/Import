@@ -142,6 +142,12 @@ data "aws_iam_policy_document" "lambda_function_agent-lab-chat_st_bedrock-agent-
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["${aws_cloudwatch_log_group.agent-lab-chat-logs.arn}:*"]
   }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "lambda_function_agent-lab-chat_st_bedrock-agent-lab" {
@@ -162,6 +168,12 @@ data "aws_iam_policy_document" "lambda_function_agent-lab-orders-tool_st_bedrock
     effect    = "Allow"
     actions   = ["dynamodb:GetItem"]
     resources = [aws_dynamodb_table.agent-lab-orders.arn]
+  }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
   }
 }
 
@@ -400,12 +412,16 @@ resource "aws_lambda_function" "agent-lab-chat" {
     AWS_BEDROCKAGENTCORE_HARNESS_ARN_0        = aws_bedrockagentcore_harness.agent_lab_orders.arn
     AWS_BEDROCK_GUARDRAIL_GUARDRAIL_ID_0      = aws_bedrock_guardrail.agent-lab-guardrail.guardrail_id
     AWS_BEDROCK_GUARDRAIL_GUARDRAIL_VERSION_0 = aws_bedrock_guardrail.agent-lab-guardrail.version
+    AWS_XRAY_GROUP_NAME_0                     = "agent-lab-traces"
   }
   }
   tags = {
     Name           = "agent-lab-chat"
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_agent-lab-chat_st_bedrock-agent-lab_attach]
 }
@@ -434,12 +450,16 @@ resource "aws_lambda_function" "agent-lab-orders-tool" {
     REGION                    = data.aws_region.current.region
     ACCOUNT                   = data.aws_caller_identity.current.account_id
     AWS_DYNAMODB_TABLE_NAME_0 = "agent-lab-orders"
+    AWS_XRAY_GROUP_NAME_0     = "agent-lab-traces"
   }
   }
   tags = {
     Name           = "agent-lab-orders-tool"
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_agent-lab-orders-tool_st_bedrock-agent-lab_attach]
 }
@@ -632,6 +652,16 @@ resource "aws_cloudwatch_log_group" "agent-lab-orders-tool-logs" {
   skip_destroy      = false
   tags = {
     Name           = "agent-lab-orders-tool-logs"
+    State          = "bedrock-agent-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_xray_group" "agent-lab-traces" {
+  group_name        = "agent-lab-traces"
+  filter_expression = "service(\"agent-lab-chat\") OR service(\"agent-lab-orders-tool\")"
+  tags = {
+    Name           = "agent-lab-traces"
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
   }
