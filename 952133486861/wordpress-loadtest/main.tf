@@ -193,6 +193,26 @@ resource "aws_security_group_rule" "rule_instance_k6Generator_group_egress_all_p
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "rule_instance_k6Generator_group_ingress_tcp_5665" {
+  security_group_id = aws_security_group.instance_k6Generator_group.id
+  cidr_blocks       = ["45.166.205.227/32"]
+  description       = "k6 web dashboard"
+  from_port         = 5665
+  protocol          = "tcp"
+  to_port           = 5665
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_instance_k6Generator_group_ingress_tcp_80" {
+  security_group_id = aws_security_group.instance_k6Generator_group.id
+  cidr_blocks       = ["45.166.205.227/32"]
+  description       = "k6 panel"
+  from_port         = 80
+  protocol          = "tcp"
+  to_port           = 80
+  type              = "ingress"
+}
+
 
 
 
