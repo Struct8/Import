@@ -400,23 +400,23 @@ resource "aws_lambda_function" "dlq-lab-notifier" {
   depends_on = [aws_iam_role_policy_attachment.lambda_function_dlq-lab-notifier_st_dlq-lab_attach]
 }
 
-data "archive_file" "archive_struct8-hub_dlq-lab-producer" {
-  output_path = "${path.module}/struct8-hub_dlq-lab-producer.zip"
-  source_dir  = "${path.module}/.external_modules/struct8-hub/prebuilt"
+data "archive_file" "archive_struct8-templates_dlq-lab-producer" {
+  output_path = "${path.module}/struct8-templates_dlq-lab-producer.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/sqs-sns-dlq-lab/v1/lambda/dlq-lab-producer"
   type        = "zip"
 }
 
 resource "aws_lambda_function" "dlq-lab-producer" {
   function_name                  = "dlq-lab-producer"
   architectures                  = ["arm64"]
-  filename                       = data.archive_file.archive_struct8-hub_dlq-lab-producer.output_path
+  filename                       = data.archive_file.archive_struct8-templates_dlq-lab-producer.output_path
   handler                        = "index.handler"
   memory_size                    = 256
   publish                        = false
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.dlq-lab-producer_role.arn
   runtime                        = "nodejs22.x"
-  source_code_hash               = data.archive_file.archive_struct8-hub_dlq-lab-producer.output_base64sha256
+  source_code_hash               = data.archive_file.archive_struct8-templates_dlq-lab-producer.output_base64sha256
   timeout                        = 10
   environment {
     variables = {
