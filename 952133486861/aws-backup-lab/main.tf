@@ -72,6 +72,17 @@ data "aws_iam_policy_document" "scheduler_schedule_efs-writer-every-5-min_st_aws
     actions   = ["iam:PassRole"]
     resources = [aws_ecs_task_definition.efs-writer.execution_role_arn, aws_ecs_task_definition.efs-writer.task_role_arn]
   }
+  statement {
+    sid       = "AllowSchedulerToTagTask"
+    effect    = "Allow"
+    actions   = ["ecs:TagResource"]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["RunTask"]
+      variable = "ecs:CreateAction"
+    }
+  }
 }
 
 resource "aws_iam_policy" "scheduler_schedule_efs-writer-every-5-min_st_aws-backup-lab" {
@@ -623,6 +634,7 @@ resource "aws_scheduler_schedule" "efs-writer-every-5-min" {
     role_arn = aws_iam_role.efs-writer-every-5-min_role.arn
     ecs_parameters {
       launch_type         = "FARGATE"
+      propagate_tags      = "TASK_DEFINITION"
       task_definition_arn = aws_ecs_task_definition.efs-writer.arn
       network_configuration {
         assign_public_ip = true
