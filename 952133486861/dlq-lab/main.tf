@@ -659,6 +659,12 @@ resource "aws_sns_topic_subscription" "Subscription4" {
   topic_arn = aws_sns_topic.dlq-lab-orders.arn
 }
 
+resource "aws_sns_topic_subscription" "dlq-lab-alerts-email" {
+  endpoint  = "contato@struct8.com"
+  protocol  = "email"
+  topic_arn = aws_sns_topic.dlq-lab-alerts.arn
+}
+
 resource "aws_scheduler_schedule" "dlq-lab-traffic-ok" {
   name                = "dlq-lab-traffic-ok"
   schedule_expression = "rate(1 minute)"
