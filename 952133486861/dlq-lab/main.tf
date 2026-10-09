@@ -141,12 +141,6 @@ data "aws_iam_policy_document" "scheduler_schedule_dlq-lab-traffic-ok_st_dlq-lab
     actions   = ["sns:Publish"]
     resources = [aws_sns_topic.dlq-lab-orders.arn]
   }
-  statement {
-    sid       = "AllowSchedulerToSendMessage"
-    effect    = "Allow"
-    actions   = ["sqs:SendMessage"]
-    resources = [aws_sqs_queue.dlq-lab-scheduler-dlq.arn]
-  }
 }
 
 resource "aws_iam_policy" "scheduler_schedule_dlq-lab-traffic-ok_st_dlq-lab" {
@@ -600,23 +594,6 @@ resource "aws_sqs_queue" "dlq-lab-orders-queue" {
   }
 }
 
-resource "aws_sqs_queue" "dlq-lab-scheduler-dlq" {
-  name                              = "dlq-lab-scheduler-dlq"
-  delay_seconds                     = 0
-  fifo_queue                        = false
-  kms_data_key_reuse_period_seconds = 300
-  max_message_size                  = 262144
-  message_retention_seconds         = 345600
-  receive_wait_time_seconds         = 0
-  sqs_managed_sse_enabled           = true
-  visibility_timeout_seconds        = 30
-  tags = {
-    Name           = "dlq-lab-scheduler-dlq"
-    State          = "dlq-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 data "aws_iam_policy_document" "aws_sqs_queue_policy_dlq-lab-orders-queue_st_dlq-lab_doc" {
   statement {
     sid    = "AllowSQSActions"
@@ -692,9 +669,6 @@ resource "aws_scheduler_schedule" "dlq-lab-traffic-ok" {
     arn      = aws_sns_topic.dlq-lab-orders.arn
     input    = "{\"behavior\":\"ok\"}"
     role_arn = aws_iam_role.dlq-lab-traffic-ok_role.arn
-    dead_letter_config {
-      arn = aws_sqs_queue.dlq-lab-scheduler-dlq.arn
-    }
     retry_policy {
       maximum_event_age_in_seconds = 60
       maximum_retry_attempts       = 0
