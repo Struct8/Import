@@ -671,7 +671,6 @@ resource "aws_cloudwatch_log_delivery_destination" "agent-lab-traces_xray" {
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_xray_trace_segment_destination.agent-lab-transaction-search]
 }
 
 resource "aws_cloudwatch_log_delivery_source" "agent-lab-gateway_traces" {
@@ -683,7 +682,6 @@ resource "aws_cloudwatch_log_delivery_source" "agent-lab-gateway_traces" {
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_xray_trace_segment_destination.agent-lab-transaction-search]
 }
 
 resource "aws_cloudwatch_log_delivery_source" "agent_lab_memory_traces" {
@@ -695,7 +693,6 @@ resource "aws_cloudwatch_log_delivery_source" "agent_lab_memory_traces" {
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_xray_trace_segment_destination.agent-lab-transaction-search]
 }
 
 resource "aws_cloudwatch_log_delivery_source" "agent_lab_orders_traces" {
@@ -707,7 +704,6 @@ resource "aws_cloudwatch_log_delivery_source" "agent_lab_orders_traces" {
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_xray_trace_segment_destination.agent-lab-transaction-search]
 }
 
 resource "aws_cloudwatch_log_group" "agent-lab-chat-logs" {
@@ -734,27 +730,6 @@ resource "aws_cloudwatch_log_group" "agent-lab-orders-tool-logs" {
   }
 }
 
-resource "aws_cloudwatch_log_resource_policy" "agent-lab-transaction-search_spans" {
-  policy_name = "agent-lab-transaction-search-xray-spans"
-  policy_document = jsonencode({
-  Version = "2012-10-17"
-  Statement = [{
-    Sid       = "TransactionSearchXRayAccess"
-    Effect    = "Allow"
-    Principal = { Service = "xray.amazonaws.com" }
-    Action    = "logs:PutLogEvents"
-    Resource = [
-      "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:aws/spans:*",
-      "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/application-signals/data:*"
-    ]
-    Condition = {
-      ArnLike      = { "aws:SourceArn" = "arn:aws:xray:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:*" }
-      StringEquals = { "aws:SourceAccount" = "${data.aws_caller_identity.current.account_id}" }
-    }
-  }]
-})
-}
-
 resource "aws_xray_group" "agent-lab-traces" {
   group_name        = "agent-lab-traces"
   filter_expression = "service(\"agent-lab-chat\") OR service(\"agent-lab-orders-tool\")"
@@ -763,11 +738,6 @@ resource "aws_xray_group" "agent-lab-traces" {
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
   }
-}
-
-resource "aws_xray_trace_segment_destination" "agent-lab-transaction-search" {
-  destination = "CloudWatchLogs"
-  depends_on  = [aws_cloudwatch_log_resource_policy.agent-lab-transaction-search_spans]
 }
 
 
