@@ -526,6 +526,10 @@ resource "aws_dynamodb_table" "lab-orders" {
 
 resource "aws_ecs_cluster" "backup-lab-cluster" {
   name = "backup-lab-cluster"
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
   tags = {
     Name           = "backup-lab-cluster"
     State          = "aws-backup-lab"
