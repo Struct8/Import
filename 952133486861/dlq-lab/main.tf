@@ -39,6 +39,12 @@ data "aws_iam_policy_document" "lambda_function_dlq-lab-consumer_st_dlq-lab_doc"
     actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage"]
     resources = [aws_sqs_queue.dlq-lab-orders-queue.arn]
   }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "lambda_function_dlq-lab-consumer_st_dlq-lab" {
@@ -59,6 +65,12 @@ data "aws_iam_policy_document" "lambda_function_dlq-lab-legacy-notifier_st_dlq-l
     effect    = "Allow"
     actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage", "sqs:SendMessage"]
     resources = [aws_sqs_queue.dlq-lab-legacy-dlq.arn]
+  }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
   }
 }
 
@@ -81,6 +93,12 @@ data "aws_iam_policy_document" "lambda_function_dlq-lab-notifier_st_dlq-lab_doc"
     actions   = ["sqs:SendMessage"]
     resources = [aws_sqs_queue.dlq-lab-notifier-failed.arn]
   }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "lambda_function_dlq-lab-notifier_st_dlq-lab" {
@@ -101,6 +119,12 @@ data "aws_iam_policy_document" "lambda_function_dlq-lab-producer_st_dlq-lab_doc"
     effect    = "Allow"
     actions   = ["sns:Publish"]
     resources = [aws_sns_topic.dlq-lab-orders.arn]
+  }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
   }
 }
 
@@ -287,6 +311,9 @@ resource "aws_lambda_event_source_mapping" "dlq-lab-orders-esm" {
   event_source_arn                   = aws_sqs_queue.dlq-lab-orders-queue.arn
   function_response_types            = ["ReportBatchItemFailures"]
   maximum_batching_window_in_seconds = 5
+  metrics_config {
+    metrics = ["EventCount"]
+  }
   tags = {
     Name           = "dlq-lab-orders-esm"
     State          = "dlq-lab"
@@ -314,16 +341,20 @@ resource "aws_lambda_function" "dlq-lab-consumer" {
   timeout                        = 10
   environment {
     variables = {
-    HUB_FAULTS = "on"
-    NAME       = "dlq-lab-consumer"
-    REGION     = data.aws_region.current.region
-    ACCOUNT    = data.aws_caller_identity.current.account_id
+    HUB_FAULTS            = "on"
+    NAME                  = "dlq-lab-consumer"
+    REGION                = data.aws_region.current.region
+    ACCOUNT               = data.aws_caller_identity.current.account_id
+    AWS_XRAY_GROUP_NAME_0 = "dlq-lab-traces"
   }
   }
   tags = {
     Name           = "dlq-lab-consumer"
     State          = "dlq-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_dlq-lab-consumer_st_dlq-lab_attach]
 }
@@ -351,16 +382,20 @@ resource "aws_lambda_function" "dlq-lab-legacy-notifier" {
   }
   environment {
     variables = {
-    HUB_FAULTS = "on"
-    NAME       = "dlq-lab-legacy-notifier"
-    REGION     = data.aws_region.current.region
-    ACCOUNT    = data.aws_caller_identity.current.account_id
+    HUB_FAULTS            = "on"
+    NAME                  = "dlq-lab-legacy-notifier"
+    REGION                = data.aws_region.current.region
+    ACCOUNT               = data.aws_caller_identity.current.account_id
+    AWS_XRAY_GROUP_NAME_0 = "dlq-lab-traces"
   }
   }
   tags = {
     Name           = "dlq-lab-legacy-notifier"
     State          = "dlq-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_dlq-lab-legacy-notifier_st_dlq-lab_attach]
 }
@@ -390,12 +425,16 @@ resource "aws_lambda_function" "dlq-lab-notifier" {
     REGION                                         = data.aws_region.current.region
     ACCOUNT                                        = data.aws_caller_identity.current.account_id
     AWS_LAMBDA_FUNCTION_EVENT_INVOKE_CONFIG_NAME_0 = "dlq-lab-notifier-async"
+    AWS_XRAY_GROUP_NAME_0                          = "dlq-lab-traces"
   }
   }
   tags = {
     Name           = "dlq-lab-notifier"
     State          = "dlq-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_dlq-lab-notifier_st_dlq-lab_attach]
 }
@@ -425,12 +464,16 @@ resource "aws_lambda_function" "dlq-lab-producer" {
     ACCOUNT                        = data.aws_caller_identity.current.account_id
     AWS_SNS_TOPIC_NAME_0           = "dlq-lab-orders"
     AWS_LAMBDA_FUNCTION_URL_NAME_0 = "dlq-lab-producer-url"
+    AWS_XRAY_GROUP_NAME_0          = "dlq-lab-traces"
   }
   }
   tags = {
     Name           = "dlq-lab-producer"
     State          = "dlq-lab"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_dlq-lab-producer_st_dlq-lab_attach]
 }
@@ -598,22 +641,25 @@ resource "aws_sqs_queue_policy" "aws_sqs_queue_policy_dlq-lab-orders-queue_st_dl
 }
 
 resource "aws_sns_topic" "dlq-lab-alerts" {
-  name = "dlq-lab-alerts"
+  name           = "dlq-lab-alerts"
+  tracing_config = "Active"
   tags = {
     Name           = "dlq-lab-alerts"
     State          = "dlq-lab"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_xray_resource_policy.aws_xray_resource_policy_st_dlq-lab_b4702f8187]
 }
 
 resource "aws_sns_topic" "dlq-lab-orders" {
-  name = "dlq-lab-orders"
+  name           = "dlq-lab-orders"
+  tracing_config = "Active"
   tags = {
     Name           = "dlq-lab-orders"
     State          = "dlq-lab"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_sqs_queue_policy.aws_sqs_queue_policy_dlq-lab-orders-queue_st_dlq-lab]
+  depends_on = [aws_sqs_queue_policy.aws_sqs_queue_policy_dlq-lab-orders-queue_st_dlq-lab, aws_xray_resource_policy.aws_xray_resource_policy_st_dlq-lab_b4702f8187]
 }
 
 resource "aws_sns_topic_subscription" "Subscription2" {
@@ -729,6 +775,44 @@ resource "aws_cloudwatch_metric_alarm" "dlq-lab-orders-dlq-not-empty" {
     State          = "dlq-lab"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_xray_group" "dlq-lab-traces" {
+  group_name        = "dlq-lab-traces"
+  filter_expression = "service(\"dlq-lab-alerts\") OR service(\"dlq-lab-consumer\") OR service(\"dlq-lab-legacy-notifier\") OR service(\"dlq-lab-notifier\") OR service(\"dlq-lab-orders\") OR service(\"dlq-lab-producer\")"
+  tags = {
+    Name           = "dlq-lab-traces"
+    State          = "dlq-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+data "aws_iam_policy_document" "aws_xray_resource_policy_st_dlq-lab_b4702f8187_doc" {
+  statement {
+    sid    = "AllowSNSToSendTracesToXRay"
+    effect = "Allow"
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+    actions   = ["xray:GetSamplingRules", "xray:GetSamplingTargets", "xray:PutTraceSegments"]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      values   = [data.aws_caller_identity.current.account_id]
+      variable = "aws:SourceAccount"
+    }
+    condition {
+      test     = "StringLike"
+      values   = ["arn:aws:sns:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:*"]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+resource "aws_xray_resource_policy" "aws_xray_resource_policy_st_dlq-lab_b4702f8187" {
+  policy_name     = "aws_xray_resource_policy_st_dlq-lab_b4702f8187"
+  policy_document = data.aws_iam_policy_document.aws_xray_resource_policy_st_dlq-lab_b4702f8187_doc.json
 }
 
 
