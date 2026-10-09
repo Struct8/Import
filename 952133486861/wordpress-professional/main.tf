@@ -947,7 +947,6 @@ resource "aws_lb_target_group" "tgWordpress" {
 }
 
 resource "aws_cloudfront_distribution" "cdnWordpress" {
-  web_acl_id      = aws_wafv2_web_acl.wpWaf.arn
   aliases         = ["wp.cloudman.pro"]
   enabled         = true
   http_version    = "http2and3"
@@ -1034,94 +1033,6 @@ resource "aws_cloudfront_origin_access_control" "oac_wpmedia" {
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
-}
-
-resource "aws_wafv2_web_acl" "wpWaf" {
-  name   = "wpWaf"
-  region = "us-east-1"
-  rule_json = <<EOF
-[
-  {
-    "Name": "ip-reputation",
-    "Priority": 0,
-    "Statement": {
-      "ManagedRuleGroupStatement": { "VendorName": "AWS", "Name": "AWSManagedRulesAmazonIpReputationList" }
-    },
-    "OverrideAction": { "None": {} },
-    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "ip-reputation" }
-  },
-  {
-    "Name": "known-bad-inputs",
-    "Priority": 1,
-    "Statement": {
-      "ManagedRuleGroupStatement": { "VendorName": "AWS", "Name": "AWSManagedRulesKnownBadInputsRuleSet" }
-    },
-    "OverrideAction": { "None": {} },
-    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "known-bad-inputs" }
-  },
-  {
-    "Name": "wordpress",
-    "Priority": 2,
-    "Statement": {
-      "ManagedRuleGroupStatement": { "VendorName": "AWS", "Name": "AWSManagedRulesWordPressRuleSet" }
-    },
-    "OverrideAction": { "None": {} },
-    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "wordpress" }
-  },
-  {
-    "Name": "php",
-    "Priority": 3,
-    "Statement": {
-      "ManagedRuleGroupStatement": { "VendorName": "AWS", "Name": "AWSManagedRulesPHPRuleSet" }
-    },
-    "OverrideAction": { "None": {} },
-    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "php" }
-  },
-  {
-    "Name": "login-rate-limit",
-    "Priority": 4,
-    "Statement": {
-      "RateBasedStatement": {
-        "Limit": 100,
-        "AggregateKeyType": "IP",
-        "ScopeDownStatement": {
-          "RegexMatchStatement": {
-            "RegexString": "^/wp-login\\.php",
-            "FieldToMatch": { "UriPath": {} },
-            "TextTransformations": [{ "Priority": 0, "Type": "LOWERCASE" }]
-          }
-        }
-      }
-    },
-    "Action": { "Block": {} },
-    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "login-rate-limit" }
-  },
-  {
-    "Name": "rate-limit",
-    "Priority": 5,
-    "Statement": {
-      "RateBasedStatement": { "Limit": 2000, "AggregateKeyType": "IP" }
-    },
-    "Action": { "Block": {} },
-    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "rate-limit" }
-  }
-]
-  EOF
-  scope = "CLOUDFRONT"
-  default_action {
-    allow {
-    }
-  }
-  tags = {
-    Name           = "wpWaf"
-    State          = "wordpress-professional"
-    Struct8Creator = "Contato Struct"
-  }
-  visibility_config {
-    metric_name                = "wpWaf"
-    cloudwatch_metrics_enabled = true
-    sampled_requests_enabled   = true
-  }
 }
 
 
