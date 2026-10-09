@@ -1565,14 +1565,14 @@ EOFUData
 resource "aws_autoscaling_group" "asgWordpress" {
   name                    = "asgWordpress"
   default_instance_warmup = 0
-  desired_capacity        = 2
+  desired_capacity        = 1
   enabled_metrics         = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   health_check_type       = "EC2"
   max_instance_lifetime   = 0
   max_size                = 6
   metrics_granularity     = "1Minute"
   min_elb_capacity        = 0
-  min_size                = 2
+  min_size                = 1
   termination_policies    = ["Default"]
   vpc_zone_identifier     = [aws_subnet.appA.id, aws_subnet.appB.id]
   wait_for_elb_capacity   = 0
