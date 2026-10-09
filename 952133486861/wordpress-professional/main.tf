@@ -1685,6 +1685,7 @@ resource "aws_ecs_service" "wordpress_service" {
   enable_ecs_managed_tags           = true
   force_delete                      = true
   health_check_grace_period_seconds = 600
+  propagate_tags                    = "TASK_DEFINITION"
   scheduling_strategy               = "REPLICA"
   task_definition                   = "${aws_ecs_task_definition.wordpress.family}:${aws_ecs_task_definition.wordpress.revision}"
   capacity_provider_strategy {
