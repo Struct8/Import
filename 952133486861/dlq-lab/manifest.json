@@ -12,7 +12,7 @@
     {
       "repo_name": "struct8-templates",
       "org": "Struct8",
-      "branch": "feat/sqs-sns-dlq-lab-producer",
+      "branch": "main",
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
         "templates/sqs-sns-dlq-lab/v1/lambda/dlq-lab-producer"
@@ -20,7 +20,7 @@
     }
   ],
   "action": "apply",
-  "trigger_id": "1791549785642",
+  "trigger_id": "1791570791505",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
