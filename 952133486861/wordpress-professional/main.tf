@@ -1566,6 +1566,7 @@ resource "aws_autoscaling_group" "asgWordpress" {
   name                    = "asgWordpress"
   default_instance_warmup = 0
   desired_capacity        = 2
+  enabled_metrics         = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   health_check_type       = "EC2"
   max_instance_lifetime   = 0
   max_size                = 6
