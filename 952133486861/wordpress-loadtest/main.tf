@@ -219,6 +219,15 @@ resource "aws_security_group_rule" "rule_instance_k6Generator_group_ingress_tcp_
   type              = "ingress"
 }
 
+resource "aws_eip" "eip-generator" {
+  instance = aws_instance.k6Generator.id
+  tags = {
+    Name           = "eip-generator"
+    State          = "wordpress-loadtest"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 
 
 
