@@ -629,7 +629,7 @@ resource "aws_ecs_task_definition" "efs-writer" {
 
 resource "aws_scheduler_schedule" "efs-writer-every-5-min" {
   name                = "efs-writer-every-5-min"
-  schedule_expression = "rate(5 minutes)"
+  schedule_expression = "rate(1 hour)"
   flexible_time_window {
     mode = "OFF"
   }
