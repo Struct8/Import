@@ -1379,7 +1379,7 @@ data "aws_ami" "AMI_Data_Source_ltWordpress" {
 resource "aws_launch_template" "ltWordpress" {
   image_id               = data.aws_ami.AMI_Data_Source_ltWordpress.id
   name                   = "ltWordpress"
-  instance_type          = "m7g.medium"
+  instance_type          = "c7g.medium"
   update_default_version = true
   user_data = base64encode(<<-EOFUData
 #!/bin/bash
@@ -1407,6 +1407,8 @@ echo "ECS_ENABLE_CONTAINER_METADATA=true" >> /etc/ecs/ecs.config
 # Tasks use awsvpc: keep them away from the instance metadata service and the instance role.
 mkdir -p /etc/ecs
 echo "ECS_AWSVPC_BLOCK_IMDS=true" >> /etc/ecs/ecs.config
+# Spot: on the two-minute interruption notice, drain the instance so its tasks start elsewhere.
+echo "ECS_ENABLE_SPOT_INSTANCE_DRAINING=true" >> /etc/ecs/ecs.config
 
 EOFUData
 )
@@ -1421,9 +1423,6 @@ EOFUData
       volume_size           = 30
       volume_type           = "gp3"
     }
-  }
-  credit_specification {
-    cpu_credits = "standard"
   }
   enclave_options {
     enabled = false
@@ -1475,6 +1474,7 @@ EOFUData
 
 resource "aws_autoscaling_group" "asgWordpress" {
   name                    = "asgWordpress"
+  capacity_rebalance      = true
   default_instance_warmup = 0
   desired_capacity        = 1
   enabled_metrics         = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
@@ -1494,9 +1494,31 @@ resource "aws_autoscaling_group" "asgWordpress" {
   instance_refresh {
     strategy = "Rolling"
   }
-  launch_template {
-    version = aws_launch_template.ltWordpress.latest_version
-    id      = aws_launch_template.ltWordpress.id
+  mixed_instances_policy {
+    instances_distribution {
+      on_demand_allocation_strategy            = "prioritized"
+      on_demand_base_capacity                  = 2
+      on_demand_percentage_above_base_capacity = 25
+      spot_allocation_strategy                 = "price-capacity-optimized"
+    }
+    launch_template {
+      launch_template_specification {
+        version            = aws_launch_template.ltWordpress.latest_version
+        launch_template_id = aws_launch_template.ltWordpress.id
+      }
+      override {
+        instance_type = "c7g.large"
+      }
+      override {
+        instance_type = "c6g.large"
+      }
+      override {
+        instance_type = "m7g.large"
+      }
+      override {
+        instance_type = "m6g.large"
+      }
+    }
   }
   tag {
     key                 = "AmazonECSManaged"
