@@ -1639,7 +1639,7 @@ locals {
     name              = "wordpress"
     image             = "public.ecr.aws/docker/library/wordpress:latest"
     essential         = true
-    cpu               = 256
+    cpu               = 512
     memory            = 640
     memoryReservation = 512
     stopTimeout       = 30
@@ -2200,7 +2200,7 @@ log "done"
 
 resource "aws_ecs_task_definition" "wordpress" {
   container_definitions    = jsonencode([local.container_def_wordpress_wordpress_1])
-  cpu                      = "256"
+  cpu                      = "512"
   execution_role_arn       = aws_iam_role.execution_role_ecs_wordpress.arn
   family                   = "wordpress"
   memory                   = "640"
