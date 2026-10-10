@@ -177,8 +177,7 @@ resource "aws_s3_bucket" "covid-scripts" {
 }
 
 resource "aws_s3_bucket" "covid-silver" {
-  bucket              = "struct8-covid-silver-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
-  bucket_namespace    = "account-regional"
+  bucket              = "struct8-covid-silver"
   force_destroy       = true
   object_lock_enabled = false
   tags = {
