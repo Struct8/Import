@@ -181,8 +181,9 @@ resource "aws_iam_role_policy_attachment" "glue_job_covid-csv-to-parquet_st_Covi
 ### CATEGORY: STORAGE ###
 
 resource "aws_s3_bucket" "covid-athena-results" {
-  bucket              = "struct8-covid-athena-results"
-  force_destroy       = false
+  bucket              = "struct8-covid-athena-results-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = true
   object_lock_enabled = false
   tags = {
     Name           = "covid-athena-results"
@@ -192,8 +193,9 @@ resource "aws_s3_bucket" "covid-athena-results" {
 }
 
 resource "aws_s3_bucket" "covid-bronze" {
-  bucket              = "struct8-covid-bronze"
-  force_destroy       = false
+  bucket              = "struct8-covid-bronze-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = true
   object_lock_enabled = false
   tags = {
     Name           = "covid-bronze"
@@ -203,8 +205,9 @@ resource "aws_s3_bucket" "covid-bronze" {
 }
 
 resource "aws_s3_bucket" "covid-scripts" {
-  bucket              = "struct8-covid-scripts"
-  force_destroy       = false
+  bucket              = "struct8-covid-scripts-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = true
   object_lock_enabled = false
   tags = {
     Name           = "covid-scripts"
@@ -214,8 +217,9 @@ resource "aws_s3_bucket" "covid-scripts" {
 }
 
 resource "aws_s3_bucket" "covid-silver" {
-  bucket              = "struct8-covid-silver"
-  force_destroy       = false
+  bucket              = "struct8-covid-silver-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = true
   object_lock_enabled = false
   tags = {
     Name           = "covid-silver"
