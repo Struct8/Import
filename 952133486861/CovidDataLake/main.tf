@@ -92,9 +92,12 @@ resource "aws_iam_role" "covid-bronze-crawler_role" {
   ]
 })
   force_detach_policies = false
-  managed_policy_arns   = ["arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"]
   max_session_duration  = 3600
   path                  = "/"
+  inline_policy {
+    name   = "glue-cloudwatch-logs"
+    policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Resource\":\"arn:aws:logs:*:*:/aws-glue/*\"}]}"
+  }
   tags = {
     Name           = "covid-bronze-crawler_role"
     State          = "CovidDataLake"
@@ -117,9 +120,12 @@ resource "aws_iam_role" "covid-csv-to-parquet_role" {
   ]
 })
   force_detach_policies = false
-  managed_policy_arns   = ["arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"]
   max_session_duration  = 3600
   path                  = "/"
+  inline_policy {
+    name   = "glue-cloudwatch-logs"
+    policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Resource\":\"arn:aws:logs:*:*:/aws-glue/*\"}]}"
+  }
   tags = {
     Name           = "covid-csv-to-parquet_role"
     State          = "CovidDataLake"
