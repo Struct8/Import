@@ -24,6 +24,16 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### ALTERNATE REGION PROVIDERS ###
+
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
+
+
+
 ### SYSTEM DATA SOURCES ###
 
 data "aws_route53_zone" "zoneWordpress" {
@@ -66,6 +76,11 @@ data "aws_secretsmanager_secret" "wpSecrets" {
 data "aws_ssm_parameter" "wpAdminPassword" {
   name            = "wpAdminPassword"
   with_decryption = false
+}
+
+data "aws_s3_bucket" "flowlogs-bucket" {
+  bucket   = "flowlogs-bucket-${data.aws_caller_identity.current.account_id}-us-east-1-an"
+  provider = aws.us_east_1
 }
 
 
@@ -845,6 +860,18 @@ resource "aws_security_group_rule" "rule_rds_cluster_wp_aurora_group_egress_all_
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_flow_log" "FlowLog" {
+  vpc_id               = aws_vpc.wordpress-professional.id
+  log_destination      = data.aws_s3_bucket.flowlogs-bucket.arn
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+  tags = {
+    Name           = "FlowLog"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_lb" "alb-wp" {
