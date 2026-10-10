@@ -1,7 +1,17 @@
 {
-  "external_repositories": [],
-  "action": "destroy",
-  "trigger_id": "1791631328423",
+  "external_repositories": [
+    {
+      "repo_name": "struct8-templates",
+      "org": "Struct8",
+      "branch": "feat/gwlb-inspection",
+      "target_dir": ".external_modules/struct8-templates",
+      "folders": [
+        "templates/gwlb-inspection/v1/user_data"
+      ]
+    }
+  ],
+  "action": "plan",
+  "trigger_id": "1791670929513",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
