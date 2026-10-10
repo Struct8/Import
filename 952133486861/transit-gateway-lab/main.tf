@@ -23,6 +23,16 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
+resource "aws_iam_instance_profile" "gwlb-appliances-asg_profile" {
+  name = "gwlb-appliances-asg_profile"
+  role = aws_iam_role.gwlb-appliances-asg_role.name
+  tags = {
+    Name           = "gwlb-appliances-asg_profile"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_instance_profile" "spoke1-test_profile" {
   name = "spoke1-test_profile"
   role = aws_iam_role.spoke1-test_role.name
@@ -43,6 +53,60 @@ resource "aws_iam_instance_profile" "spoke2-test_profile" {
   }
 }
 
+data "aws_iam_policy_document" "debug-gwlb-appliances_debug_permissions" {
+  statement {
+    sid       = "SendToTaggedInstancesOnly"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["3747d641-2011-4e16-a9cc-2f21512cd864"]
+      variable = "aws:ResourceTag/Struct8Debug"
+    }
+  }
+  statement {
+    sid       = "PinnedDocumentOnly"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+  }
+  statement {
+    sid       = "ReadOwnResults"
+    effect    = "Allow"
+    actions   = ["ssm:GetCommandInvocation", "ssm:DescribeInstanceInformation"]
+    resources = ["*"]
+  }
+  statement {
+    sid       = "CancelOnTaggedInstancesOnly"
+    effect    = "Allow"
+    actions   = ["ssm:CancelCommand"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["3747d641-2011-4e16-a9cc-2f21512cd864"]
+      variable = "aws:ResourceTag/Struct8Debug"
+    }
+  }
+  statement {
+    sid       = "RunShellScriptDocument"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+  }
+}
+
+data "aws_iam_policy_document" "debug-gwlb-appliances_debug_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
+      type        = "AWS"
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
 data "aws_iam_policy_document" "debug-spoke-1_debug_permissions" {
   statement {
     sid       = "SendToTaggedInstancesOnly"
@@ -59,7 +123,7 @@ data "aws_iam_policy_document" "debug-spoke-1_debug_permissions" {
     sid       = "PinnedDocumentOnly"
     effect    = "Allow"
     actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-1777769e-5891-4b59-ba1b-e5964cef20eb"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
   }
   statement {
     sid       = "ReadOwnResults"
@@ -77,6 +141,12 @@ data "aws_iam_policy_document" "debug-spoke-1_debug_permissions" {
       values   = ["1777769e-5891-4b59-ba1b-e5964cef20eb"]
       variable = "aws:ResourceTag/Struct8Debug"
     }
+  }
+  statement {
+    sid       = "RunShellScriptDocument"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
   }
 }
 
@@ -107,7 +177,7 @@ data "aws_iam_policy_document" "debug-spoke-2_debug_permissions" {
     sid       = "PinnedDocumentOnly"
     effect    = "Allow"
     actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-991eeb51-f267-4468-b9a1-668aac78d0a0"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
   }
   statement {
     sid       = "ReadOwnResults"
@@ -126,6 +196,12 @@ data "aws_iam_policy_document" "debug-spoke-2_debug_permissions" {
       variable = "aws:ResourceTag/Struct8Debug"
     }
   }
+  statement {
+    sid       = "RunShellScriptDocument"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
+  }
 }
 
 data "aws_iam_policy_document" "debug-spoke-2_debug_trust" {
@@ -139,6 +215,12 @@ data "aws_iam_policy_document" "debug-spoke-2_debug_trust" {
   }
 }
 
+resource "aws_iam_role" "Struct8Debug-debug-gwlb-appliances" {
+  name                 = "Struct8Debug-3747d641-2011-4e16-a9cc-2f21512cd864"
+  assume_role_policy   = data.aws_iam_policy_document.debug-gwlb-appliances_debug_trust.json
+  max_session_duration = 3600
+}
+
 resource "aws_iam_role" "Struct8Debug-debug-spoke-1" {
   name                 = "Struct8Debug-1777769e-5891-4b59-ba1b-e5964cef20eb"
   assume_role_policy   = data.aws_iam_policy_document.debug-spoke-1_debug_trust.json
@@ -149,6 +231,62 @@ resource "aws_iam_role" "Struct8Debug-debug-spoke-2" {
   name                 = "Struct8Debug-991eeb51-f267-4468-b9a1-668aac78d0a0"
   assume_role_policy   = data.aws_iam_policy_document.debug-spoke-2_debug_trust.json
   max_session_duration = 3600
+}
+
+resource "aws_iam_role" "gwlb-appliances-asg_role" {
+  name = "gwlb-appliances-asg_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "gwlb-appliances-asg_role"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role" "role_fis_az-a-outage" {
+  name = "role_fis_az-a-outage"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "fis.amazonaws.com"
+      },
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
+        },
+        "ArnLike": {
+          "aws:SourceArn": "arn:aws:fis:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:experiment/*"
+        }
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "role_fis_az-a-outage"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_iam_role" "spoke1-test_role" {
@@ -199,6 +337,12 @@ resource "aws_iam_role" "spoke2-test_role" {
   }
 }
 
+resource "aws_iam_role_policy" "Struct8Debug-debug-gwlb-appliances_policy" {
+  name   = "Struct8Debug-3747d641-2011-4e16-a9cc-2f21512cd864-policy"
+  policy = data.aws_iam_policy_document.debug-gwlb-appliances_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-debug-gwlb-appliances.id
+}
+
 resource "aws_iam_role_policy" "Struct8Debug-debug-spoke-1_policy" {
   name   = "Struct8Debug-1777769e-5891-4b59-ba1b-e5964cef20eb-policy"
   policy = data.aws_iam_policy_document.debug-spoke-1_debug_permissions.json
@@ -211,6 +355,40 @@ resource "aws_iam_role_policy" "Struct8Debug-debug-spoke-2_policy" {
   role   = aws_iam_role.Struct8Debug-debug-spoke-2.id
 }
 
+resource "aws_iam_role_policy" "role_fis_az-a-outage_fis" {
+  name = "az-a-outage-fis"
+  policy = jsonencode({
+  Version = "2012-10-17"
+  Statement = [
+    {
+      Sid       = "FisAsgCapacityError"
+      Effect    = "Allow"
+      Action    = "ec2:InjectApiError"
+      Resource  = "*"
+      Condition = { StringEquals = { "ec2:FisActionId" = ["aws:ec2:asg-insufficient-instance-capacity-error"] } }
+    },
+    {
+      Sid      = "FisDescribeAutoScalingGroups"
+      Effect   = "Allow"
+      Action   = "autoscaling:DescribeAutoScalingGroups"
+      Resource = "*"
+    },
+    {
+      Sid      = "FisLogDelivery"
+      Effect   = "Allow"
+      Action   = ["logs:CreateLogDelivery", "logs:PutResourcePolicy", "logs:DescribeResourcePolicies", "logs:DescribeLogGroups"]
+      Resource = "*"
+    }
+  ]
+})
+  role = aws_iam_role.role_fis_az-a-outage.id
+}
+
+resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_gwlb-appliances-asg_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.gwlb-appliances-asg_role.name
+}
+
 resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_spoke1-test_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   role       = aws_iam_role.spoke1-test_role.name
@@ -219,6 +397,16 @@ resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_spoke
 resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_spoke2-test_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   role       = aws_iam_role.spoke2-test_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "role_fis_az-a-outage_fis_ec2" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSFaultInjectionSimulatorEC2Access"
+  role       = aws_iam_role.role_fis_az-a-outage.name
+}
+
+resource "aws_iam_role_policy_attachment" "role_fis_az-a-outage_fis_network" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSFaultInjectionSimulatorNetworkAccess"
+  role       = aws_iam_role.role_fis_az-a-outage.name
 }
 
 
@@ -257,6 +445,61 @@ resource "aws_vpc" "vpc-spoke-2" {
   instance_tenancy     = "default"
   tags = {
     Name           = "vpc-spoke-2"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_vpc_endpoint" "hub-gwlbe-a" {
+  service_name      = aws_vpc_endpoint_service.gwlb-service.service_name
+  vpc_id            = aws_vpc.vpc-hub.id
+  ip_address_type   = "ipv4"
+  subnet_ids        = [aws_subnet.hub-gwlbe-a.id]
+  vpc_endpoint_type = "GatewayLoadBalancer"
+  tags = {
+    Name           = "hub-gwlbe-a"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_vpc_endpoint" "hub-gwlbe-b" {
+  service_name      = aws_vpc_endpoint_service.gwlb-service.service_name
+  vpc_id            = aws_vpc.vpc-hub.id
+  ip_address_type   = "ipv4"
+  subnet_ids        = [aws_subnet.hub-gwlbe-b.id]
+  vpc_endpoint_type = "GatewayLoadBalancer"
+  tags = {
+    Name           = "hub-gwlbe-b"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_vpc_endpoint" "hub-gwlbe-c" {
+  service_name      = aws_vpc_endpoint_service.gwlb-service.service_name
+  vpc_id            = aws_vpc.vpc-hub.id
+  ip_address_type   = "ipv4"
+  subnet_ids        = [aws_subnet.hub-gwlbe-c.id]
+  vpc_endpoint_type = "GatewayLoadBalancer"
+  tags = {
+    Name           = "hub-gwlbe-c"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_vpc_endpoint" "hub-ssm-endpoint_SSM" {
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.ssm"
+  vpc_id              = aws_vpc.vpc-hub.id
+  ip_address_type     = "ipv4"
+  private_dns_enabled = false
+  security_group_ids  = [aws_security_group.sg_vpce_hub-ssm-endpoint.id]
+  subnet_ids          = [aws_subnet.Subnet.id]
+  vpc_endpoint_type   = "Interface"
+  tags = {
+    Name           = "hub-ssm-endpoint"
+    DifName        = "hub-ssm-endpoint_SSM"
     State          = "transit-gateway-lab"
     Struct8Creator = "Contato Struct"
   }
@@ -314,6 +557,17 @@ resource "aws_vpc_endpoint" "spoke2-gateway-endpoints_S3" {
   }
 }
 
+resource "aws_vpc_endpoint_service" "gwlb-service" {
+  acceptance_required        = false
+  allowed_principals         = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+  gateway_load_balancer_arns = [aws_lb.hub-gwlb.arn]
+  tags = {
+    Name           = "gwlb-service"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_subnet" "Subnet" {
   vpc_id                  = aws_vpc.vpc-hub.id
   availability_zone       = "us-west-2a"
@@ -321,6 +575,78 @@ resource "aws_subnet" "Subnet" {
   map_public_ip_on_launch = true
   tags = {
     Name           = "Subnet"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "hub-gwlb-a" {
+  vpc_id                  = aws_vpc.vpc-hub.id
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.30.111.0/28"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "hub-gwlb-a"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "hub-gwlb-b" {
+  vpc_id                  = aws_vpc.vpc-hub.id
+  availability_zone       = "us-west-2b"
+  cidr_block              = "10.30.111.16/28"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "hub-gwlb-b"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "hub-gwlb-c" {
+  vpc_id                  = aws_vpc.vpc-hub.id
+  availability_zone       = "us-west-2c"
+  cidr_block              = "10.30.111.32/28"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "hub-gwlb-c"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "hub-gwlbe-a" {
+  vpc_id                  = aws_vpc.vpc-hub.id
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.30.112.0/28"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "hub-gwlbe-a"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "hub-gwlbe-b" {
+  vpc_id                  = aws_vpc.vpc-hub.id
+  availability_zone       = "us-west-2b"
+  cidr_block              = "10.30.112.16/28"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "hub-gwlbe-b"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "hub-gwlbe-c" {
+  vpc_id                  = aws_vpc.vpc-hub.id
+  availability_zone       = "us-west-2c"
+  cidr_block              = "10.30.112.32/28"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "hub-gwlbe-c"
     State          = "transit-gateway-lab"
     Struct8Creator = "Contato Struct"
   }
@@ -499,21 +825,33 @@ resource "aws_route" "route_RT_to_tgw-lab_ipv4" {
   depends_on             = [aws_ec2_transit_gateway_vpc_attachment.att-hub]
 }
 
-resource "aws_route" "route_rt-hub-tgw-a_to_NAT1_ipv4" {
+resource "aws_route" "route_rt-hub-appliance_to_NAT1_ipv4" {
   nat_gateway_id         = aws_nat_gateway.NAT1.id
+  route_table_id         = aws_route_table.rt-hub-appliance.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+resource "aws_route" "route_rt-hub-gwlbe_to_NAT1_ipv4" {
+  nat_gateway_id         = aws_nat_gateway.NAT1.id
+  route_table_id         = aws_route_table.rt-hub-gwlbe.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+resource "aws_route" "route_rt-hub-tgw-a_to_hub-gwlbe-a_ipv4" {
   route_table_id         = aws_route_table.rt-hub-tgw-a.id
+  vpc_endpoint_id        = aws_vpc_endpoint.hub-gwlbe-a.id
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route" "route_rt-hub-tgw-b_to_NAT1_ipv4" {
-  nat_gateway_id         = aws_nat_gateway.NAT1.id
+resource "aws_route" "route_rt-hub-tgw-b_to_hub-gwlbe-b_ipv4" {
   route_table_id         = aws_route_table.rt-hub-tgw-b.id
+  vpc_endpoint_id        = aws_vpc_endpoint.hub-gwlbe-b.id
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route" "route_rt-hub-tgw-c_to_NAT1_ipv4" {
-  nat_gateway_id         = aws_nat_gateway.NAT1.id
+resource "aws_route" "route_rt-hub-tgw-c_to_hub-gwlbe-c_ipv4" {
   route_table_id         = aws_route_table.rt-hub-tgw-c.id
+  vpc_endpoint_id        = aws_vpc_endpoint.hub-gwlbe-c.id
   destination_cidr_block = "0.0.0.0/0"
 }
 
@@ -531,10 +869,65 @@ resource "aws_route" "route_rt-spoke-2_to_tgw-lab_ipv4" {
   depends_on             = [aws_ec2_transit_gateway_vpc_attachment.att-spoke-2]
 }
 
+resource "aws_route53_record" "alias_a_aws_vpc_endpoint_hub-ssm-endpoint_SSM_ssm_us-west-2_amazonaws_com" {
+  name    = "ssm.us-west-2.amazonaws.com"
+  zone_id = aws_route53_zone.ssm-private-zone.zone_id
+  type    = "A"
+  alias {
+    name                   = aws_vpc_endpoint.hub-ssm-endpoint_SSM.dns_entry[0].dns_name
+    zone_id                = aws_vpc_endpoint.hub-ssm-endpoint_SSM.dns_entry[0].hosted_zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_zone" "ssm-private-zone" {
+  name          = "ssm.us-west-2.amazonaws.com"
+  force_destroy = false
+  lifecycle {
+    ignore_changes = [vpc]
+  }
+  tags = {
+    Name           = "ssm-private-zone"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+  vpc {
+    vpc_id = aws_vpc.vpc-hub.id
+  }
+}
+
+resource "aws_route53_zone_association" "spoke1-zone-assoc" {
+  vpc_id  = aws_vpc.vpc-spoke-1.id
+  zone_id = aws_route53_zone.ssm-private-zone.zone_id
+}
+
+resource "aws_route53_zone_association" "spoke2-zone-assoc" {
+  vpc_id  = aws_vpc.vpc-spoke-2.id
+  zone_id = aws_route53_zone.ssm-private-zone.zone_id
+}
+
 resource "aws_route_table" "RT" {
   vpc_id = aws_vpc.vpc-hub.id
   tags = {
     Name           = "RT"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_route_table" "rt-hub-appliance" {
+  vpc_id = aws_vpc.vpc-hub.id
+  tags = {
+    Name           = "rt-hub-appliance"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_route_table" "rt-hub-gwlbe" {
+  vpc_id = aws_vpc.vpc-hub.id
+  tags = {
+    Name           = "rt-hub-gwlbe"
     State          = "transit-gateway-lab"
     Struct8Creator = "Contato Struct"
   }
@@ -588,6 +981,36 @@ resource "aws_route_table" "rt-spoke-2" {
 resource "aws_route_table_association" "aws_route_table_association_Subnet_RT" {
   route_table_id = aws_route_table.RT.id
   subnet_id      = aws_subnet.Subnet.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_hub_gwlb_a_rt_hub_appliance" {
+  route_table_id = aws_route_table.rt-hub-appliance.id
+  subnet_id      = aws_subnet.hub-gwlb-a.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_hub_gwlb_b_rt_hub_appliance" {
+  route_table_id = aws_route_table.rt-hub-appliance.id
+  subnet_id      = aws_subnet.hub-gwlb-b.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_hub_gwlb_c_rt_hub_appliance" {
+  route_table_id = aws_route_table.rt-hub-appliance.id
+  subnet_id      = aws_subnet.hub-gwlb-c.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_hub_gwlbe_a_rt_hub_gwlbe" {
+  route_table_id = aws_route_table.rt-hub-gwlbe.id
+  subnet_id      = aws_subnet.hub-gwlbe-a.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_hub_gwlbe_b_rt_hub_gwlbe" {
+  route_table_id = aws_route_table.rt-hub-gwlbe.id
+  subnet_id      = aws_subnet.hub-gwlbe-b.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_hub_gwlbe_c_rt_hub_gwlbe" {
+  route_table_id = aws_route_table.rt-hub-gwlbe.id
+  subnet_id      = aws_subnet.hub-gwlbe-c.id
 }
 
 resource "aws_route_table_association" "aws_route_table_association_hub_public_b_RT" {
@@ -645,6 +1068,17 @@ resource "aws_route_table_association" "aws_route_table_association_spoke2_c_rt_
   subnet_id      = aws_subnet.spoke2-c.id
 }
 
+resource "aws_security_group" "autoscaling_group_gwlb-appliances-asg_group" {
+  name                   = "autoscaling_group_gwlb-appliances-asg_group"
+  vpc_id                 = aws_vpc.vpc-hub.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "autoscaling_group_gwlb-appliances-asg_group"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_security_group" "instance_spoke1-test_group" {
   name                   = "instance_spoke1-test_group"
   vpc_id                 = aws_vpc.vpc-spoke-1.id
@@ -667,6 +1101,47 @@ resource "aws_security_group" "instance_spoke2-test_group" {
     State          = "transit-gateway-lab"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_security_group" "sg_vpce_hub-ssm-endpoint" {
+  name        = "vpce-sg-hub-ssm-endpoint"
+  vpc_id      = aws_vpc.vpc-hub.id
+  description = "Auto-generated SG for hub-ssm-endpoint"
+  tags = {
+    Name           = "hub-ssm-endpoint"
+    DifName        = "sg_vpce_hub-ssm-endpoint"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group_rule" "rule_autoscaling_group_gwlb_appliances_asg_group_egress_all_protocols" {
+  security_group_id = aws_security_group.autoscaling_group_gwlb-appliances-asg_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_autoscaling_group_gwlb_appliances_asg_group_ingress_tcp_8060" {
+  security_group_id = aws_security_group.autoscaling_group_gwlb-appliances-asg_group.id
+  cidr_blocks       = ["10.30.111.0/28", "10.30.111.16/28", "10.30.111.32/28"]
+  description       = "Health check from the Gateway Load Balancer"
+  from_port         = 8060
+  protocol          = "tcp"
+  to_port           = 8060
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_autoscaling_group_gwlb_appliances_asg_group_ingress_udp_6081" {
+  security_group_id = aws_security_group.autoscaling_group_gwlb-appliances-asg_group.id
+  cidr_blocks       = ["10.30.111.0/28", "10.30.111.16/28", "10.30.111.32/28"]
+  description       = "GENEVE from the Gateway Load Balancer"
+  from_port         = 6081
+  protocol          = "udp"
+  to_port           = 6081
+  type              = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_instance_spoke1_test_group_egress_all_protocols" {
@@ -705,6 +1180,76 @@ resource "aws_security_group_rule" "rule_instance_spoke2_test_group_ingress_icmp
   protocol          = "icmp"
   to_port           = -1
   type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_sg_vpce_hub_ssm_endpoint_egress_all_protocols" {
+  security_group_id = aws_security_group.sg_vpce_hub-ssm-endpoint.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow all outbound traffic"
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_sg_vpce_hub_ssm_endpoint_ingress_tcp_443" {
+  security_group_id = aws_security_group.sg_vpce_hub-ssm-endpoint.id
+  cidr_blocks       = ["10.30.0.0/16", "10.2.0.0/16", "10.6.0.0/16"]
+  description       = "Allow HTTPS from VPC and the VPCs sharing this endpoint"
+  from_port         = 443
+  protocol          = "tcp"
+  to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_lb" "hub-gwlb" {
+  name                             = "hub-gwlb"
+  enable_cross_zone_load_balancing = true
+  load_balancer_type               = "gateway"
+  subnets                          = [aws_subnet.hub-gwlb-a.id, aws_subnet.hub-gwlb-b.id, aws_subnet.hub-gwlb-c.id]
+  tags = {
+    Name           = "hub-gwlb"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_lb_listener" "gwlb-listener" {
+  load_balancer_arn = aws_lb.hub-gwlb.arn
+  default_action {
+    order            = 1
+    target_group_arn = aws_lb_target_group.gwlb-appliances.arn
+    type             = "forward"
+    forward {
+      target_group {
+        arn = aws_lb_target_group.gwlb-appliances.arn
+      }
+    }
+  }
+  tags = {
+    Name           = "gwlb-listener"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_lb_target_group" "gwlb-appliances" {
+  name                 = "gwlb-appliances"
+  vpc_id               = aws_vpc.vpc-hub.id
+  deregistration_delay = "300"
+  ip_address_type      = "ipv4"
+  port                 = 6081
+  protocol             = "GENEVE"
+  target_type          = "instance"
+  health_check {
+    port     = "8060"
+    protocol = "TCP"
+  }
+  tags = {
+    Name           = "gwlb-appliances"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_ec2_transit_gateway" "tgw-lab" {
@@ -763,6 +1308,12 @@ resource "aws_ec2_transit_gateway_route_table_association" "att-spoke-2_tgw-rt-s
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
 }
 
+resource "aws_ec2_transit_gateway_route_table_association" "onprem-vpn_tgw-rt-hub_association" {
+  transit_gateway_attachment_id  = aws_vpn_connection.onprem-vpn.transit_gateway_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-hub.id
+  replace_existing_association   = true
+}
+
 resource "aws_ec2_transit_gateway_route_table_propagation" "att-hub_tgw-rt-spokes_propagation" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.att-hub.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
@@ -778,9 +1329,15 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "att-spoke-2_tgw-rt-h
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-hub.id
 }
 
+resource "aws_ec2_transit_gateway_route_table_propagation" "onprem-vpn_tgw-rt-spokes_propagation" {
+  transit_gateway_attachment_id  = aws_vpn_connection.onprem-vpn.transit_gateway_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
+}
+
 resource "aws_ec2_transit_gateway_vpc_attachment" "att-hub" {
   transit_gateway_id                              = aws_ec2_transit_gateway.tgw-lab.id
   vpc_id                                          = aws_vpc.vpc-hub.id
+  appliance_mode_support                          = "enable"
   subnet_ids                                      = [aws_subnet.hub-tgw-a.id, aws_subnet.hub-tgw-b.id, aws_subnet.hub-tgw-c.id]
   transit_gateway_default_route_table_association = false
   transit_gateway_default_route_table_propagation = false
@@ -812,6 +1369,28 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "att-spoke-2" {
   transit_gateway_default_route_table_propagation = false
   tags = {
     Name           = "att-spoke-2"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_vpn_connection" "onprem-vpn" {
+  customer_gateway_id = aws_customer_gateway.onprem-cgw.id
+  transit_gateway_id  = aws_ec2_transit_gateway.tgw-lab.id
+  type                = "ipsec.1"
+  tags = {
+    Name           = "onprem-vpn"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_customer_gateway" "onprem-cgw" {
+  bgp_asn    = "65000"
+  ip_address = "203.0.113.12"
+  type       = "ipsec.1"
+  tags = {
+    Name           = "onprem-cgw"
     State          = "transit-gateway-lab"
     Struct8Creator = "Contato Struct"
   }
@@ -898,101 +1477,250 @@ resource "aws_instance" "spoke2-test" {
   }
 }
 
-
-
-
-### CATEGORY: CONFIG ###
-
-resource "aws_ssm_document" "Struct8Probe-debug-spoke-1" {
-  name = "Struct8Probe-1777769e-5891-4b59-ba1b-e5964cef20eb"
-  content = <<EOF
-{
-  "schemaVersion": "2.2",
-  "description": "Struct8 network probe. The command text is fixed here; the caller supplies only a target and a port.",
-  "parameters": {
-    "target": {
-      "type": "String",
-      "description": "Hostname or IP address to probe.",
-      "interpolationType": "ENV_VAR",
-      "allowedPattern": "^[A-Za-z0-9._-]{1,253}$"
-    },
-    "port": {
-      "type": "String",
-      "description": "TCP port to test.",
-      "default": "443",
-      "interpolationType": "ENV_VAR",
-      "allowedPattern": "^[0-9]{1,5}$"
-    }
-  },
-  "mainSteps": [
-    {
-      "action": "aws:runShellScript",
-      "name": "struct8Probe",
-      "inputs": {
-        "timeoutSeconds": "60",
-        "runCommand": [
-          "if [ -z \"$SSM_target\" ]; then export SSM_target=\"{{target}}\"; fi",
-          "if [ -z \"$SSM_port\" ]; then export SSM_port=\"{{port}}\"; fi",
-          "echo '--- resolve ---'",
-          "getent hosts \"$SSM_target\" || echo \"no DNS answer\"",
-          "echo '--- icmp ---'",
-          "ping -c 3 -W 2 \"$SSM_target\" || echo \"no ICMP reply (often filtered, not conclusive)\"",
-          "echo '--- tcp ---'",
-          "if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$SSM_target\" \"$SSM_port\" 2>/dev/null; then echo \"port $SSM_port open\"; else echo \"port $SSM_port closed or filtered\"; fi"
-        ]
-      }
-    }
-  ]
-}
-  EOF
-  document_format = "JSON"
-  document_type   = "Command"
+data "local_file" "UserData_gwlb-appliance-lt" {
+  filename = "${path.module}/.external_modules/struct8-templates/templates/gwlb-inspection/v1/user_data/Inspect.sh"
 }
 
-resource "aws_ssm_document" "Struct8Probe-debug-spoke-2" {
-  name = "Struct8Probe-991eeb51-f267-4468-b9a1-668aac78d0a0"
-  content = <<EOF
-{
-  "schemaVersion": "2.2",
-  "description": "Struct8 network probe. The command text is fixed here; the caller supplies only a target and a port.",
-  "parameters": {
-    "target": {
-      "type": "String",
-      "description": "Hostname or IP address to probe.",
-      "interpolationType": "ENV_VAR",
-      "allowedPattern": "^[A-Za-z0-9._-]{1,253}$"
-    },
-    "port": {
-      "type": "String",
-      "description": "TCP port to test.",
-      "default": "443",
-      "interpolationType": "ENV_VAR",
-      "allowedPattern": "^[0-9]{1,5}$"
-    }
-  },
-  "mainSteps": [
-    {
-      "action": "aws:runShellScript",
-      "name": "struct8Probe",
-      "inputs": {
-        "timeoutSeconds": "60",
-        "runCommand": [
-          "if [ -z \"$SSM_target\" ]; then export SSM_target=\"{{target}}\"; fi",
-          "if [ -z \"$SSM_port\" ]; then export SSM_port=\"{{port}}\"; fi",
-          "echo '--- resolve ---'",
-          "getent hosts \"$SSM_target\" || echo \"no DNS answer\"",
-          "echo '--- icmp ---'",
-          "ping -c 3 -W 2 \"$SSM_target\" || echo \"no ICMP reply (often filtered, not conclusive)\"",
-          "echo '--- tcp ---'",
-          "if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$SSM_target\" \"$SSM_port\" 2>/dev/null; then echo \"port $SSM_port open\"; else echo \"port $SSM_port closed or filtered\"; fi"
-        ]
-      }
-    }
-  ]
+data "aws_ami" "AMI_Data_Source_gwlb-appliance-lt" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-kernel-6.1-arm64"]
+  }
 }
-  EOF
-  document_format = "JSON"
-  document_type   = "Command"
+
+resource "aws_launch_template" "gwlb-appliance-lt" {
+  image_id               = data.aws_ami.AMI_Data_Source_gwlb-appliance-lt.id
+  name                   = "gwlb-appliance-lt"
+  instance_type          = "t4g.small"
+  update_default_version = true
+  user_data = base64encode(<<-EOFUData
+#!/bin/bash
+
+# --- BEGIN STRUCT8 VARIABLES ---
+cat << 'EOFENV' > /etc/struct8_env
+NAME="gwlb-appliances-asg"
+REGION="${data.aws_region.current.region}"
+ACCOUNT="${data.aws_caller_identity.current.account_id}"
+EOFENV
+cat /etc/struct8_env >> /etc/environment
+sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
+chmod +x /etc/profile.d/struct8_vars.sh
+chmod 644 /etc/struct8_env
+# --- END STRUCT8 VARIABLES ---
+
+${data.local_file.UserData_gwlb-appliance-lt.content}
+EOFUData
+)
+  vpc_security_group_ids = [aws_security_group.autoscaling_group_gwlb-appliances-asg_group.id]
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      encrypted             = true
+      iops                  = 3000
+      throughput            = 125
+      volume_size           = 8
+      volume_type           = "gp3"
+    }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.gwlb-appliances-asg_profile.name
+  }
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_put_response_hop_limit = 1
+    http_tokens                 = "required"
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+    Struct8Debug   = "3747d641-2011-4e16-a9cc-2f21512cd864"
+    Name           = "gwlb-appliances-asg"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+  }
+  tags = {
+    Name           = "gwlb-appliance-lt"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_autoscaling_group" "gwlb-appliances-asg" {
+  name                    = "gwlb-appliances-asg"
+  default_instance_warmup = 0
+  desired_capacity        = 3
+  enabled_metrics         = ["GroupInServiceInstances"]
+  health_check_type       = "EC2"
+  max_instance_lifetime   = 0
+  max_size                = 3
+  metrics_granularity     = "1Minute"
+  min_elb_capacity        = 0
+  min_size                = 3
+  target_group_arns       = [aws_lb_target_group.gwlb-appliances.arn]
+  termination_policies    = ["Default"]
+  vpc_zone_identifier     = [aws_subnet.hub-gwlb-a.id, aws_subnet.hub-gwlb-b.id, aws_subnet.hub-gwlb-c.id]
+  wait_for_elb_capacity   = 0
+  launch_template {
+    version = aws_launch_template.gwlb-appliance-lt.latest_version
+    id      = aws_launch_template.gwlb-appliance-lt.id
+  }
+  tag {
+    key                 = "Struct8Debug"
+    propagate_at_launch = true
+    value               = "3747d641-2011-4e16-a9cc-2f21512cd864"
+  }
+  tag {
+    key                 = "Name"
+    propagate_at_launch = true
+    value               = "gwlb-appliances-asg"
+  }
+  tag {
+    key                 = "State"
+    propagate_at_launch = true
+    value               = "transit-gateway-lab"
+  }
+  tag {
+    key                 = "Struct8Creator"
+    propagate_at_launch = true
+    value               = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_log_group" "fis-az-a-outage" {
+  name              = "/aws/fis/az-a-outage"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "fis-az-a-outage"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "appliances-in-service-below-2" {
+  alarm_name          = "appliances-in-service-below-2"
+  metric_name         = "GroupInServiceInstances"
+  alarm_description   = "Fewer than 2 GWLB appliances in service: stops the zone a outage experiment"
+  comparison_operator = "LessThanThreshold"
+  datapoints_to_alarm = 2
+  evaluation_periods  = 2
+  namespace           = "AWS/AutoScaling"
+  period              = 60
+  statistic           = "Minimum"
+  threshold           = 2
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.gwlb-appliances-asg.name
+  }
+  tags = {
+    Name           = "appliances-in-service-below-2"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: DEVTOOLS ###
+
+resource "aws_fis_experiment_template" "az-a-outage" {
+  action {
+    action_id = "aws:network:disrupt-connectivity"
+    name      = "cut-zone-a-network"
+    parameter {
+      key   = "duration"
+      value = "PT10M"
+    }
+    parameter {
+      key   = "scope"
+      value = "all"
+    }
+    target {
+      key   = "Subnets"
+      value = "connected-subnets"
+    }
+  }
+  action {
+    action_id = "aws:ec2:stop-instances"
+    name      = "stop-zone-a-appliance"
+    target {
+      key   = "Instances"
+      value = "appliance-zone-a"
+    }
+  }
+  action {
+    action_id = "aws:ec2:asg-insufficient-instance-capacity-error"
+    name      = "no-launch-in-zone-a"
+    parameter {
+      key   = "duration"
+      value = "PT10M"
+    }
+    parameter {
+      key   = "availabilityZoneIdentifiers"
+      value = "us-west-2a"
+    }
+    parameter {
+      key   = "percentage"
+      value = "100"
+    }
+    target {
+      key   = "AutoScalingGroups"
+      value = "connected-autoscaling-groups"
+    }
+  }
+  description = "Zone a outage in the hub: network cut, appliance stopped, no relaunch in zone a"
+  role_arn    = aws_iam_role.role_fis_az-a-outage.arn
+  log_configuration {
+    log_schema_version = 2
+    cloudwatch_logs_configuration {
+      log_group_arn = "${aws_cloudwatch_log_group.fis-az-a-outage.arn}:*"
+    }
+  }
+  stop_condition {
+    source = "aws:cloudwatch:alarm"
+    value  = aws_cloudwatch_metric_alarm.appliances-in-service-below-2.arn
+  }
+  tags = {
+    Name           = "az-a-outage"
+    State          = "transit-gateway-lab"
+    Struct8Creator = "Contato Struct"
+  }
+  target {
+    name           = "appliance-zone-a"
+    resource_type  = "aws:ec2:instance"
+    selection_mode = "ALL"
+    filter {
+      path   = "Placement.AvailabilityZone"
+      values = ["us-west-2a"]
+    }
+    resource_tag {
+      key   = "aws:autoscaling:groupName"
+      value = "gwlb-appliances-asg"
+    }
+  }
+  target {
+    name           = "connected-subnets"
+    resource_arns  = [aws_subnet.hub-gwlb-a.arn, aws_subnet.hub-gwlbe-a.arn, aws_subnet.hub-tgw-a.arn]
+    resource_type  = "aws:ec2:subnet"
+    selection_mode = "ALL"
+  }
+  target {
+    name           = "connected-autoscaling-groups"
+    resource_arns  = [aws_autoscaling_group.gwlb-appliances-asg.arn]
+    resource_type  = "aws:ec2:autoscaling-group"
+    selection_mode = "ALL"
+  }
+  depends_on = [aws_iam_role_policy_attachment.role_fis_az-a-outage_fis_ec2, aws_iam_role_policy_attachment.role_fis_az-a-outage_fis_network]
 }
 
 
