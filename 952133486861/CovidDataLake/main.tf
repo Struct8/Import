@@ -391,6 +391,36 @@ resource "aws_glue_catalog_table" "silver_covid_global" {
     number_of_buckets         = 0
     output_format             = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
     stored_as_sub_directories = false
+    columns {
+      name    = "country"
+      comment = "Country or region name (JHU Country/Region)."
+      type    = "string"
+    }
+    columns {
+      name    = "province"
+      comment = "Province or state; null for countries with no subdivision."
+      type    = "string"
+    }
+    columns {
+      name    = "lat"
+      comment = "Latitude of the region."
+      type    = "double"
+    }
+    columns {
+      name    = "lon"
+      comment = "Longitude of the region."
+      type    = "double"
+    }
+    columns {
+      name    = "confirmed"
+      comment = "Cumulative confirmed cases on report_date."
+      type    = "bigint"
+    }
+    columns {
+      name    = "deaths"
+      comment = "Cumulative deaths on report_date."
+      type    = "bigint"
+    }
   }
 }
 
