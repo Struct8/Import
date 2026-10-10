@@ -28,6 +28,10 @@ data "aws_ec2_transit_gateway" "tgw-lab" {
     name   = "tag:Name"
     values = ["tgw-lab"]
   }
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
 }
 
 data "aws_ec2_transit_gateway_route_table" "tgw-rt-spokes" {
@@ -35,12 +39,20 @@ data "aws_ec2_transit_gateway_route_table" "tgw-rt-spokes" {
     name   = "tag:Name"
     values = ["tgw-rt-spokes"]
   }
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
 }
 
 data "aws_ec2_transit_gateway_route_table" "tgw-rt-hub" {
   filter {
     name   = "tag:Name"
     values = ["tgw-rt-hub"]
+  }
+  filter {
+    name   = "state"
+    values = ["available"]
   }
 }
 
