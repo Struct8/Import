@@ -1482,8 +1482,6 @@ EOFUData
     hostname_type                        = "ip-name"
   }
   tag_specifications {
-  }
-  tag_specifications {
     resource_type = "volume"
     tags = {
     AmazonECSManaged = true
@@ -1521,10 +1519,13 @@ resource "aws_autoscaling_group" "asgWordpress" {
   instance_refresh {
     strategy = "Rolling"
   }
+  lifecycle {
+    ignore_changes = [desired_capacity]
+  }
   mixed_instances_policy {
     instances_distribution {
       on_demand_allocation_strategy            = "prioritized"
-      on_demand_base_capacity                  = 2
+      on_demand_base_capacity                  = 1
       on_demand_percentage_above_base_capacity = 25
       spot_allocation_strategy                 = "price-capacity-optimized"
     }
