@@ -388,7 +388,7 @@ resource "aws_glue_catalog_table" "silver_covid_global" {
   storage_descriptor {
     compressed                = false
     input_format              = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat"
-    location                  = "s3://struct8-covid-silver/covid19/"
+    location                  = "s3://${aws_s3_bucket.covid-silver.bucket}/covid19/"
     number_of_buckets         = 0
     output_format             = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
     stored_as_sub_directories = false
@@ -396,7 +396,7 @@ resource "aws_glue_catalog_table" "silver_covid_global" {
 }
 
 resource "aws_glue_crawler" "covid-bronze-crawler" {
-  # ajuste manual · depends_on — Crawler validates the S3 target prefix s3://struct8-covid-bronze/covid19/ at creation and 404s unless the CSV objects that create that prefix exist first. The generator draws no ordering between the crawler and the s3_objects.
+  # ajuste manual · depends_on — Crawler validates its S3 target prefix at creation and 404s unless the CSV objects that create that prefix exist first. The generator draws no ordering between the crawler and the s3_objects.
   database_name = aws_glue_catalog_database.covid_db.name
   name          = "covid-bronze-crawler"
   description   = "Scans the raw CSV files in the bronze bucket on demand and registers them in the Glue Data Catalog under the bronze_ table prefix. It has no schedule: the user runs it manually (Run crawler), and its successful completion is what starts the ETL job via the trigger."
@@ -406,7 +406,7 @@ resource "aws_glue_crawler" "covid-bronze-crawler" {
     use_lake_formation_credentials = false
   }
   s3_target {
-    path = "s3://struct8-covid-bronze/covid19/"
+    path = "s3://${aws_s3_bucket.covid-bronze.bucket}/covid19/"
   }
   tags = {
     Name           = "covid-bronze-crawler"
@@ -429,11 +429,11 @@ resource "aws_glue_job" "covid-csv-to-parquet" {
   command {
     name            = "glueetl"
     python_version  = "3"
-    script_location = "s3://struct8-covid-scripts/glue/covid_csv_to_parquet.py"
+    script_location = "s3://${aws_s3_bucket.covid-scripts.bucket}/glue/covid_csv_to_parquet.py"
   }
   default_arguments = {
-    "--BRONZE_PATH"    = "s3://struct8-covid-bronze/covid19"
-    "--SILVER_PATH"    = "s3://struct8-covid-silver/covid19"
+    "--BRONZE_PATH"    = "s3://${aws_s3_bucket.covid-bronze.bucket}/covid19"
+    "--SILVER_PATH"    = "s3://${aws_s3_bucket.covid-silver.bucket}/covid19"
     "--job-language"   = "python"
     "--enable-metrics" = true
   }
