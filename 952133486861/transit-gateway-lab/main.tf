@@ -21,6 +21,32 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+### EXTERNAL REFERENCES ###
+
+data "aws_ec2_transit_gateway" "tgw-lab" {
+  filter {
+    name   = "tag:Name"
+    values = ["tgw-lab"]
+  }
+}
+
+data "aws_ec2_transit_gateway_route_table" "tgw-rt-spokes" {
+  filter {
+    name   = "tag:Name"
+    values = ["tgw-rt-spokes"]
+  }
+}
+
+data "aws_ec2_transit_gateway_route_table" "tgw-rt-hub" {
+  filter {
+    name   = "tag:Name"
+    values = ["tgw-rt-hub"]
+  }
+}
+
+
+
+
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "gwlb-appliances-asg_profile" {
@@ -257,38 +283,6 @@ resource "aws_iam_role" "gwlb-appliances-asg_role" {
   }
 }
 
-resource "aws_iam_role" "role_fis_az-a-outage" {
-  name = "role_fis_az-a-outage"
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "fis.amazonaws.com"
-      },
-      "Condition": {
-        "StringEquals": {
-          "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
-        },
-        "ArnLike": {
-          "aws:SourceArn": "arn:aws:fis:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:experiment/*"
-        }
-      }
-    }
-  ]
-})
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  tags = {
-    Name           = "role_fis_az-a-outage"
-    State          = "transit-gateway-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_iam_role" "spoke1-test_role" {
   name = "spoke1-test_role"
   assume_role_policy = jsonencode({
@@ -355,35 +349,6 @@ resource "aws_iam_role_policy" "Struct8Debug-debug-spoke-2_policy" {
   role   = aws_iam_role.Struct8Debug-debug-spoke-2.id
 }
 
-resource "aws_iam_role_policy" "role_fis_az-a-outage_fis" {
-  name = "az-a-outage-fis"
-  policy = jsonencode({
-  Version = "2012-10-17"
-  Statement = [
-    {
-      Sid       = "FisAsgCapacityError"
-      Effect    = "Allow"
-      Action    = "ec2:InjectApiError"
-      Resource  = "*"
-      Condition = { StringEquals = { "ec2:FisActionId" = ["aws:ec2:asg-insufficient-instance-capacity-error"] } }
-    },
-    {
-      Sid      = "FisDescribeAutoScalingGroups"
-      Effect   = "Allow"
-      Action   = "autoscaling:DescribeAutoScalingGroups"
-      Resource = "*"
-    },
-    {
-      Sid      = "FisLogDelivery"
-      Effect   = "Allow"
-      Action   = ["logs:CreateLogDelivery", "logs:PutResourcePolicy", "logs:DescribeResourcePolicies", "logs:DescribeLogGroups"]
-      Resource = "*"
-    }
-  ]
-})
-  role = aws_iam_role.role_fis_az-a-outage.id
-}
-
 resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_gwlb-appliances-asg_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   role       = aws_iam_role.gwlb-appliances-asg_role.name
@@ -397,16 +362,6 @@ resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_spoke
 resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_spoke2-test_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   role       = aws_iam_role.spoke2-test_role.name
-}
-
-resource "aws_iam_role_policy_attachment" "role_fis_az-a-outage_fis_ec2" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSFaultInjectionSimulatorEC2Access"
-  role       = aws_iam_role.role_fis_az-a-outage.name
-}
-
-resource "aws_iam_role_policy_attachment" "role_fis_az-a-outage_fis_network" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSFaultInjectionSimulatorNetworkAccess"
-  role       = aws_iam_role.role_fis_az-a-outage.name
 }
 
 
@@ -807,7 +762,7 @@ resource "aws_nat_gateway" "NAT1" {
 
 resource "aws_route" "route_NAT1_to_tgw-lab_ipv4" {
   route_table_id         = aws_nat_gateway.NAT1.route_table_id
-  transit_gateway_id     = aws_ec2_transit_gateway.tgw-lab.id
+  transit_gateway_id     = data.aws_ec2_transit_gateway.tgw-lab.id
   destination_cidr_block = "10.0.0.0/8"
   depends_on             = [aws_ec2_transit_gateway_vpc_attachment.att-hub]
 }
@@ -820,7 +775,7 @@ resource "aws_route" "route_RT_to_IGW_ipv4" {
 
 resource "aws_route" "route_RT_to_tgw-lab_ipv4" {
   route_table_id         = aws_route_table.RT.id
-  transit_gateway_id     = aws_ec2_transit_gateway.tgw-lab.id
+  transit_gateway_id     = data.aws_ec2_transit_gateway.tgw-lab.id
   destination_cidr_block = "10.0.0.0/8"
   depends_on             = [aws_ec2_transit_gateway_vpc_attachment.att-hub]
 }
@@ -857,14 +812,14 @@ resource "aws_route" "route_rt-hub-tgw-c_to_hub-gwlbe-c_ipv4" {
 
 resource "aws_route" "route_rt-spoke-1_to_tgw-lab_ipv4" {
   route_table_id         = aws_route_table.rt-spoke-1.id
-  transit_gateway_id     = aws_ec2_transit_gateway.tgw-lab.id
+  transit_gateway_id     = data.aws_ec2_transit_gateway.tgw-lab.id
   destination_cidr_block = "0.0.0.0/0"
   depends_on             = [aws_ec2_transit_gateway_vpc_attachment.att-spoke-1]
 }
 
 resource "aws_route" "route_rt-spoke-2_to_tgw-lab_ipv4" {
   route_table_id         = aws_route_table.rt-spoke-2.id
-  transit_gateway_id     = aws_ec2_transit_gateway.tgw-lab.id
+  transit_gateway_id     = data.aws_ec2_transit_gateway.tgw-lab.id
   destination_cidr_block = "0.0.0.0/0"
   depends_on             = [aws_ec2_transit_gateway_vpc_attachment.att-spoke-2]
 }
@@ -1251,90 +1206,44 @@ resource "aws_lb_target_group" "gwlb-appliances" {
   }
 }
 
-resource "aws_ec2_transit_gateway" "tgw-lab" {
-  default_route_table_association = "disable"
-  default_route_table_propagation = "disable"
-  description                     = "Hub and spoke with centralized egress through vpc-hub"
-  tags = {
-    Name           = "tgw-lab"
-    State          = "transit-gateway-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_ec2_transit_gateway_route" "tgw-rt-spokes_att-hub_0_0_0_0_0" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.att-hub.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
+  transit_gateway_route_table_id = data.aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
   destination_cidr_block         = "0.0.0.0/0"
-}
-
-resource "aws_ec2_transit_gateway_route" "tgw-rt-spokes_blackhole_10_0_0_0_8" {
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
-  blackhole                      = true
-  destination_cidr_block         = "10.0.0.0/8"
-}
-
-resource "aws_ec2_transit_gateway_route_table" "tgw-rt-hub" {
-  transit_gateway_id = aws_ec2_transit_gateway.tgw-lab.id
-  tags = {
-    Name           = "tgw-rt-hub"
-    State          = "transit-gateway-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_ec2_transit_gateway_route_table" "tgw-rt-spokes" {
-  transit_gateway_id = aws_ec2_transit_gateway.tgw-lab.id
-  tags = {
-    Name           = "tgw-rt-spokes"
-    State          = "transit-gateway-lab"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_ec2_transit_gateway_route_table_association" "att-hub_tgw-rt-hub_association" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.att-hub.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-hub.id
+  transit_gateway_route_table_id = data.aws_ec2_transit_gateway_route_table.tgw-rt-hub.id
 }
 
 resource "aws_ec2_transit_gateway_route_table_association" "att-spoke-1_tgw-rt-spokes_association" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.att-spoke-1.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
+  transit_gateway_route_table_id = data.aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
 }
 
 resource "aws_ec2_transit_gateway_route_table_association" "att-spoke-2_tgw-rt-spokes_association" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.att-spoke-2.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_association" "onprem-vpn_tgw-rt-hub_association" {
-  transit_gateway_attachment_id  = aws_vpn_connection.onprem-vpn.transit_gateway_attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-hub.id
-  replace_existing_association   = true
+  transit_gateway_route_table_id = data.aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
 }
 
 resource "aws_ec2_transit_gateway_route_table_propagation" "att-hub_tgw-rt-spokes_propagation" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.att-hub.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
+  transit_gateway_route_table_id = data.aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
 }
 
 resource "aws_ec2_transit_gateway_route_table_propagation" "att-spoke-1_tgw-rt-hub_propagation" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.att-spoke-1.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-hub.id
+  transit_gateway_route_table_id = data.aws_ec2_transit_gateway_route_table.tgw-rt-hub.id
 }
 
 resource "aws_ec2_transit_gateway_route_table_propagation" "att-spoke-2_tgw-rt-hub_propagation" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.att-spoke-2.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-hub.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_propagation" "onprem-vpn_tgw-rt-spokes_propagation" {
-  transit_gateway_attachment_id  = aws_vpn_connection.onprem-vpn.transit_gateway_attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-rt-spokes.id
+  transit_gateway_route_table_id = data.aws_ec2_transit_gateway_route_table.tgw-rt-hub.id
 }
 
 resource "aws_ec2_transit_gateway_vpc_attachment" "att-hub" {
-  transit_gateway_id                              = aws_ec2_transit_gateway.tgw-lab.id
+  transit_gateway_id                              = data.aws_ec2_transit_gateway.tgw-lab.id
   vpc_id                                          = aws_vpc.vpc-hub.id
   appliance_mode_support                          = "enable"
   subnet_ids                                      = [aws_subnet.hub-tgw-a.id, aws_subnet.hub-tgw-b.id, aws_subnet.hub-tgw-c.id]
@@ -1348,7 +1257,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "att-hub" {
 }
 
 resource "aws_ec2_transit_gateway_vpc_attachment" "att-spoke-1" {
-  transit_gateway_id                              = aws_ec2_transit_gateway.tgw-lab.id
+  transit_gateway_id                              = data.aws_ec2_transit_gateway.tgw-lab.id
   vpc_id                                          = aws_vpc.vpc-spoke-1.id
   subnet_ids                                      = [aws_subnet.spoke1-a.id, aws_subnet.spoke1-b.id, aws_subnet.spoke1-c.id]
   transit_gateway_default_route_table_association = false
@@ -1361,35 +1270,13 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "att-spoke-1" {
 }
 
 resource "aws_ec2_transit_gateway_vpc_attachment" "att-spoke-2" {
-  transit_gateway_id                              = aws_ec2_transit_gateway.tgw-lab.id
+  transit_gateway_id                              = data.aws_ec2_transit_gateway.tgw-lab.id
   vpc_id                                          = aws_vpc.vpc-spoke-2.id
   subnet_ids                                      = [aws_subnet.spoke2-a.id, aws_subnet.spoke2-b.id, aws_subnet.spoke2-c.id]
   transit_gateway_default_route_table_association = false
   transit_gateway_default_route_table_propagation = false
   tags = {
     Name           = "att-spoke-2"
-    State          = "transit-gateway-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_vpn_connection" "onprem-vpn" {
-  customer_gateway_id = aws_customer_gateway.onprem-cgw.id
-  transit_gateway_id  = aws_ec2_transit_gateway.tgw-lab.id
-  type                = "ipsec.1"
-  tags = {
-    Name           = "onprem-vpn"
-    State          = "transit-gateway-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_customer_gateway" "onprem-cgw" {
-  bgp_asn    = "65000"
-  ip_address = "203.0.113.12"
-  type       = "ipsec.1"
-  tags = {
-    Name           = "onprem-cgw"
     State          = "transit-gateway-lab"
     Struct8Creator = "Contato Struct"
   }
@@ -1587,139 +1474,6 @@ resource "aws_autoscaling_group" "gwlb-appliances-asg" {
     propagate_at_launch = true
     value               = "Contato Struct"
   }
-}
-
-
-
-
-### CATEGORY: MONITORING ###
-
-resource "aws_cloudwatch_log_group" "fis-az-a-outage" {
-  name              = "/aws/fis/az-a-outage"
-  log_group_class   = "STANDARD"
-  retention_in_days = 1
-  skip_destroy      = false
-  tags = {
-    Name           = "fis-az-a-outage"
-    State          = "transit-gateway-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_cloudwatch_metric_alarm" "appliances-in-service-below-2" {
-  alarm_name          = "appliances-in-service-below-2"
-  metric_name         = "GroupInServiceInstances"
-  alarm_description   = "Fewer than 2 GWLB appliances in service: stops the zone a outage experiment"
-  comparison_operator = "LessThanThreshold"
-  datapoints_to_alarm = 2
-  evaluation_periods  = 2
-  namespace           = "AWS/AutoScaling"
-  period              = 60
-  statistic           = "Minimum"
-  threshold           = 2
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.gwlb-appliances-asg.name
-  }
-  tags = {
-    Name           = "appliances-in-service-below-2"
-    State          = "transit-gateway-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-
-
-
-### CATEGORY: DEVTOOLS ###
-
-resource "aws_fis_experiment_template" "az-a-outage" {
-  action {
-    action_id = "aws:network:disrupt-connectivity"
-    name      = "cut-zone-a-network"
-    parameter {
-      key   = "duration"
-      value = "PT10M"
-    }
-    parameter {
-      key   = "scope"
-      value = "all"
-    }
-    target {
-      key   = "Subnets"
-      value = "connected-subnets"
-    }
-  }
-  action {
-    action_id = "aws:ec2:stop-instances"
-    name      = "stop-zone-a-appliance"
-    target {
-      key   = "Instances"
-      value = "appliance-zone-a"
-    }
-  }
-  action {
-    action_id = "aws:ec2:asg-insufficient-instance-capacity-error"
-    name      = "no-launch-in-zone-a"
-    parameter {
-      key   = "duration"
-      value = "PT10M"
-    }
-    parameter {
-      key   = "availabilityZoneIdentifiers"
-      value = "us-west-2a"
-    }
-    parameter {
-      key   = "percentage"
-      value = "100"
-    }
-    target {
-      key   = "AutoScalingGroups"
-      value = "connected-autoscaling-groups"
-    }
-  }
-  description = "Zone a outage in the hub: network cut, appliance stopped, no relaunch in zone a"
-  role_arn    = aws_iam_role.role_fis_az-a-outage.arn
-  log_configuration {
-    log_schema_version = 2
-    cloudwatch_logs_configuration {
-      log_group_arn = "${aws_cloudwatch_log_group.fis-az-a-outage.arn}:*"
-    }
-  }
-  stop_condition {
-    source = "aws:cloudwatch:alarm"
-    value  = aws_cloudwatch_metric_alarm.appliances-in-service-below-2.arn
-  }
-  tags = {
-    Name           = "az-a-outage"
-    State          = "transit-gateway-lab"
-    Struct8Creator = "Contato Struct"
-  }
-  target {
-    name           = "appliance-zone-a"
-    resource_type  = "aws:ec2:instance"
-    selection_mode = "ALL"
-    filter {
-      path   = "Placement.AvailabilityZone"
-      values = ["us-west-2a"]
-    }
-    resource_tag {
-      key   = "aws:autoscaling:groupName"
-      value = "gwlb-appliances-asg"
-    }
-  }
-  target {
-    name           = "connected-subnets"
-    resource_arns  = [aws_subnet.hub-gwlb-a.arn, aws_subnet.hub-gwlbe-a.arn, aws_subnet.hub-tgw-a.arn]
-    resource_type  = "aws:ec2:subnet"
-    selection_mode = "ALL"
-  }
-  target {
-    name           = "connected-autoscaling-groups"
-    resource_arns  = [aws_autoscaling_group.gwlb-appliances-asg.arn]
-    resource_type  = "aws:ec2:autoscaling-group"
-    selection_mode = "ALL"
-  }
-  depends_on = [aws_iam_role_policy_attachment.role_fis_az-a-outage_fis_ec2, aws_iam_role_policy_attachment.role_fis_az-a-outage_fis_network]
 }
 
 
