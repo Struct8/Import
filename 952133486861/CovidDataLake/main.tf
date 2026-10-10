@@ -69,6 +69,18 @@ data "aws_iam_policy_document" "glue_job_covid-csv-to-parquet_st_CovidDataLake_d
     actions   = ["s3:DeleteObject", "s3:GetObject", "s3:PutObject"]
     resources = ["${aws_s3_bucket.covid-scripts.arn}/*"]
   }
+  statement {
+    sid       = "AllowBucketLevelActions2"
+    effect    = "Allow"
+    actions   = ["s3:GetBucketLocation", "s3:ListBucket"]
+    resources = [aws_s3_bucket.covid-silver.arn]
+  }
+  statement {
+    sid       = "AllowObjectCRUD2"
+    effect    = "Allow"
+    actions   = ["s3:DeleteObject", "s3:GetObject", "s3:PutObject"]
+    resources = ["${aws_s3_bucket.covid-silver.arn}/*"]
+  }
 }
 
 resource "aws_iam_policy" "glue_job_covid-csv-to-parquet_st_CovidDataLake" {
