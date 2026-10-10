@@ -1237,7 +1237,6 @@ resource "aws_lb_target_group" "gwlb-appliances" {
   name                 = "gwlb-appliances"
   vpc_id               = aws_vpc.vpc-hub.id
   deregistration_delay = "300"
-  ip_address_type      = "ipv4"
   port                 = 6081
   protocol             = "GENEVE"
   target_type          = "instance"
