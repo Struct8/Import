@@ -92,6 +92,7 @@ resource "aws_iam_role" "covid-bronze-crawler_role" {
   ]
 })
   force_detach_policies = false
+  managed_policy_arns   = ["arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"]
   max_session_duration  = 3600
   path                  = "/"
   tags = {
@@ -116,6 +117,7 @@ resource "aws_iam_role" "covid-csv-to-parquet_role" {
   ]
 })
   force_detach_policies = false
+  managed_policy_arns   = ["arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"]
   max_session_duration  = 3600
   path                  = "/"
   tags = {
