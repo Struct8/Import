@@ -441,6 +441,9 @@ resource "aws_glue_catalog_table" "silver_covid_global" {
       comment = "Cumulative deaths on report_date."
       type    = "bigint"
     }
+    ser_de_info {
+      serialization_library = "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
+    }
   }
 }
 
