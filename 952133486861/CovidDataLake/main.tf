@@ -143,6 +143,11 @@ resource "aws_iam_role" "covid-lake-settings_role" {
   force_detach_policies = false
   max_session_duration  = 3600
   path                  = "/"
+  tags = {
+    Name           = "covid-lake-settings_role"
+    State          = "CovidDataLake"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_iam_role" "covid-select-silver_role" {
@@ -163,6 +168,11 @@ resource "aws_iam_role" "covid-select-silver_role" {
   force_detach_policies = false
   max_session_duration  = 3600
   path                  = "/"
+  tags = {
+    Name           = "covid-select-silver_role"
+    State          = "CovidDataLake"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "glue_crawler_covid-bronze-crawler_st_CovidDataLake_attach" {
@@ -432,9 +442,6 @@ resource "aws_glue_catalog_table" "silver_covid_global" {
     number_of_buckets         = 0
     output_format             = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
     stored_as_sub_directories = false
-    ser_de_info {
-      serialization_library = "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
-    }
   }
   view_definition {
     view_version_id = 0
@@ -446,9 +453,8 @@ resource "aws_glue_catalog_table" "silver_covid_global" {
 resource "aws_glue_crawler" "covid-bronze-crawler" {
   database_name = aws_glue_catalog_database.covid_db.name
   name          = "covid-bronze-crawler"
-  description   = "Scans the raw CSV files in the bronze bucket every day at 05:00 UTC and registers them in the Glue Data Catalog under the bronze_ table prefix. Its successful completion is what starts the ETL job."
+  description   = "Scans the raw CSV files in the bronze bucket on demand and registers them in the Glue Data Catalog under the bronze_ table prefix. It has no schedule: the user runs it manually (Run crawler), and its successful completion is what starts the ETL job via the trigger."
   role          = aws_iam_role.covid-bronze-crawler_role.arn
-  schedule      = "cron(0 5 * * ? *)"
   table_prefix  = "bronze_"
   lake_formation_configuration {
     use_lake_formation_credentials = false
@@ -498,9 +504,6 @@ resource "aws_glue_trigger" "covid-etl-trigger" {
   actions {
     job_name = aws_glue_job.covid-csv-to-parquet.name
   }
-  actions {
-    crawler_name = aws_glue_crawler.covid-bronze-crawler.name
-  }
   description       = "Starts the ETL job when the bronze crawler finishes successfully. It is a conditional trigger with no schedule of its own, so the pipeline advances whenever the crawler runs."
   start_on_creation = false
   type              = "CONDITIONAL"
@@ -549,8 +552,9 @@ LIMIT 20;
 }
 
 resource "aws_athena_workgroup" "covid-workgroup" {
-  name        = "covid-workgroup"
-  description = "Athena workgroup for the COVID-19 lake. It caps each query at 10 GiB scanned, publishes query metrics to CloudWatch, and overrides client settings so every query writes to the results bucket configured here."
+  name          = "covid-workgroup"
+  description   = "Athena workgroup for the COVID-19 lake. It caps each query at 10 GiB scanned, publishes query metrics to CloudWatch, and overrides client settings so every query writes to the results bucket configured here."
+  force_destroy = true
   configuration {
     bytes_scanned_cutoff_per_query          = 10737418240
     enable_minimum_encryption_configuration = false
@@ -589,83 +593,6 @@ resource "aws_lakeformation_permissions" "covid-select-silver" {
 resource "aws_lakeformation_resource" "covid-silver-registered" {
   arn                     = aws_s3_bucket.covid-silver.arn
   use_service_linked_role = true
-}
-
-resource "aws_quicksight_data_set" "covid-silver-dataset" {
-  data_set_id = "covid-silver-dataset"
-  name        = "covid-silver-dataset"
-  import_mode = "DIRECT_QUERY"
-  data_set_usage_configuration {
-    disable_use_as_direct_query_source = false
-    disable_use_as_imported_source     = false
-  }
-  logical_table_map {
-    source {
-      physical_table_id = "silver-covid-global"
-    }
-    logical_table_map_id = "silver-covid-global"
-    alias                = "COVID-19 by country and date"
-  }
-  physical_table_map {
-    physical_table_map_id = "silver-covid-global"
-    relational_table {
-      name            = aws_glue_catalog_table.silver_covid_global.name
-      data_source_arn = aws_quicksight_data_source.covid-athena-source.arn
-      schema          = aws_glue_catalog_table.silver_covid_global.database_name
-      input_columns {
-        name = "country"
-        type = "STRING"
-      }
-      input_columns {
-        name = "province"
-        type = "STRING"
-      }
-      input_columns {
-        name = "lat"
-        type = "DECIMAL"
-      }
-      input_columns {
-        name = "lon"
-        type = "DECIMAL"
-      }
-      input_columns {
-        name = "report_date"
-        type = "STRING"
-      }
-      input_columns {
-        name = "confirmed"
-        type = "INTEGER"
-      }
-      input_columns {
-        name = "deaths"
-        type = "INTEGER"
-      }
-    }
-  }
-  tags = {
-    Name           = "covid-silver-dataset"
-    State          = "CovidDataLake"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_quicksight_data_source" "covid-athena-source" {
-  data_source_id = "covid-athena-source"
-  name           = "covid-athena-source"
-  type           = "ATHENA"
-  parameters {
-    athena {
-      work_group = aws_athena_workgroup.covid-workgroup.name
-    }
-  }
-  ssl_properties {
-    disable_ssl = false
-  }
-  tags = {
-    Name           = "covid-athena-source"
-    State          = "CovidDataLake"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 
