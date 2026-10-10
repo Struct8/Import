@@ -1379,7 +1379,7 @@ data "aws_ami" "AMI_Data_Source_ltWordpress" {
 resource "aws_launch_template" "ltWordpress" {
   image_id               = data.aws_ami.AMI_Data_Source_ltWordpress.id
   name                   = "ltWordpress"
-  instance_type          = "t4g.small"
+  instance_type          = "m7g.medium"
   update_default_version = true
   user_data = base64encode(<<-EOFUData
 #!/bin/bash
