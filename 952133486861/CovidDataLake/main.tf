@@ -125,56 +125,6 @@ resource "aws_iam_role" "covid-csv-to-parquet_role" {
   }
 }
 
-resource "aws_iam_role" "covid-lake-settings_role" {
-  name = "covid-lake-settings_role"
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "lakeformation.amazonaws.com"
-      }
-    }
-  ]
-})
-  description           = "Administrador do Lake Formation: registra os locais e concede as permissoes."
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  tags = {
-    Name           = "covid-lake-settings_role"
-    State          = "CovidDataLake"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_iam_role" "covid-select-silver_role" {
-  name = "covid-select-silver_role"
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "lakeformation.amazonaws.com"
-      }
-    }
-  ]
-})
-  description           = "Papel que consulta o data lake pelo Athena e pelo QuickSight, com acesso concedido pelo Lake Formation."
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  tags = {
-    Name           = "covid-select-silver_role"
-    State          = "CovidDataLake"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_iam_role_policy_attachment" "glue_crawler_covid-bronze-crawler_st_CovidDataLake_attach" {
   policy_arn = aws_iam_policy.glue_crawler_covid-bronze-crawler_st_CovidDataLake.arn
   role       = aws_iam_role.covid-bronze-crawler_role.name
@@ -443,14 +393,10 @@ resource "aws_glue_catalog_table" "silver_covid_global" {
     output_format             = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
     stored_as_sub_directories = false
   }
-  view_definition {
-    view_version_id = 0
-    is_protected    = false
-    refresh_seconds = 0
-  }
 }
 
 resource "aws_glue_crawler" "covid-bronze-crawler" {
+  # ajuste manual · depends_on — Crawler validates the S3 target prefix s3://struct8-covid-bronze/covid19/ at creation and 404s unless the CSV objects that create that prefix exist first. The generator draws no ordering between the crawler and the s3_objects.
   database_name = aws_glue_catalog_database.covid_db.name
   name          = "covid-bronze-crawler"
   description   = "Scans the raw CSV files in the bronze bucket on demand and registers them in the Glue Data Catalog under the bronze_ table prefix. It has no schedule: the user runs it manually (Run crawler), and its successful completion is what starts the ETL job via the trigger."
@@ -467,7 +413,7 @@ resource "aws_glue_crawler" "covid-bronze-crawler" {
     State          = "CovidDataLake"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_iam_role_policy_attachment.glue_crawler_covid-bronze-crawler_st_CovidDataLake_attach]
+  depends_on = [aws_s3_object.covid-confirmed-csv, aws_s3_object.covid-deaths-csv]
 }
 
 resource "aws_glue_job" "covid-csv-to-parquet" {
@@ -509,9 +455,9 @@ resource "aws_glue_trigger" "covid-etl-trigger" {
   type              = "CONDITIONAL"
   predicate {
     conditions {
+      crawler_name     = "covid-bronze-crawler"
       crawl_state      = "SUCCEEDED"
       logical_operator = "EQUALS"
-      state            = "SUCCEEDED"
     }
   }
   tags = {
@@ -576,23 +522,6 @@ resource "aws_athena_workgroup" "covid-workgroup" {
     State          = "CovidDataLake"
     Struct8Creator = "Contato Struct"
   }
-}
-
-resource "aws_lakeformation_data_lake_settings" "covid-lake-settings" {
-  admins = [aws_iam_role.covid-lake-settings_role.arn]
-}
-
-resource "aws_lakeformation_permissions" "covid-select-silver" {
-  principal   = aws_iam_role.covid-select-silver_role.arn
-  permissions = ["SELECT", "DESCRIBE"]
-  database {
-    name = aws_glue_catalog_database.covid_db.name
-  }
-}
-
-resource "aws_lakeformation_resource" "covid-silver-registered" {
-  arn                     = aws_s3_bucket.covid-silver.arn
-  use_service_linked_role = true
 }
 
 
