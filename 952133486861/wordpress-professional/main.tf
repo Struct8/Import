@@ -1578,9 +1578,9 @@ resource "aws_appautoscaling_policy" "scalingWordpress-cpu" {
   service_namespace  = aws_appautoscaling_target.scalingWordpress.service_namespace
   target_tracking_scaling_policy_configuration {
     disable_scale_in   = false
-    scale_in_cooldown  = 300
+    scale_in_cooldown  = 60
     scale_out_cooldown = 60
-    target_value       = 60
+    target_value       = 70
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
