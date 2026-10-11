@@ -418,7 +418,7 @@ resource "aws_rds_cluster" "produtos-aurora" {
   serverlessv2_scaling_configuration {
     max_capacity             = 4
     min_capacity             = 0
-    seconds_until_auto_pause = 50
+    seconds_until_auto_pause = 300
   }
   tags = {
     Name           = "produtos-aurora"
