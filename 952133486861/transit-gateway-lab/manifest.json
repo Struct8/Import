@@ -10,8 +10,8 @@
       ]
     }
   ],
-  "action": "apply",
-  "trigger_id": "1791681272870",
+  "action": "destroy",
+  "trigger_id": "1791685477522",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -23,8 +23,9 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "Manual Trigger: transit-gateway-lab",
-      "parallel_execution": false,
+      "stage_name": "DESTROY ALL: tgw-core-lab (1/2)",
+      "parallel_execution": true,
+      "max_parallel": 4,
       "states": [
         {
           "path": "952133486861/transit-gateway-lab",
@@ -34,8 +35,41 @@
             "region": "us-west-2",
             "secret_name": "AUTH_AWS_952133486861"
           }
+        },
+        {
+          "path": "952133486861/onprem-sim-lab",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-east-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        }
+      ]
+    },
+    {
+      "stage_name": "DESTROY ALL: tgw-core-lab (2/2)",
+      "parallel_execution": true,
+      "max_parallel": 4,
+      "states": [
+        {
+          "path": "952133486861/tgw-core-lab",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "depends_on": [
+            "952133486861/transit-gateway-lab",
+            "952133486861/onprem-sim-lab"
+          ]
         }
       ]
     }
-  ]
+  ],
+  "pipeline_schedule": {
+    "mode": "dependency",
+    "max_parallel": 4
+  }
 }
