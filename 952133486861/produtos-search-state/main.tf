@@ -49,9 +49,15 @@ data "aws_cloudfront_cache_policy" "policy_cachingdisabled" {
 
 data "aws_iam_policy_document" "lambda_function_lambda-busca_st_produtos-search-state_doc" {
   statement {
+    sid       = "ReadDbSecret"
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = [aws_rds_cluster.produtos-aurora.master_user_secret[0].secret_arn]
+  }
+  statement {
     sid       = "DataApi"
     effect    = "Allow"
-    actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
+    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents", "rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
     resources = ["*"]
   }
 }
@@ -64,6 +70,12 @@ resource "aws_iam_policy" "lambda_function_lambda-busca_st_produtos-search-state
 
 data "aws_iam_policy_document" "lambda_function_lambda-ingestao_st_produtos-search-state_doc" {
   statement {
+    sid       = "ReadDbSecret"
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = [aws_rds_cluster.produtos-aurora.master_user_secret[0].secret_arn]
+  }
+  statement {
     sid       = "AllowEventSourceRead"
     effect    = "Allow"
     actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage", "sqs:SendMessage"]
@@ -72,7 +84,7 @@ data "aws_iam_policy_document" "lambda_function_lambda-ingestao_st_produtos-sear
   statement {
     sid       = "DataApi"
     effect    = "Allow"
-    actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
+    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents", "rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
     resources = ["*"]
   }
 }
