@@ -10,8 +10,8 @@
       ]
     }
   ],
-  "action": "destroy",
-  "trigger_id": "1791723450196",
+  "action": "apply",
+  "trigger_id": "1791724569075",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -23,20 +23,11 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "DESTROY ALL: lakeformation-regional-settings",
+      "stage_name": "Manual Trigger: CovidDataLake",
       "parallel_execution": false,
       "states": [
         {
           "path": "952133486861/CovidDataLake",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
-            "secret_name": "AUTH_AWS_952133486861"
-          }
-        },
-        {
-          "path": "952133486861/lakeformation-regional-settings",
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
