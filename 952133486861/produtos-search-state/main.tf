@@ -411,14 +411,14 @@ resource "aws_rds_cluster" "produtos-aurora" {
   master_username             = "dbadmin"
   monitoring_interval         = 0
   network_type                = "IPV4"
-  port                        = 0
+  port                        = 5432
   skip_final_snapshot         = true
   storage_encrypted           = true
   vpc_security_group_ids      = [aws_security_group.rds_cluster_produtos-aurora_group.id]
   serverlessv2_scaling_configuration {
     max_capacity             = 4
     min_capacity             = 0
-    seconds_until_auto_pause = 300
+    seconds_until_auto_pause = 50
   }
   tags = {
     Name           = "produtos-aurora"
