@@ -404,7 +404,7 @@ resource "aws_glue_catalog_table" "silver_covid_global" {
     "projection.report_date.format"        = "yyyy-MM-dd"
     "projection.report_date.interval"      = "1"
     "projection.report_date.interval.unit" = "DAYS"
-    "storage.location.template"            = "s3://${aws_s3_bucket.covid-silver.bucket}/covid19/report_date=${report_date}/"
+    "storage.location.template"            = "s3://${aws_s3_bucket.covid-silver.bucket}/covid19/report_date=$${report_date}/"
     "classification"                       = "parquet"
   }
   retention  = 0
