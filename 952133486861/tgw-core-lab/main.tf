@@ -82,7 +82,7 @@ resource "aws_vpn_connection" "onprem-vpn" {
 
 resource "aws_customer_gateway" "onprem-cgw" {
   bgp_asn    = "65000"
-  ip_address = "203.0.113.12"
+  ip_address = "18.217.1.198"
   type       = "ipsec.1"
   tags = {
     Name           = "onprem-cgw"
