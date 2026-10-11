@@ -197,7 +197,7 @@ resource "aws_security_group_rule" "rule_rds_cluster_hardware_db_cluster_group_e
 
 resource "aws_db_subnet_group" "subnet_group_hardware-db-cluster" {
   name       = "hardware-db-cluster-subnet-group"
-  subnet_ids = [aws_subnet.subnet-db-a.id]
+  subnet_ids = [aws_subnet.subnet-db-a.id, aws_subnet.subnet-db-b.id]
   tags = {
     Name           = "subnet_group_hardware-db-cluster"
     State          = "hardware-search-state"
