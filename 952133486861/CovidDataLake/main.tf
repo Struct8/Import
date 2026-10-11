@@ -104,6 +104,7 @@ resource "aws_iam_role" "covid-bronze-crawler_role" {
   ]
 })
   force_detach_policies = false
+  managed_policy_arns   = ["arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"]
   max_session_duration  = 3600
   path                  = "/"
   inline_policy {
@@ -513,9 +514,10 @@ resource "aws_glue_trigger" "covid-etl-start" {
   actions {
     crawler_name = aws_glue_crawler.covid-bronze-crawler.name
   }
-  description       = "Start trigger of the ETL workflow. ON_DEMAND with start_on_creation=true: fires once when the stack is applied, kicking off the bronze crawler. No schedule, so no recurring cost."
-  start_on_creation = false
-  type              = "ON_DEMAND"
+  description       = "Scheduled start trigger of the ETL workflow. start_on_creation=true activates it on apply; the cron (every 10 min) fires the bronze crawler shortly after, with no manual action. Zero-touch pipeline bootstrap."
+  schedule          = "cron(0/10 * * * ? *)"
+  start_on_creation = true
+  type              = "SCHEDULED"
   tags = {
     Name           = "covid-etl-start"
     State          = "CovidDataLake"
