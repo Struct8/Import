@@ -1,0 +1,540 @@
+terraform {
+  required_providers {
+    archive = {
+      source = "hashicorp/archive"
+    }
+    aws = {
+      source = "hashicorp/aws"
+    }
+  }
+
+  backend "s3" {
+    bucket  = "struct8-import"
+    key     = "952133486861/produtos-search-state/main.tfstate"
+    region  = "us-west-2"
+    encrypt = true
+  }
+}
+
+# --- Main Cloud Provider ---
+provider "aws" {
+  region = "us-west-2"
+}
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
+### CATEGORY: IAM ###
+
+data "aws_iam_policy_document" "lambda_function_lambda-busca_st_produtos-search-state_doc" {
+  statement {
+    sid       = "DataApi"
+    effect    = "Allow"
+    actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_lambda-busca_st_produtos-search-state" {
+  name        = "lambda_function_lambda-busca_st_produtos-search-state"
+  description = "Access Policy for lambda-busca"
+  policy      = data.aws_iam_policy_document.lambda_function_lambda-busca_st_produtos-search-state_doc.json
+}
+
+data "aws_iam_policy_document" "lambda_function_lambda-ingestao_st_produtos-search-state_doc" {
+  statement {
+    sid       = "DataApi"
+    effect    = "Allow"
+    actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
+    resources = [aws_rds_cluster.produtos_aurora.arn]
+  }
+  statement {
+    sid       = "ReadDbSecret"
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = [aws_rds_cluster.produtos_aurora.master_user_secret[0].secret_arn]
+  }
+  statement {
+    sid       = "AllowEventSourceRead"
+    effect    = "Allow"
+    actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage", "sqs:SendMessage"]
+    resources = [aws_sqs_queue.fila-ingestao.arn]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_lambda-ingestao_st_produtos-search-state" {
+  name        = "lambda_function_lambda-ingestao_st_produtos-search-state"
+  description = "Access Policy for lambda-ingestao"
+  policy      = data.aws_iam_policy_document.lambda_function_lambda-ingestao_st_produtos-search-state_doc.json
+}
+
+resource "aws_iam_role" "lambda-busca_role" {
+  name = "lambda-busca_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "lambda-busca_role"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role" "lambda-ingestao_role" {
+  name = "lambda-ingestao_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "lambda-ingestao_role"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_lambda-busca_st_produtos-search-state_attach" {
+  policy_arn = aws_iam_policy.lambda_function_lambda-busca_st_produtos-search-state.arn
+  role       = aws_iam_role.lambda-busca_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_lambda-ingestao_st_produtos-search-state_attach" {
+  policy_arn = aws_iam_policy.lambda_function_lambda-ingestao_st_produtos-search-state.arn
+  role       = aws_iam_role.lambda-ingestao_role.name
+}
+
+
+
+
+### CATEGORY: NETWORK ###
+
+resource "aws_vpc" "produtos-vpc" {
+  cidr_block           = "10.7.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  instance_tenancy     = "default"
+  tags = {
+    Name           = "produtos-vpc"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "privada-a" {
+  vpc_id                  = aws_vpc.produtos-vpc.id
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.7.0.0/24"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "privada-a"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "privada-b" {
+  vpc_id                  = aws_vpc.produtos-vpc.id
+  availability_zone       = "us-west-2b"
+  cidr_block              = "10.7.1.0/24"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "privada-b"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "rds_cluster_produtos-aurora_group" {
+  name                   = "rds_cluster_produtos-aurora_group"
+  vpc_id                 = aws_vpc.produtos-vpc.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "rds_cluster_produtos-aurora_group"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group_rule" "rule_rds_cluster_produtos_aurora_group_egress_all_protocols" {
+  security_group_id = aws_security_group.rds_cluster_produtos-aurora_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_apigatewayv2_api" "produtos-http-api" {
+  name          = "produtos-http-api"
+  description   = "HTTP API de busca e detalhe de produtos"
+  protocol_type = "HTTP"
+  cors_configuration {
+    allow_headers = ["content-type"]
+    allow_methods = ["GET", "POST", "OPTIONS"]
+    allow_origins = ["*"]
+  }
+  tags = {
+    Name           = "produtos-http-api"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_apigatewayv2_integration" "busca-integration" {
+  api_id                 = aws_apigatewayv2_api.produtos-http-api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.lambda-busca.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 0
+  depends_on             = [aws_lambda_permission.perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-busca]
+}
+
+resource "aws_apigatewayv2_route" "busca-route" {
+  api_id    = aws_apigatewayv2_api.produtos-http-api.id
+  route_key = "GET /busca"
+  target    = "integrations/${aws_apigatewayv2_integration.busca-integration.id}"
+}
+
+resource "aws_apigatewayv2_stage" "default-stage" {
+  api_id      = aws_apigatewayv2_api.produtos-http-api.id
+  name        = "$default"
+  auto_deploy = true
+  tags = {
+    Name           = "default-stage"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudfront_distribution" "site-cdn" {
+  comment             = "CDN do site de busca de produtos"
+  default_root_object = "index.html"
+  enabled             = true
+  http_version        = "http2and3"
+  is_ipv6_enabled     = true
+  price_class         = "PriceClass_All"
+  default_cache_behavior {
+    target_origin_id       = "site-origin"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD", "OPTIONS"]
+    viewer_protocol_policy = "redirect-to-https"
+  }
+  origin {
+    domain_name                 = aws_s3_bucket.site-estatico.bucket_regional_domain_name
+    origin_access_control_id    = aws_cloudfront_origin_access_control.oac_site-estatico.id
+    origin_id                   = "site-origin"
+    response_completion_timeout = 0
+  }
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+  tags = {
+    Name           = "site-cdn"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
+resource "aws_cloudfront_origin_access_control" "oac_site-estatico" {
+  name                              = "oac-site-estatico"
+  description                       = "OAC for site-estatico"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+
+
+
+### CATEGORY: STORAGE ###
+
+resource "aws_s3_bucket" "site-estatico" {
+  bucket              = "site-estatico-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = false
+  object_lock_enabled = false
+  tags = {
+    Name           = "site-estatico"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "site-estatico_controls" {
+  bucket = aws_s3_bucket.site-estatico.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+data "aws_iam_policy_document" "aws_s3_bucket_policy_site-estatico_st_produtos-search-state_doc" {
+  statement {
+    sid    = "AllowCloudFrontServicePrincipalReadOnly"
+    effect = "Allow"
+    principals {
+      identifiers = ["cloudfront.amazonaws.com"]
+      type        = "Service"
+    }
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.site-estatico.arn}/*"]
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.site-cdn.id}"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "aws_s3_bucket_policy_site-estatico_st_produtos-search-state" {
+  bucket = aws_s3_bucket.site-estatico.id
+  policy = data.aws_iam_policy_document.aws_s3_bucket_policy_site-estatico_st_produtos-search-state_doc.json
+}
+
+resource "aws_s3_bucket_public_access_block" "site-estatico_block" {
+  block_public_acls       = true
+  block_public_policy     = true
+  bucket                  = aws_s3_bucket.site-estatico.id
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "site-estatico_configuration" {
+  bucket = aws_s3_bucket.site-estatico.id
+  rule {
+    bucket_key_enabled = true
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "site-estatico_versioning" {
+  bucket = aws_s3_bucket.site-estatico.id
+  versioning_configuration {
+    mfa_delete = "Disabled"
+    status     = "Suspended"
+  }
+}
+
+
+
+
+### CATEGORY: DATABASE ###
+
+resource "aws_db_subnet_group" "subnet_group_produtos-aurora" {
+  name       = "produtos-aurora-subnet-group"
+  subnet_ids = [aws_subnet.privada-a.id, aws_subnet.privada-b.id]
+  tags = {
+    Name           = "subnet_group_produtos-aurora"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_rds_cluster" "produtos-aurora" {
+  database_name               = "produtos"
+  db_subnet_group_name        = aws_db_subnet_group.subnet_group_produtos-aurora.name
+  apply_immediately           = true
+  backup_retention_period     = 7
+  cluster_identifier          = "produtos-aurora"
+  copy_tags_to_snapshot       = true
+  database_insights_mode      = "standard"
+  enable_http_endpoint        = true
+  engine                      = "aurora-postgresql"
+  engine_version              = "16.4"
+  manage_master_user_password = true
+  master_username             = "dbadmin"
+  monitoring_interval         = 0
+  network_type                = "IPV4"
+  port                        = 0
+  skip_final_snapshot         = true
+  storage_encrypted           = true
+  vpc_security_group_ids      = [aws_security_group.rds_cluster_produtos-aurora_group.id]
+  serverlessv2_scaling_configuration {
+    max_capacity             = 4
+    min_capacity             = 0
+    seconds_until_auto_pause = 300
+  }
+  tags = {
+    Name           = "produtos-aurora"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_rds_cluster_instance" "produtos-aurora-instance" {
+  cluster_identifier    = aws_rds_cluster.produtos-aurora.id
+  copy_tags_to_snapshot = true
+  engine                = aws_rds_cluster.produtos-aurora.engine
+  identifier            = "produtos-aurora-instance"
+  instance_class        = "db.serverless"
+  promotion_tier        = 1
+  tags = {
+    Name           = "produtos-aurora-instance"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: COMPUTE ###
+
+resource "aws_lambda_event_source_mapping" "ingestao-esm" {
+  function_name                      = aws_lambda_function.lambda-ingestao.arn
+  batch_size                         = 10
+  event_source_arn                   = aws_sqs_queue.fila-ingestao.arn
+  function_response_types            = ["ReportBatchItemFailures"]
+  maximum_batching_window_in_seconds = 5
+  tags = {
+    Name           = "ingestao-esm"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+data "archive_file" "archive_CloudMan_lambda-busca" {
+  output_path = "${path.module}/CloudMan_lambda-busca.zip"
+  source_dir  = "${path.module}/.external_modules/CloudMan/LambdaFiles/produtos-search/busca"
+  type        = "zip"
+}
+
+resource "aws_lambda_function" "lambda-busca" {
+  function_name                  = "lambda-busca"
+  architectures                  = ["arm64"]
+  description                    = "Endpoint de busca: FTS + pg_trgm no Aurora via RDS Data API"
+  filename                       = data.archive_file.archive_CloudMan_lambda-busca.output_path
+  handler                        = "index.handler"
+  memory_size                    = 512
+  publish                        = false
+  reserved_concurrent_executions = -1
+  role                           = aws_iam_role.lambda-busca_role.arn
+  runtime                        = "nodejs22.x"
+  source_code_hash               = data.archive_file.archive_CloudMan_lambda-busca.output_base64sha256
+  timeout                        = 15
+  environment {
+    variables = {
+    NAME                         = "lambda-busca"
+    REGION                       = data.aws_region.current.region
+    ACCOUNT                      = data.aws_caller_identity.current.account_id
+    AWS_RDS_CLUSTER_NAME_0       = aws_rds_cluster.produtos-aurora.cluster_identifier
+    AWS_RDS_CLUSTER_ENGINE_0     = aws_rds_cluster.produtos-aurora.engine
+    AWS_RDS_CLUSTER_ENDPOINT_0   = aws_rds_cluster.produtos-aurora.endpoint
+    AWS_RDS_CLUSTER_PORT_0       = aws_rds_cluster.produtos-aurora.port
+    AWS_RDS_CLUSTER_DB_NAME_0    = coalesce(aws_rds_cluster.produtos-aurora.database_name, "postgres")
+    AWS_RDS_CLUSTER_SECRET_ARN_0 = one(aws_rds_cluster.produtos-aurora.master_user_secret[*].secret_arn)
+    AWS_RDS_CLUSTER_ARN_0        = aws_rds_cluster.produtos-aurora.arn
+    AWS_RDS_CLUSTER_DATA_API_0   = true
+  }
+  }
+  tags = {
+    Name           = "lambda-busca"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_lambda-busca_st_produtos-search-state_attach]
+}
+
+data "archive_file" "archive_CloudMan_lambda-ingestao" {
+  output_path = "${path.module}/CloudMan_lambda-ingestao.zip"
+  source_dir  = "${path.module}/.external_modules/CloudMan/LambdaFiles/produtos-search/ingestao"
+  type        = "zip"
+}
+
+resource "aws_lambda_function" "lambda-ingestao" {
+  function_name                  = "lambda-ingestao"
+  architectures                  = ["arm64"]
+  description                    = "Worker de ingestao: grava produto e indexa (tsvector/embeddings) no Aurora via RDS Proxy"
+  filename                       = data.archive_file.archive_CloudMan_lambda-ingestao.output_path
+  handler                        = "index.handler"
+  memory_size                    = 1024
+  publish                        = false
+  reserved_concurrent_executions = -1
+  role                           = aws_iam_role.lambda-ingestao_role.arn
+  runtime                        = "nodejs22.x"
+  source_code_hash               = data.archive_file.archive_CloudMan_lambda-ingestao.output_base64sha256
+  timeout                        = 60
+  environment {
+    variables = {
+    NAME                         = "lambda-ingestao"
+    REGION                       = data.aws_region.current.region
+    ACCOUNT                      = data.aws_caller_identity.current.account_id
+    AWS_SQS_QUEUE_NAME_0         = "fila-ingestao"
+    AWS_RDS_CLUSTER_NAME_0       = aws_rds_cluster.produtos-aurora.cluster_identifier
+    AWS_RDS_CLUSTER_ENGINE_0     = aws_rds_cluster.produtos-aurora.engine
+    AWS_RDS_CLUSTER_ENDPOINT_0   = aws_rds_cluster.produtos-aurora.endpoint
+    AWS_RDS_CLUSTER_PORT_0       = aws_rds_cluster.produtos-aurora.port
+    AWS_RDS_CLUSTER_DB_NAME_0    = coalesce(aws_rds_cluster.produtos-aurora.database_name, "postgres")
+    AWS_RDS_CLUSTER_SECRET_ARN_0 = one(aws_rds_cluster.produtos-aurora.master_user_secret[*].secret_arn)
+    AWS_RDS_CLUSTER_ARN_0        = aws_rds_cluster.produtos-aurora.arn
+    AWS_RDS_CLUSTER_DATA_API_0   = true
+  }
+  }
+  tags = {
+    Name           = "lambda-ingestao"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_lambda-ingestao_st_produtos-search-state_attach]
+}
+
+resource "aws_lambda_permission" "perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-busca" {
+  function_name = aws_lambda_function.lambda-busca.function_name
+  statement_id  = "perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-busca"
+  principal     = "apigateway.amazonaws.com"
+  action        = "lambda:InvokeFunction"
+  source_arn    = "${aws_apigatewayv2_api.produtos-http-api.execution_arn}/*/*"
+}
+
+
+
+
+### CATEGORY: INTEGRATION ###
+
+resource "aws_sqs_queue" "fila-ingestao" {
+  name                              = "fila-ingestao"
+  delay_seconds                     = 0
+  fifo_queue                        = false
+  kms_data_key_reuse_period_seconds = 300
+  max_message_size                  = 262144
+  message_retention_seconds         = 1209600
+  receive_wait_time_seconds         = 0
+  sqs_managed_sse_enabled           = true
+  visibility_timeout_seconds        = 360
+  tags = {
+    Name           = "fila-ingestao"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
