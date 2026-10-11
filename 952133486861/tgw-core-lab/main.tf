@@ -81,9 +81,13 @@ resource "aws_vpn_connection" "onprem-vpn" {
 }
 
 resource "aws_customer_gateway" "onprem-cgw" {
+  # ajuste manual · lifecycle.create_before_destroy — Replacing the customer gateway (new ip_address) failed with 'The customer gateway is in use': the VPN connection still points at the old one when Terraform destroys it. Creating the new gateway first lets the VPN connection switch to it in place.
   bgp_asn    = "65000"
   ip_address = "18.217.1.198"
   type       = "ipsec.1"
+  lifecycle {
+    create_before_destroy = true
+  }
   tags = {
     Name           = "onprem-cgw"
     State          = "tgw-core-lab"
