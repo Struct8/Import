@@ -1122,8 +1122,8 @@ resource "aws_security_group_rule" "rule_instance_spoke1_test_group_egress_all_p
 
 resource "aws_security_group_rule" "rule_instance_spoke1_test_group_ingress_icmp__1" {
   security_group_id = aws_security_group.instance_spoke1-test_group.id
-  cidr_blocks       = ["10.0.0.0/8"]
-  description       = "Ping from the other VPCs of the lab"
+  cidr_blocks       = ["10.0.0.0/8", "192.168.0.0/16"]
+  description       = "Ping from the other VPCs of the lab and from the simulated on-premises network"
   from_port         = -1
   protocol          = "icmp"
   to_port           = -1
@@ -1141,8 +1141,8 @@ resource "aws_security_group_rule" "rule_instance_spoke2_test_group_egress_all_p
 
 resource "aws_security_group_rule" "rule_instance_spoke2_test_group_ingress_icmp__1" {
   security_group_id = aws_security_group.instance_spoke2-test_group.id
-  cidr_blocks       = ["10.0.0.0/8"]
-  description       = "Ping from the other VPCs of the lab"
+  cidr_blocks       = ["10.0.0.0/8", "192.168.0.0/16"]
+  description       = "Ping from the other VPCs of the lab and from the simulated on-premises network"
   from_port         = -1
   protocol          = "icmp"
   to_port           = -1
