@@ -145,6 +145,30 @@ resource "aws_iam_role" "covid-csv-to-parquet_role" {
   }
 }
 
+resource "aws_iam_role" "covid-datalake-settings_role" {
+  name = "covid-datalake-settings_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lakeformation.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "covid-datalake-settings_role"
+    State          = "CovidDataLake"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "glue_crawler_covid-bronze-crawler_st_CovidDataLake_attach" {
   policy_arn = aws_iam_policy.glue_crawler_covid-bronze-crawler_st_CovidDataLake.arn
   role       = aws_iam_role.covid-bronze-crawler_role.name
@@ -573,6 +597,19 @@ resource "aws_athena_workgroup" "covid-workgroup" {
     Name           = "covid-workgroup"
     State          = "CovidDataLake"
     Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_lakeformation_data_lake_settings" "covid-datalake-settings" {
+  # ajuste manual · admins — LF data_lake_settings e singleton da conta: a lista de admins substitui a existente no apply. O gerador coloca um IAM role embutido como unico admin, o que removeria o CloudMan (unico admin atual) e desadministraria a conta. Este override fixa a lista com CloudMan (preservado) e root (adicionado) para o lab COVID ser consultavel por qualquer identidade IAM. root nao e modelavel como node.
+  admins = ["arn:aws:iam::952133486861:user/CloudMan", "arn:aws:iam::952133486861:root"]
+  create_database_default_permissions {
+    principal   = "IAM_ALLOWED_PRINCIPALS"
+    permissions = ["ALL"]
+  }
+  create_table_default_permissions {
+    principal   = "IAM_ALLOWED_PRINCIPALS"
+    permissions = ["ALL"]
   }
 }
 
