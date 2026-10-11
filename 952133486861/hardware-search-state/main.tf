@@ -214,7 +214,7 @@ resource "aws_rds_cluster" "hardware-db-cluster" {
   database_insights_mode      = "standard"
   enable_http_endpoint        = true
   engine                      = "aurora-postgresql"
-  engine_version              = "16.6"
+  engine_version              = "16.8"
   manage_master_user_password = true
   master_username             = "dbadmin"
   monitoring_interval         = 0
