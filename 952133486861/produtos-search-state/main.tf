@@ -223,7 +223,7 @@ resource "aws_apigatewayv2_integration" "busca-integration" {
   integration_type       = "AWS_PROXY"
   integration_uri        = aws_lambda_function.lambda-busca.invoke_arn
   payload_format_version = "2.0"
-  timeout_milliseconds   = 0
+  timeout_milliseconds   = 29000
   depends_on             = [aws_lambda_permission.perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-busca]
 }
 
