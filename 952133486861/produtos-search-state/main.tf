@@ -34,6 +34,14 @@ data "aws_cloudfront_cache_policy" "policy_cachingoptimized" {
   name = "Managed-CachingOptimized"
 }
 
+data "aws_cloudfront_origin_request_policy" "policy_allviewerexcepthostheader" {
+  name = "Managed-AllViewerExceptHostHeader"
+}
+
+data "aws_cloudfront_cache_policy" "policy_cachingdisabled" {
+  name = "Managed-CachingDisabled"
+}
+
 
 
 
@@ -237,6 +245,7 @@ resource "aws_apigatewayv2_stage" "default-stage" {
 }
 
 resource "aws_cloudfront_distribution" "site-cdn" {
+  # ajuste manual · ordered_cache_behavior[target_origin_id=api-origin].path_pattern — O gerador deriva path_pattern como /<nome-do-behavior>/* (=/busca/*), que nao casa com a rota GET /busca?q= (sem segmento apos a barra). O site chama /busca com query string pela mesma origem (CloudFront), entao o pattern tem de ser /busca* para capturar /busca e /busca?... O schema do aws_cloudfront_behavior_ nao expoe path_pattern.
   comment             = "CDN do site de busca de produtos"
   default_root_object = "index.html"
   enabled             = true
@@ -251,11 +260,31 @@ resource "aws_cloudfront_distribution" "site-cdn" {
     cached_methods           = ["GET", "HEAD", "OPTIONS"]
     viewer_protocol_policy   = "redirect-to-https"
   }
+  ordered_cache_behavior {
+    cache_policy_id          = data.aws_cloudfront_cache_policy.policy_cachingdisabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.policy_allviewerexcepthostheader.id
+    target_origin_id         = "api-origin"
+    allowed_methods          = ["GET", "HEAD", "OPTIONS"]
+    cached_methods           = ["GET", "HEAD"]
+    path_pattern             = "/busca*"
+    viewer_protocol_policy   = "redirect-to-https"
+  }
   origin {
     domain_name                 = aws_s3_bucket.site-estatico.bucket_regional_domain_name
     origin_access_control_id    = aws_cloudfront_origin_access_control.oac_site-estatico.id
     origin_id                   = "site-origin"
     response_completion_timeout = 0
+  }
+  origin {
+    domain_name                 = "${aws_apigatewayv2_api.produtos-http-api.id}.execute-api.${data.aws_region.current.region}.amazonaws.com"
+    origin_id                   = "api-origin"
+    response_completion_timeout = 0
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
   }
   restrictions {
     geo_restriction {
