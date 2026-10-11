@@ -397,8 +397,18 @@ resource "aws_glue_catalog_table" "silver_covid_global" {
   database_name = aws_glue_catalog_database.covid_db.name
   name          = "silver_covid_global"
   description   = "Curated COVID-19 series with cumulative confirmed cases and deaths per country and date. Stored as Parquet in the silver bucket and partitioned by report_date. This is the table Athena and QuickSight read."
-  retention     = 0
-  table_type    = "EXTERNAL_TABLE"
+  parameters = {
+    "projection.enabled"                   = "true"
+    "projection.report_date.type"          = "date"
+    "projection.report_date.range"         = "2020-01-22,NOW"
+    "projection.report_date.format"        = "yyyy-MM-dd"
+    "projection.report_date.interval"      = "1"
+    "projection.report_date.interval.unit" = "DAYS"
+    "storage.location.template"            = "s3://${aws_s3_bucket.covid-silver.bucket}/covid19/report_date=${report_date}/"
+    "classification"                       = "parquet"
+  }
+  retention  = 0
+  table_type = "EXTERNAL_TABLE"
   partition_keys {
     name    = "report_date"
     comment = "Report date, in YYYY-MM-DD format."
@@ -450,7 +460,7 @@ resource "aws_glue_catalog_table" "silver_covid_global" {
 resource "aws_glue_crawler" "covid-bronze-crawler" {
   database_name = aws_glue_catalog_database.covid_db.name
   name          = "covid-bronze-crawler"
-  description   = "Scans the raw CSV files in the bronze bucket on demand and registers them in the Glue Data Catalog under the bronze_ table prefix. It has no schedule: the user runs it manually (Run crawler), and its successful completion is what starts the ETL job via the trigger."
+  description   = "Scans the raw CSV files in the bronze bucket and registers them in the Glue Data Catalog under the bronze_ table prefix. Runs automatically every 10 minutes (cron schedule); its successful completion starts the ETL job via the trigger. No manual run needed."
   role          = aws_iam_role.covid-bronze-crawler_role.arn
   table_prefix  = "bronze_"
   lake_formation_configuration {
@@ -496,8 +506,27 @@ resource "aws_glue_job" "covid-csv-to-parquet" {
   depends_on = [aws_iam_role_policy_attachment.glue_job_covid-csv-to-parquet_st_CovidDataLake_attach]
 }
 
+resource "aws_glue_trigger" "covid-etl-start" {
+  # ajuste manual · workflow_name — aws_glue_workflow e uncurated no Struct8: nao ha conexao trigger->workflow que preencha workflow_name. Este override amarra o trigger de start ao workflow, para o start_on_creation disparar a cadeia uma vez no apply.
+  name          = "covid-etl-start"
+  workflow_name = aws_glue_workflow.covid-etl-workflow.name
+  actions {
+    crawler_name = aws_glue_crawler.covid-bronze-crawler.name
+  }
+  description       = "Start trigger of the ETL workflow. ON_DEMAND with start_on_creation=true: fires once when the stack is applied, kicking off the bronze crawler. No schedule, so no recurring cost."
+  start_on_creation = true
+  type              = "ON_DEMAND"
+  tags = {
+    Name           = "covid-etl-start"
+    State          = "CovidDataLake"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_glue_trigger" "covid-etl-trigger" {
-  name = "covid-etl-trigger"
+  # ajuste manual · workflow_name — aws_glue_workflow e uncurated: amarra o trigger CONDITIONAL ao mesmo workflow, para o encadeamento crawler SUCCEEDED -> job rodar dentro do workflow.
+  name          = "covid-etl-trigger"
+  workflow_name = aws_glue_workflow.covid-etl-workflow.name
   actions {
     job_name = aws_glue_job.covid-csv-to-parquet.name
   }
@@ -513,6 +542,16 @@ resource "aws_glue_trigger" "covid-etl-trigger" {
   }
   tags = {
     Name           = "covid-etl-trigger"
+    State          = "CovidDataLake"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_glue_workflow" "covid-etl-workflow" {
+  name                = "covid-etl-workflow"
+  max_concurrent_runs = 1
+  tags = {
+    Name           = "covid-etl-workflow"
     State          = "CovidDataLake"
     Struct8Creator = "Contato Struct"
   }
