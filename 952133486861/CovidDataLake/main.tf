@@ -514,7 +514,7 @@ resource "aws_glue_trigger" "covid-etl-start" {
     crawler_name = aws_glue_crawler.covid-bronze-crawler.name
   }
   description       = "Start trigger of the ETL workflow. ON_DEMAND with start_on_creation=true: fires once when the stack is applied, kicking off the bronze crawler. No schedule, so no recurring cost."
-  start_on_creation = true
+  start_on_creation = false
   type              = "ON_DEMAND"
   tags = {
     Name           = "covid-etl-start"
