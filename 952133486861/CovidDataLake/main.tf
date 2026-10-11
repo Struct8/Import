@@ -198,7 +198,8 @@ resource "aws_s3_bucket" "covid-scripts" {
 }
 
 resource "aws_s3_bucket" "covid-silver" {
-  bucket              = "struct8-covid-silver"
+  bucket              = "struct8-covid-silver-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
   force_destroy       = true
   object_lock_enabled = false
   tags = {
@@ -508,7 +509,6 @@ resource "aws_glue_job" "covid-csv-to-parquet" {
 }
 
 resource "aws_glue_trigger" "covid-etl-start" {
-  # ajuste manual · workflow_name — aws_glue_workflow e uncurated no Struct8: nao ha conexao trigger->workflow que preencha workflow_name. Este override amarra o trigger de start ao workflow, para o start_on_creation disparar a cadeia uma vez no apply.
   name          = "covid-etl-start"
   workflow_name = aws_glue_workflow.covid-etl-workflow.name
   actions {
@@ -526,7 +526,6 @@ resource "aws_glue_trigger" "covid-etl-start" {
 }
 
 resource "aws_glue_trigger" "covid-etl-trigger" {
-  # ajuste manual · workflow_name — aws_glue_workflow e uncurated: amarra o trigger CONDITIONAL ao mesmo workflow, para o encadeamento crawler SUCCEEDED -> job rodar dentro do workflow.
   name          = "covid-etl-trigger"
   workflow_name = aws_glue_workflow.covid-etl-workflow.name
   actions {
