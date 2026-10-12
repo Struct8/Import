@@ -9,12 +9,13 @@
         "LambdaFiles/produtos-search/busca",
         "LambdaFiles/produtos-search/ingestao",
         "LambdaFiles/produtos-search/site",
-        "LambdaFiles/produtos-search/publisher"
+        "LambdaFiles/produtos-search/publisher",
+        "LambdaFiles/produtos-search/presign"
       ]
     }
   ],
   "action": "apply",
-  "trigger_id": "1791815474717",
+  "trigger_id": "1791820207205",
   "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
