@@ -7,13 +7,12 @@
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
         "templates/ec2-nat-private/v1/user_data",
-        "templates/wordpress-professional/v1/container",
-        "templates/vpc-k6-load-generator/v3/user_data"
+        "templates/wordpress-professional/v1/container"
       ]
     }
   ],
   "action": "apply",
-  "trigger_id": "1791834234661",
+  "trigger_id": "1791837345126",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -25,20 +24,11 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "APPLY ALL: wordpress-professional",
+      "stage_name": "Manual Trigger: wordpress-professional",
       "parallel_execution": false,
       "states": [
         {
           "path": "952133486861/wordpress-professional",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
-            "secret_name": "AUTH_AWS_952133486861"
-          }
-        },
-        {
-          "path": "952133486861/wordpress-loadtest",
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
