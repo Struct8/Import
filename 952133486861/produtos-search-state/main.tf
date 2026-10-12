@@ -111,6 +111,27 @@ resource "aws_iam_policy" "lambda_function_lambda-ingestao_st_produtos-search-st
   policy      = data.aws_iam_policy_document.lambda_function_lambda-ingestao_st_produtos-search-state_doc.json
 }
 
+data "aws_iam_policy_document" "lambda_function_lambda-publisher_st_produtos-search-state_doc" {
+  statement {
+    sid       = "AllowWriteLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.publisher-logs.arn}:*"]
+  }
+  statement {
+    sid       = "AllowSQSActions"
+    effect    = "Allow"
+    actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage", "sqs:SendMessage"]
+    resources = [aws_sqs_queue.fila-ingestao.arn]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_lambda-publisher_st_produtos-search-state" {
+  name        = "lambda_function_lambda-publisher_st_produtos-search-state"
+  description = "Access Policy for lambda-publisher"
+  policy      = data.aws_iam_policy_document.lambda_function_lambda-publisher_st_produtos-search-state_doc.json
+}
+
 resource "aws_iam_role" "lambda-busca_role" {
   name = "lambda-busca_role"
   assume_role_policy = jsonencode({
@@ -159,6 +180,30 @@ resource "aws_iam_role" "lambda-ingestao_role" {
   }
 }
 
+resource "aws_iam_role" "lambda-publisher_role" {
+  name = "lambda-publisher_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "lambda-publisher_role"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "lambda_function_lambda-busca_st_produtos-search-state_attach" {
   policy_arn = aws_iam_policy.lambda_function_lambda-busca_st_produtos-search-state.arn
   role       = aws_iam_role.lambda-busca_role.name
@@ -167,6 +212,11 @@ resource "aws_iam_role_policy_attachment" "lambda_function_lambda-busca_st_produ
 resource "aws_iam_role_policy_attachment" "lambda_function_lambda-ingestao_st_produtos-search-state_attach" {
   policy_arn = aws_iam_policy.lambda_function_lambda-ingestao_st_produtos-search-state.arn
   role       = aws_iam_role.lambda-ingestao_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_lambda-publisher_st_produtos-search-state_attach" {
+  policy_arn = aws_iam_policy.lambda_function_lambda-publisher_st_produtos-search-state.arn
+  role       = aws_iam_role.lambda-publisher_role.name
 }
 
 resource "aws_acm_certificate" "hardstore-cert" {
@@ -314,10 +364,25 @@ resource "aws_apigatewayv2_integration" "busca-integration" {
   depends_on             = [aws_lambda_permission.perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-busca]
 }
 
+resource "aws_apigatewayv2_integration" "produtos-integration" {
+  api_id                 = aws_apigatewayv2_api.produtos-http-api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.lambda-publisher.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 10000
+  depends_on             = [aws_lambda_permission.perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-publisher]
+}
+
 resource "aws_apigatewayv2_route" "busca-route" {
   api_id    = aws_apigatewayv2_api.produtos-http-api.id
   route_key = "GET /busca"
   target    = "integrations/${aws_apigatewayv2_integration.busca-integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "produtos-route" {
+  api_id    = aws_apigatewayv2_api.produtos-http-api.id
+  route_key = "POST /produtos"
+  target    = "integrations/${aws_apigatewayv2_integration.produtos-integration.id}"
 }
 
 resource "aws_apigatewayv2_stage" "default-stage" {
@@ -648,9 +713,52 @@ resource "aws_lambda_function" "lambda-ingestao" {
   depends_on = [aws_iam_role_policy_attachment.lambda_function_lambda-ingestao_st_produtos-search-state_attach]
 }
 
+data "archive_file" "archive_CloudMan_lambda-publisher" {
+  output_path = "${path.module}/CloudMan_lambda-publisher.zip"
+  source_dir  = "${path.module}/.external_modules/CloudMan/LambdaFiles/produtos-search/publisher"
+  type        = "zip"
+}
+
+resource "aws_lambda_function" "lambda-publisher" {
+  function_name                  = "lambda-publisher"
+  architectures                  = ["arm64"]
+  description                    = "Recebe POST /produtos e publica na SQS para ingestao assincrona"
+  filename                       = data.archive_file.archive_CloudMan_lambda-publisher.output_path
+  handler                        = "index.handler"
+  memory_size                    = 256
+  publish                        = false
+  reserved_concurrent_executions = -1
+  role                           = aws_iam_role.lambda-publisher_role.arn
+  runtime                        = "nodejs22.x"
+  source_code_hash               = data.archive_file.archive_CloudMan_lambda-publisher.output_base64sha256
+  timeout                        = 10
+  environment {
+    variables = {
+    NAME                 = "lambda-publisher"
+    REGION               = data.aws_region.current.region
+    ACCOUNT              = data.aws_caller_identity.current.account_id
+    AWS_SQS_QUEUE_NAME_0 = "fila-ingestao"
+  }
+  }
+  tags = {
+    Name           = "lambda-publisher"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_lambda-publisher_st_produtos-search-state_attach]
+}
+
 resource "aws_lambda_permission" "perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-busca" {
   function_name = aws_lambda_function.lambda-busca.function_name
   statement_id  = "perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-busca"
+  principal     = "apigateway.amazonaws.com"
+  action        = "lambda:InvokeFunction"
+  source_arn    = "${aws_apigatewayv2_api.produtos-http-api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-publisher" {
+  function_name = aws_lambda_function.lambda-publisher.function_name
+  statement_id  = "perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-publisher"
   principal     = "apigateway.amazonaws.com"
   action        = "lambda:InvokeFunction"
   source_arn    = "${aws_apigatewayv2_api.produtos-http-api.execution_arn}/*/*"
@@ -702,6 +810,18 @@ resource "aws_cloudwatch_log_group" "ingestao-logs" {
   skip_destroy      = false
   tags = {
     Name           = "ingestao-logs"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "publisher-logs" {
+  name              = "/aws/lambda/lambda-publisher"
+  log_group_class   = "STANDARD"
+  retention_in_days = 14
+  skip_destroy      = false
+  tags = {
+    Name           = "publisher-logs"
     State          = "produtos-search-state"
     Struct8Creator = "Contato Struct"
   }
