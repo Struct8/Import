@@ -49,16 +49,22 @@ data "aws_cloudfront_cache_policy" "policy_cachingdisabled" {
 
 data "aws_iam_policy_document" "lambda_function_lambda-busca_st_produtos-search-state_doc" {
   statement {
-    sid       = "ReadDbSecret"
+    sid       = "AllowWriteLogs"
     effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
-    resources = [aws_rds_cluster.produtos-aurora.master_user_secret[0].secret_arn]
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.busca-logs.arn}:*"]
   }
   statement {
     sid       = "DataApi"
     effect    = "Allow"
-    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents", "rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
-    resources = ["*"]
+    actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
+    resources = [aws_rds_cluster.produtos-aurora.arn]
+  }
+  statement {
+    sid       = "AllowRDSSecretAccessprodutosaurora"
+    effect    = "Allow"
+    actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
+    resources = [aws_rds_cluster.produtos-aurora.master_user_secret[0].secret_arn]
   }
 }
 
@@ -70,9 +76,21 @@ resource "aws_iam_policy" "lambda_function_lambda-busca_st_produtos-search-state
 
 data "aws_iam_policy_document" "lambda_function_lambda-ingestao_st_produtos-search-state_doc" {
   statement {
-    sid       = "ReadDbSecret"
+    sid       = "AllowWriteLogs"
     effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.ingestao-logs.arn}:*"]
+  }
+  statement {
+    sid       = "DataApi"
+    effect    = "Allow"
+    actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
+    resources = [aws_rds_cluster.produtos-aurora.arn]
+  }
+  statement {
+    sid       = "AllowRDSSecretAccessprodutosaurora"
+    effect    = "Allow"
+    actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
     resources = [aws_rds_cluster.produtos-aurora.master_user_secret[0].secret_arn]
   }
   statement {
@@ -80,12 +98,6 @@ data "aws_iam_policy_document" "lambda_function_lambda-ingestao_st_produtos-sear
     effect    = "Allow"
     actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage", "sqs:SendMessage"]
     resources = [aws_sqs_queue.fila-ingestao.arn]
-  }
-  statement {
-    sid       = "DataApi"
-    effect    = "Allow"
-    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents", "rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
-    resources = ["*"]
   }
 }
 
@@ -257,7 +269,6 @@ resource "aws_apigatewayv2_stage" "default-stage" {
 }
 
 resource "aws_cloudfront_distribution" "site-cdn" {
-  # ajuste manual · ordered_cache_behavior[target_origin_id=api-origin].path_pattern — O gerador deriva path_pattern como /<nome-do-behavior>/* (=/busca/*), que nao casa com a rota GET /busca?q= (sem segmento apos a barra). O site chama /busca com query string pela mesma origem (CloudFront), entao o pattern tem de ser /busca* para capturar /busca e /busca?... O schema do aws_cloudfront_behavior_ nao expoe path_pattern.
   comment             = "CDN do site de busca de produtos"
   default_root_object = "index.html"
   enabled             = true
@@ -329,7 +340,7 @@ resource "aws_cloudfront_origin_access_control" "oac_site-estatico" {
 resource "aws_s3_bucket" "site-estatico" {
   bucket              = "site-estatico-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
   bucket_namespace    = "account-regional"
-  force_destroy       = false
+  force_destroy       = true
   object_lock_enabled = false
   tags = {
     Name           = "site-estatico"
@@ -391,6 +402,20 @@ resource "aws_s3_bucket_versioning" "site-estatico_versioning" {
   versioning_configuration {
     mfa_delete = "Disabled"
     status     = "Suspended"
+  }
+}
+
+resource "aws_s3_object" "site-files" {
+  for_each     = fileset("${path.module}/.external_modules/CloudMan/LambdaFiles/produtos-search/site", "**")
+  source       = "${path.module}/.external_modules/CloudMan/LambdaFiles/produtos-search/site/${each.value}"
+  bucket       = aws_s3_bucket.site-estatico.bucket
+  content_type = lookup({ "html" = "text/html; charset=utf-8", "js" = "text/javascript; charset=utf-8", "css" = "text/css; charset=utf-8", "json" = "application/json", "svg" = "image/svg+xml" }, lower(regex("[^.]*$", each.value)), "application/octet-stream")
+  etag         = filemd5("${path.module}/.external_modules/CloudMan/LambdaFiles/produtos-search/site/${each.value}")
+  key          = each.value
+  tags = {
+    Name           = "site-files"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -581,6 +606,35 @@ resource "aws_sqs_queue" "fila-ingestao" {
   visibility_timeout_seconds        = 360
   tags = {
     Name           = "fila-ingestao"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_log_group" "busca-logs" {
+  name              = "/aws/lambda/lambda-busca"
+  log_group_class   = "STANDARD"
+  retention_in_days = 14
+  skip_destroy      = false
+  tags = {
+    Name           = "busca-logs"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "ingestao-logs" {
+  name              = "/aws/lambda/lambda-ingestao"
+  log_group_class   = "STANDARD"
+  retention_in_days = 14
+  skip_destroy      = false
+  tags = {
+    Name           = "ingestao-logs"
     State          = "produtos-search-state"
     Struct8Creator = "Contato Struct"
   }
