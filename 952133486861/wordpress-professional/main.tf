@@ -2130,12 +2130,14 @@ resource "aws_ecs_task_definition" "wordpress" {
 ### CATEGORY: INTEGRATION ###
 
 resource "aws_sns_topic" "alarmsWordpress" {
-  name = "alarmsWordpress"
+  name           = "alarmsWordpress"
+  tracing_config = "Active"
   tags = {
     Name           = "alarmsWordpress"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_xray_resource_policy.aws_xray_resource_policy_st_wordpress-professional_6a7eb02276]
 }
 
 resource "aws_sns_topic_subscription" "Subscription1" {
@@ -2264,12 +2266,40 @@ resource "aws_cloudwatch_metric_alarm" "alarmTasksMemory" {
 
 resource "aws_xray_group" "wordpressTraces" {
   group_name        = "wordpressTraces"
-  filter_expression = "service(\"wordpress\")"
+  filter_expression = "service(\"alarmsWordpress\") OR service(\"wordpress\")"
   tags = {
     Name           = "wordpressTraces"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
+}
+
+data "aws_iam_policy_document" "aws_xray_resource_policy_st_wordpress-professional_6a7eb02276_doc" {
+  statement {
+    sid    = "AllowSNSToSendTracesToXRay"
+    effect = "Allow"
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+    actions   = ["xray:GetSamplingRules", "xray:GetSamplingTargets", "xray:PutTraceSegments"]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      values   = [data.aws_caller_identity.current.account_id]
+      variable = "aws:SourceAccount"
+    }
+    condition {
+      test     = "StringLike"
+      values   = ["arn:aws:sns:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:*"]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+resource "aws_xray_resource_policy" "aws_xray_resource_policy_st_wordpress-professional_6a7eb02276" {
+  policy_name     = "aws_xray_resource_policy_st_wordpress-professional_6a7eb02276"
+  policy_document = data.aws_iam_policy_document.aws_xray_resource_policy_st_wordpress-professional_6a7eb02276_doc.json
 }
 
 
