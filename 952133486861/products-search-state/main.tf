@@ -59,7 +59,7 @@ data "aws_iam_policy_document" "lambda_function_lambda-ingestion_st_products-sea
     resources = ["${aws_cloudwatch_log_group.ingestion-logs.arn}:*"]
   }
   statement {
-    sid       = "AllowRDSDataApiproductsaurora"
+    sid       = "DataApi"
     effect    = "Allow"
     actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
     resources = [aws_rds_cluster.products-aurora.arn]
@@ -69,12 +69,6 @@ data "aws_iam_policy_document" "lambda_function_lambda-ingestion_st_products-sea
     effect    = "Allow"
     actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
     resources = [aws_rds_cluster.products-aurora.master_user_secret[0].secret_arn]
-  }
-  statement {
-    sid       = "DataApi"
-    effect    = "Allow"
-    actions   = ["rds-data:ExecuteStatement"]
-    resources = [aws_rds_cluster.produtos-aurora.arn]
   }
   statement {
     sid       = "AllowEventSourceRead"
@@ -140,7 +134,7 @@ data "aws_iam_policy_document" "lambda_function_lambda-search_st_products-search
     resources = ["${aws_cloudwatch_log_group.search-logs.arn}:*"]
   }
   statement {
-    sid       = "AllowRDSDataApiproductsaurora"
+    sid       = "DataApi"
     effect    = "Allow"
     actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
     resources = [aws_rds_cluster.products-aurora.arn]
@@ -150,12 +144,6 @@ data "aws_iam_policy_document" "lambda_function_lambda-search_st_products-search
     effect    = "Allow"
     actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
     resources = [aws_rds_cluster.products-aurora.master_user_secret[0].secret_arn]
-  }
-  statement {
-    sid       = "DataApi"
-    effect    = "Allow"
-    actions   = ["rds-data:ExecuteStatement"]
-    resources = [aws_rds_cluster.produtos-aurora.arn]
   }
 }
 
@@ -939,7 +927,7 @@ resource "aws_sqs_queue" "ingestion-queue" {
 ### CATEGORY: MONITORING ###
 
 resource "aws_cloudwatch_log_group" "ingestion-logs" {
-  name              = "/aws/lambda/lambda-ingestao"
+  name              = "/aws/lambda/lambda-ingestion"
   log_group_class   = "STANDARD"
   retention_in_days = 14
   skip_destroy      = false
@@ -975,7 +963,7 @@ resource "aws_cloudwatch_log_group" "publisher-logs" {
 }
 
 resource "aws_cloudwatch_log_group" "search-logs" {
-  name              = "/aws/lambda/lambda-busca"
+  name              = "/aws/lambda/lambda-search"
   log_group_class   = "STANDARD"
   retention_in_days = 14
   skip_destroy      = false
