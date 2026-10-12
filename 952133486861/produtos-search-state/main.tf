@@ -100,7 +100,7 @@ data "aws_iam_policy_document" "lambda_function_lambda-ingestao_st_produtos-sear
   statement {
     sid       = "AllowEventSourceRead"
     effect    = "Allow"
-    actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage", "sqs:SendMessage"]
+    actions   = ["sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ReceiveMessage"]
     resources = [aws_sqs_queue.fila-ingestao.arn]
   }
 }
@@ -109,6 +109,27 @@ resource "aws_iam_policy" "lambda_function_lambda-ingestao_st_produtos-search-st
   name        = "lambda_function_lambda-ingestao_st_produtos-search-state"
   description = "Access Policy for lambda-ingestao"
   policy      = data.aws_iam_policy_document.lambda_function_lambda-ingestao_st_produtos-search-state_doc.json
+}
+
+data "aws_iam_policy_document" "lambda_function_lambda-presign_st_produtos-search-state_doc" {
+  statement {
+    sid       = "AllowWriteLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.presign-logs.arn}:*"]
+  }
+  statement {
+    sid       = "AllowImagePut"
+    effect    = "Allow"
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.site-estatico.arn}/img/*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_lambda-presign_st_produtos-search-state" {
+  name        = "lambda_function_lambda-presign_st_produtos-search-state"
+  description = "Access Policy for lambda-presign"
+  policy      = data.aws_iam_policy_document.lambda_function_lambda-presign_st_produtos-search-state_doc.json
 }
 
 data "aws_iam_policy_document" "lambda_function_lambda-publisher_st_produtos-search-state_doc" {
@@ -180,6 +201,30 @@ resource "aws_iam_role" "lambda-ingestao_role" {
   }
 }
 
+resource "aws_iam_role" "lambda-presign_role" {
+  name = "lambda-presign_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "lambda-presign_role"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role" "lambda-publisher_role" {
   name = "lambda-publisher_role"
   assume_role_policy = jsonencode({
@@ -212,6 +257,11 @@ resource "aws_iam_role_policy_attachment" "lambda_function_lambda-busca_st_produ
 resource "aws_iam_role_policy_attachment" "lambda_function_lambda-ingestao_st_produtos-search-state_attach" {
   policy_arn = aws_iam_policy.lambda_function_lambda-ingestao_st_produtos-search-state.arn
   role       = aws_iam_role.lambda-ingestao_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_lambda-presign_st_produtos-search-state_attach" {
+  policy_arn = aws_iam_policy.lambda_function_lambda-presign_st_produtos-search-state.arn
+  role       = aws_iam_role.lambda-presign_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_function_lambda-publisher_st_produtos-search-state_attach" {
@@ -373,6 +423,15 @@ resource "aws_apigatewayv2_integration" "produtos-integration" {
   depends_on             = [aws_lambda_permission.perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-publisher]
 }
 
+resource "aws_apigatewayv2_integration" "upload-integration" {
+  api_id                 = aws_apigatewayv2_api.produtos-http-api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.lambda-presign.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 10000
+  depends_on             = [aws_lambda_permission.perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-presign]
+}
+
 resource "aws_apigatewayv2_route" "busca-route" {
   api_id    = aws_apigatewayv2_api.produtos-http-api.id
   route_key = "GET /busca"
@@ -383,6 +442,12 @@ resource "aws_apigatewayv2_route" "produtos-route" {
   api_id    = aws_apigatewayv2_api.produtos-http-api.id
   route_key = "POST /produtos"
   target    = "integrations/${aws_apigatewayv2_integration.produtos-integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "upload-route" {
+  api_id    = aws_apigatewayv2_api.produtos-http-api.id
+  route_key = "GET /upload-url"
+  target    = "integrations/${aws_apigatewayv2_integration.upload-integration.id}"
 }
 
 resource "aws_apigatewayv2_stage" "default-stage" {
@@ -428,6 +493,15 @@ resource "aws_cloudfront_distribution" "site-cdn" {
     allowed_methods          = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods           = ["GET", "HEAD"]
     path_pattern             = "/produtos*"
+    viewer_protocol_policy   = "redirect-to-https"
+  }
+  ordered_cache_behavior {
+    cache_policy_id          = data.aws_cloudfront_cache_policy.policy_cachingdisabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.policy_allviewerexcepthostheader.id
+    target_origin_id         = "api-origin"
+    allowed_methods          = ["GET", "HEAD", "OPTIONS"]
+    cached_methods           = ["GET", "HEAD"]
+    path_pattern             = "/upload-url*"
     viewer_protocol_policy   = "redirect-to-https"
   }
   origin {
@@ -487,6 +561,16 @@ resource "aws_s3_bucket" "site-estatico" {
     Name           = "site-estatico"
     State          = "produtos-search-state"
     Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_s3_bucket_cors_configuration" "site-estatico_cors" {
+  bucket = aws_s3_bucket.site-estatico.id
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT", "GET"]
+    allowed_origins = ["https://hardstore.cloudman.pro"]
+    max_age_seconds = 3000
   }
 }
 
@@ -703,7 +787,6 @@ resource "aws_lambda_function" "lambda-ingestao" {
     NAME                         = "lambda-ingestao"
     REGION                       = data.aws_region.current.region
     ACCOUNT                      = data.aws_caller_identity.current.account_id
-    AWS_SQS_QUEUE_NAME_0         = "fila-ingestao"
     AWS_RDS_CLUSTER_NAME_0       = aws_rds_cluster.produtos-aurora.cluster_identifier
     AWS_RDS_CLUSTER_ENGINE_0     = aws_rds_cluster.produtos-aurora.engine
     AWS_RDS_CLUSTER_ENDPOINT_0   = aws_rds_cluster.produtos-aurora.endpoint
@@ -720,6 +803,41 @@ resource "aws_lambda_function" "lambda-ingestao" {
     Struct8Creator = "Contato Struct"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_lambda-ingestao_st_produtos-search-state_attach]
+}
+
+data "archive_file" "archive_CloudMan_lambda-presign" {
+  output_path = "${path.module}/CloudMan_lambda-presign.zip"
+  source_dir  = "${path.module}/.external_modules/CloudMan/LambdaFiles/produtos-search/presign"
+  type        = "zip"
+}
+
+resource "aws_lambda_function" "lambda-presign" {
+  function_name                  = "lambda-presign"
+  architectures                  = ["arm64"]
+  description                    = "Gera presigned PUT para upload de imagem direto no S3"
+  filename                       = data.archive_file.archive_CloudMan_lambda-presign.output_path
+  handler                        = "index.handler"
+  memory_size                    = 256
+  publish                        = false
+  reserved_concurrent_executions = -1
+  role                           = aws_iam_role.lambda-presign_role.arn
+  runtime                        = "nodejs22.x"
+  source_code_hash               = data.archive_file.archive_CloudMan_lambda-presign.output_base64sha256
+  timeout                        = 10
+  environment {
+    variables = {
+    NAME                 = "lambda-presign"
+    REGION               = data.aws_region.current.region
+    ACCOUNT              = data.aws_caller_identity.current.account_id
+    AWS_S3_BUCKET_NAME_0 = "site-estatico-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  }
+  }
+  tags = {
+    Name           = "lambda-presign"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_lambda-presign_st_produtos-search-state_attach]
 }
 
 data "archive_file" "archive_CloudMan_lambda-publisher" {
@@ -760,6 +878,14 @@ resource "aws_lambda_function" "lambda-publisher" {
 resource "aws_lambda_permission" "perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-busca" {
   function_name = aws_lambda_function.lambda-busca.function_name
   statement_id  = "perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-busca"
+  principal     = "apigateway.amazonaws.com"
+  action        = "lambda:InvokeFunction"
+  source_arn    = "${aws_apigatewayv2_api.produtos-http-api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-presign" {
+  function_name = aws_lambda_function.lambda-presign.function_name
+  statement_id  = "perm_aws_apigatewayv2_api_produtos-http-api_to_lambda-presign"
   principal     = "apigateway.amazonaws.com"
   action        = "lambda:InvokeFunction"
   source_arn    = "${aws_apigatewayv2_api.produtos-http-api.execution_arn}/*/*"
@@ -819,6 +945,18 @@ resource "aws_cloudwatch_log_group" "ingestao-logs" {
   skip_destroy      = false
   tags = {
     Name           = "ingestao-logs"
+    State          = "produtos-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "presign-logs" {
+  name              = "/aws/lambda/lambda-presign"
+  log_group_class   = "STANDARD"
+  retention_in_days = 14
+  skip_destroy      = false
+  tags = {
+    Name           = "presign-logs"
     State          = "produtos-search-state"
     Struct8Creator = "Contato Struct"
   }
