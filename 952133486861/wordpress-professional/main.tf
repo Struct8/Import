@@ -68,10 +68,6 @@ data "aws_ssm_parameter" "wpAdminPassword" {
   with_decryption = false
 }
 
-data "aws_cloudfront_realtime_log_config" "cdnLogConfig" {
-  name = "cdnLogConfig"
-}
-
 
 
 
@@ -974,7 +970,6 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
     target_origin_id           = "originAlb"
     allowed_methods            = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods             = ["GET", "HEAD", "OPTIONS"]
-    realtime_log_config_arn    = data.aws_cloudfront_realtime_log_config.cdnLogConfig.arn
     viewer_protocol_policy     = "redirect-to-https"
     function_association {
       event_type   = "viewer-request"
