@@ -8,13 +8,14 @@
       "folders": [
         "LambdaFiles/produtos-search/busca",
         "LambdaFiles/produtos-search/ingestao",
-        "LambdaFiles/produtos-search/site"
+        "LambdaFiles/produtos-search/site",
+        "LambdaFiles/produtos-search/publisher"
       ]
     }
   ],
   "action": "apply",
-  "trigger_id": "1791812368249",
-  "triggered_by": "Contato Struct",
+  "trigger_id": "1791814872026",
+  "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
