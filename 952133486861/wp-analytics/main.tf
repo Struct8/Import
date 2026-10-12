@@ -1,5 +1,8 @@
 terraform {
   required_providers {
+    archive = {
+      source = "hashicorp/archive"
+    }
     aws = {
       source = "hashicorp/aws"
     }
@@ -20,6 +23,23 @@ provider "aws" {
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
+
+### SYSTEM DATA SOURCES ###
+
+data "aws_cloudfront_origin_request_policy" "policy_allviewerexcepthostheader" {
+  name = "Managed-AllViewerExceptHostHeader"
+}
+
+data "aws_cloudfront_cache_policy" "policy_cachingdisabled" {
+  name = "Managed-CachingDisabled"
+}
+
+data "aws_cloudfront_response_headers_policy" "policy_securityheaderspolicy" {
+  name = "Managed-SecurityHeadersPolicy"
+}
+
+
+
 
 ### CATEGORY: IAM ###
 
@@ -63,6 +83,81 @@ resource "aws_iam_policy" "kinesis_firehose_delivery_stream_cdnLogFirehose_st_wp
   name        = "kinesis_firehose_delivery_stream_cdnLogFirehose_st_wp-analytics"
   description = "Access Policy for cdnLogFirehose"
   policy      = data.aws_iam_policy_document.kinesis_firehose_delivery_stream_cdnLogFirehose_st_wp-analytics_doc.json
+}
+
+data "aws_iam_policy_document" "lambda_function_analyticsPage_st_wp-analytics_doc" {
+  statement {
+    sid       = "AllowRunQueriesInWorkgroup"
+    effect    = "Allow"
+    actions   = ["athena:GetQueryExecution", "athena:GetQueryResults", "athena:StartQueryExecution", "athena:StopQueryExecution"]
+    resources = [aws_athena_workgroup.cdnAnalytics.arn]
+  }
+  statement {
+    sid       = "AllowWriteLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.analyticsPageLogs.arn}:*"]
+  }
+  statement {
+    sid       = "AllowReadTable"
+    effect    = "Allow"
+    actions   = ["glue:GetTable"]
+    resources = [aws_glue_catalog_table.cdn_log.arn, "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog", "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:database/${aws_glue_catalog_table.cdn_log.database_name}"]
+  }
+  statement {
+    sid       = "AllowBucketLevelActions"
+    effect    = "Allow"
+    actions   = ["s3:GetBucketLocation", "s3:ListBucket"]
+    resources = [aws_s3_bucket.cdnLogBucket.arn]
+  }
+  statement {
+    sid       = "AllowQueryResults"
+    effect    = "Allow"
+    actions   = ["s3:AbortMultipartUpload", "s3:GetObject", "s3:ListMultipartUploadParts", "s3:PutObject"]
+    resources = ["${aws_s3_bucket.cdnLogBucket.arn}/*.csv", "${aws_s3_bucket.cdnLogBucket.arn}/*.csv.metadata"]
+  }
+  statement {
+    sid       = "AllowReadLog"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.cdnLogBucket.arn}/cdn-log/*"]
+  }
+  statement {
+    sid       = "AllowReadDatabase"
+    effect    = "Allow"
+    actions   = ["glue:GetDatabase"]
+    resources = ["arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog", "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:database/${aws_glue_catalog_table.cdn_log.database_name}"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_analyticsPage_st_wp-analytics" {
+  name        = "lambda_function_analyticsPage_st_wp-analytics"
+  description = "Access Policy for analyticsPage"
+  policy      = data.aws_iam_policy_document.lambda_function_analyticsPage_st_wp-analytics_doc.json
+}
+
+resource "aws_iam_role" "analyticsPage_role" {
+  name = "analyticsPage_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "analyticsPage_role"
+    State          = "wp-analytics"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_iam_role" "cdnLogConfig_role" {
@@ -121,6 +216,11 @@ resource "aws_iam_role_policy_attachment" "cloudfront_realtime_log_config_cdnLog
 resource "aws_iam_role_policy_attachment" "kinesis_firehose_delivery_stream_cdnLogFirehose_st_wp-analytics_attach" {
   policy_arn = aws_iam_policy.kinesis_firehose_delivery_stream_cdnLogFirehose_st_wp-analytics.arn
   role       = aws_iam_role.cdnLogFirehose_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_analyticsPage_st_wp-analytics_attach" {
+  policy_arn = aws_iam_policy.lambda_function_analyticsPage_st_wp-analytics.arn
+  role       = aws_iam_role.analyticsPage_role.name
 }
 
 
@@ -195,6 +295,74 @@ resource "aws_s3_bucket_versioning" "cdnLogBucket_versioning" {
 
 
 
+### CATEGORY: COMPUTE ###
+
+data "archive_file" "archive_struct8-templates_analyticsPage" {
+  output_path = "${path.module}/struct8-templates_analyticsPage.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/wordpress-professional/v1/lambda/analytics"
+  type        = "zip"
+}
+
+resource "aws_lambda_function" "analyticsPage" {
+  function_name                  = "analyticsPage"
+  architectures                  = ["arm64"]
+  description                    = "Analytics page: runs the CDN log queries in Athena and returns HTML."
+  filename                       = data.archive_file.archive_struct8-templates_analyticsPage.output_path
+  handler                        = "index.handler"
+  memory_size                    = 256
+  publish                        = false
+  reserved_concurrent_executions = -1
+  role                           = aws_iam_role.analyticsPage_role.arn
+  runtime                        = "python3.13"
+  source_code_hash               = data.archive_file.archive_struct8-templates_analyticsPage.output_base64sha256
+  timeout                        = 60
+  environment {
+    variables = {
+    ATHENA_WORKGROUP               = aws_athena_workgroup.cdnAnalytics.name
+    GLUE_DATABASE                  = aws_glue_catalog_database.cdn_analytics.name
+    GLUE_TABLE                     = aws_glue_catalog_table.cdn_log.name
+    ACCESS_KEY                     = "2b30c98c05ce094292e64661482b4af9"
+    NAME                           = "analyticsPage"
+    REGION                         = data.aws_region.current.region
+    ACCOUNT                        = data.aws_caller_identity.current.account_id
+    AWS_LAMBDA_FUNCTION_URL_NAME_0 = "analyticsUrl"
+    AWS_S3_BUCKET_NAME_0           = "cdnlogbucket-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+    AWS_ATHENA_WORKGROUP_NAME_0    = "cdnAnalytics"
+    AWS_GLUE_CATALOG_TABLE_NAME_0  = "cdn_log"
+  }
+  }
+  tags = {
+    Name           = "analyticsPage"
+    State          = "wp-analytics"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_analyticsPage_st_wp-analytics_attach]
+}
+
+resource "aws_lambda_function_url" "analyticsUrl" {
+  function_name      = aws_lambda_function.analyticsPage.function_name
+  authorization_type = "NONE"
+}
+
+resource "aws_lambda_permission" "perm_aws_lambda_function_url_analyticsUrl_to_analyticsPage" {
+  function_name          = aws_lambda_function.analyticsPage.function_name
+  statement_id           = "perm_aws_lambda_function_url_analyticsUrl_to_analyticsPage"
+  principal              = "*"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_url_auth_type = "NONE"
+}
+
+resource "aws_lambda_permission" "perm_aws_lambda_function_url_analyticsUrl_to_analyticsPage_invoke" {
+  function_name            = aws_lambda_function.analyticsPage.function_name
+  statement_id             = "perm_aws_lambda_function_url_analyticsUrl_to_analyticsPage_invoke"
+  principal                = "*"
+  action                   = "lambda:InvokeFunction"
+  invoked_via_function_url = true
+}
+
+
+
+
 ### CATEGORY: ANALYTICS ###
 
 resource "aws_glue_catalog_database" "cdn_analytics" {
@@ -244,26 +412,6 @@ resource "aws_glue_catalog_table" "cdn_log" {
       type    = "double"
     }
     columns {
-      name    = "country"
-      comment = "Two-letter country of the visitor."
-      type    = "string"
-    }
-    columns {
-      name    = "method"
-      comment = "HTTP method."
-      type    = "string"
-    }
-    columns {
-      name    = "uri_stem"
-      comment = "Path of the request, without the query string."
-      type    = "string"
-    }
-    columns {
-      name    = "uri_query"
-      comment = "Query string."
-      type    = "string"
-    }
-    columns {
       name    = "status"
       comment = "HTTP status the CDN answered."
       type    = "int"
@@ -272,6 +420,16 @@ resource "aws_glue_catalog_table" "cdn_log" {
       name    = "bytes"
       comment = "Bytes the CDN sent."
       type    = "bigint"
+    }
+    columns {
+      name    = "method"
+      comment = "HTTP method."
+      type    = "string"
+    }
+    columns {
+      name    = "uri_stem"
+      comment = "Path of the request, including the query string. Use split_part(uri_stem, '?', 1) for the path alone."
+      type    = "string"
     }
     columns {
       name    = "time_taken"
@@ -289,6 +447,11 @@ resource "aws_glue_catalog_table" "cdn_log" {
       type    = "string"
     }
     columns {
+      name    = "uri_query"
+      comment = "Query string."
+      type    = "string"
+    }
+    columns {
       name    = "edge_result_type"
       comment = "Hit, Miss, RefreshHit, Error..."
       type    = "string"
@@ -296,6 +459,11 @@ resource "aws_glue_catalog_table" "cdn_log" {
     columns {
       name    = "edge_detailed_result_type"
       comment = "Detailed result, such as a response from the WAF."
+      type    = "string"
+    }
+    columns {
+      name    = "country"
+      comment = "Two-letter country of the visitor."
       type    = "string"
     }
     columns {
@@ -334,10 +502,10 @@ resource "aws_athena_named_query" "shopFunnel" {
   description = "Requests to each step of the purchase, per day."
   query = <<EOF
 SELECT concat(year, '-', month, '-', day) AS day,
-  count_if(uri_stem LIKE '/product/%') AS product_views,
-  count_if(uri_stem = '/cart/') AS cart_views,
-  count_if(uri_stem LIKE '/checkout/%' AND method = 'GET') AS checkout_views,
-  count_if(uri_stem LIKE '/wp-json/wc/store/v1/checkout%' AND method = 'POST') AS orders_placed
+  count_if(split_part(uri_stem, '?', 1) LIKE '/product/%') AS product_views,
+  count_if(split_part(uri_stem, '?', 1) = '/cart/') AS cart_views,
+  count_if(split_part(uri_stem, '?', 1) LIKE '/checkout/%' AND method = 'GET') AS checkout_views,
+  count_if(split_part(uri_stem, '?', 1) LIKE '/wp-json/wc/store/v1/checkout%' AND method = 'POST') AS orders_placed
 FROM cdn_log
 WHERE concat(year, month, day) >= date_format(current_date - interval '14' day, '%Y%m%d')
 GROUP BY 1
@@ -351,11 +519,11 @@ resource "aws_athena_named_query" "topPages" {
   database    = aws_glue_catalog_database.cdn_analytics.name
   description = "Most viewed pages in the last 7 days, bots included."
   query = <<EOF
-SELECT uri_stem, count(*) AS requests
+SELECT split_part(uri_stem, '?', 1) AS page, count(*) AS requests
 FROM cdn_log
 WHERE concat(year, month, day) >= date_format(current_date - interval '7' day, '%Y%m%d')
-  AND method = 'GET' AND status = 200 AND behavior_path = 'Default (*)'
-GROUP BY uri_stem
+  AND method = 'GET' AND status = 200 AND behavior_path = '*'
+GROUP BY 1
 ORDER BY requests DESC
 LIMIT 50;
   EOF
@@ -370,7 +538,7 @@ resource "aws_athena_named_query" "visitsByCountry" {
 SELECT concat(year, '-', month, '-', day) AS day, country, count(*) AS requests
 FROM cdn_log
 WHERE concat(year, month, day) >= date_format(current_date - interval '7' day, '%Y%m%d')
-  AND behavior_path = 'Default (*)'
+  AND behavior_path = '*'
 GROUP BY 1, 2
 ORDER BY 1 DESC, 3 DESC;
   EOF
@@ -428,6 +596,23 @@ resource "aws_kinesis_stream" "cdnLogStream" {
   shard_count = 1
   tags = {
     Name           = "cdnLogStream"
+    State          = "wp-analytics"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_log_group" "analyticsPageLogs" {
+  name              = "/aws/lambda/analyticsPage"
+  log_group_class   = "STANDARD"
+  retention_in_days = 14
+  skip_destroy      = false
+  tags = {
+    Name           = "analyticsPageLogs"
     State          = "wp-analytics"
     Struct8Creator = "Contato Struct"
   }
