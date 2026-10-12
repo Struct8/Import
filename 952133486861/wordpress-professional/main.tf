@@ -1359,7 +1359,7 @@ resource "aws_rds_cluster" "wp-aurora" {
   storage_encrypted           = true
   vpc_security_group_ids      = [aws_security_group.rds_cluster_wp-aurora_group.id]
   serverlessv2_scaling_configuration {
-    max_capacity             = 2
+    max_capacity             = 4
     min_capacity             = 0
     seconds_until_auto_pause = 300
   }
@@ -1973,6 +1973,10 @@ service:
       {
         name  = "OTEL_SERVICE_NAME"
         value = "wordpress"
+      },
+      {
+        name  = "WP_SHOP"
+        value = "true"
       },
       {
         name  = "NAME"
