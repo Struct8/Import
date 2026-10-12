@@ -421,6 +421,15 @@ resource "aws_cloudfront_distribution" "site-cdn" {
     path_pattern             = "/busca*"
     viewer_protocol_policy   = "redirect-to-https"
   }
+  ordered_cache_behavior {
+    cache_policy_id          = data.aws_cloudfront_cache_policy.policy_cachingdisabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.policy_allviewerexcepthostheader.id
+    target_origin_id         = "api-origin"
+    allowed_methods          = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods           = ["GET", "HEAD"]
+    path_pattern             = "/produtos*"
+    viewer_protocol_policy   = "redirect-to-https"
+  }
   origin {
     domain_name                 = aws_s3_bucket.site-estatico.bucket_regional_domain_name
     origin_access_control_id    = aws_cloudfront_origin_access_control.oac_site-estatico.id
