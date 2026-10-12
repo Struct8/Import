@@ -1051,9 +1051,11 @@ resource "aws_cloudfront_function" "traceStart" {
   name = "traceStart"
   code = <<-EOF
 // Starts the trace of each request at the edge. It writes the trace id that the
-// load balancer keeps and WordPress uses (X-Amzn-Trace-Id, Root field), and the
-// time the request reached CloudFront in milliseconds (X-Request-Start). Values
-// sent by the visitor are replaced, so a visitor cannot choose the trace id.
+// load balancer keeps and WordPress uses (X-Amzn-Trace-Id, Root field), the
+// time the request reached CloudFront in milliseconds (X-Request-Start), and the
+// id of this distribution (X-Cdn-Distribution-Id), which names the CloudFront
+// node of the trace map. Values sent by the visitor are replaced, so a visitor
+// cannot choose the trace id or the node's name.
 // Date returns the time this function started, the same value for the whole run.
 function handler(event) {
   var request = event.request;
@@ -1064,10 +1066,11 @@ function handler(event) {
   }
   request.headers['x-amzn-trace-id'] = { value: 'Root=1-' + Math.floor(now / 1000).toString(16) + '-' + id };
   request.headers['x-request-start'] = { value: 't=' + now };
+  request.headers['x-cdn-distribution-id'] = { value: event.context.distributionId };
   return request;
 }
 EOF
-  comment = "Starts the trace at the edge: writes X-Amzn-Trace-Id (Root) and X-Request-Start."
+  comment = "Starts the trace at the edge: writes X-Amzn-Trace-Id (Root), X-Request-Start and X-Cdn-Distribution-Id."
   publish = true
   runtime = "cloudfront-js-2.0"
   tags = {
