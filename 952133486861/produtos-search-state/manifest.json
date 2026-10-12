@@ -7,12 +7,13 @@
       "target_dir": ".external_modules/CloudMan",
       "folders": [
         "LambdaFiles/produtos-search/busca",
-        "LambdaFiles/produtos-search/ingestao"
+        "LambdaFiles/produtos-search/ingestao",
+        "LambdaFiles/produtos-search/site"
       ]
     }
   ],
-  "action": "destroy",
-  "trigger_id": "1791762748429",
+  "action": "apply",
+  "trigger_id": "1791810212315",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
