@@ -21,23 +21,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### SYSTEM DATA SOURCES ###
-
-data "aws_cloudfront_origin_request_policy" "policy_allviewerexcepthostheader" {
-  name = "Managed-AllViewerExceptHostHeader"
-}
-
-data "aws_cloudfront_cache_policy" "policy_cachingdisabled" {
-  name = "Managed-CachingDisabled"
-}
-
-data "aws_cloudfront_response_headers_policy" "policy_securityheaderspolicy" {
-  name = "Managed-SecurityHeadersPolicy"
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 data "aws_iam_policy_document" "cloudfront_realtime_log_config_cdnLogConfig_st_wp-analytics_doc" {
