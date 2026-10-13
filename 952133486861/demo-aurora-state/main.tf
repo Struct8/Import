@@ -51,16 +51,6 @@ resource "aws_iam_policy" "db_proxy_demo-aurora-rds-proxy_st_demo-aurora-state" 
   policy      = data.aws_iam_policy_document.db_proxy_demo-aurora-rds-proxy_st_demo-aurora-state_doc.json
 }
 
-resource "aws_iam_policy" "demo-dataapi-access" {
-  name        = "demo-dataapi-access"
-  description = "Concede à Lambda demo-aurora-dataapi o acesso ao Aurora via Data API (rds-data + leitura do secret)"
-  tags = {
-    Name           = "demo-dataapi-access"
-    State          = "demo-aurora-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 data "aws_iam_policy_document" "instance_demo-pgweb_st_demo-aurora-state_doc" {
   statement {
     sid       = "AllowRDSDataApidemoaurora"
@@ -90,7 +80,7 @@ data "aws_iam_policy_document" "lambda_function_demo-aurora-dataapi_st_demo-auro
     resources = ["${aws_cloudwatch_log_group.demo-aurora-dataapi-logs.arn}:*"]
   }
   statement {
-    sid       = "AllowRDSDataApidemoaurora"
+    sid       = "AllowRDSDataApi"
     effect    = "Allow"
     actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
     resources = [aws_rds_cluster.demo-aurora.arn]
