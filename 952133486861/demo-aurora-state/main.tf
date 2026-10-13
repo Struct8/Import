@@ -51,36 +51,6 @@ resource "aws_iam_policy" "db_proxy_demo-aurora-rds-proxy_st_demo-aurora-state" 
   policy      = data.aws_iam_policy_document.db_proxy_demo-aurora-rds-proxy_st_demo-aurora-state_doc.json
 }
 
-data "aws_iam_policy_document" "iam_instance_profile_demo-pgweb_profile_st_demo-aurora-state_doc" {
-  statement {
-    sid       = "ReadLambdaLogs"
-    effect    = "Allow"
-    actions   = ["logs:DescribeLogGroups", "logs:DescribeLogStreams", "logs:FilterLogEvents", "logs:GetLogEvents"]
-    resources = ["arn:aws:logs:us-west-2:952133486861:log-group:/aws/lambda/demo-aurora-*"]
-  }
-}
-
-resource "aws_iam_policy" "iam_instance_profile_demo-pgweb_profile_st_demo-aurora-state" {
-  name        = "iam_instance_profile_demo-pgweb_profile_st_demo-aurora-state"
-  description = "Access Policy for demo-pgweb_profile"
-  policy      = data.aws_iam_policy_document.iam_instance_profile_demo-pgweb_profile_st_demo-aurora-state_doc.json
-}
-
-data "aws_iam_policy_document" "iam_role_demo-pgweb_role_st_demo-aurora-state_doc" {
-  statement {
-    sid       = "ReadLambdaLogs"
-    effect    = "Allow"
-    actions   = ["logs:DescribeLogGroups", "logs:DescribeLogStreams", "logs:FilterLogEvents", "logs:GetLogEvents"]
-    resources = ["arn:aws:logs:us-west-2:952133486861:log-group:/aws/lambda/demo-aurora-*"]
-  }
-}
-
-resource "aws_iam_policy" "iam_role_demo-pgweb_role_st_demo-aurora-state" {
-  name        = "iam_role_demo-pgweb_role_st_demo-aurora-state"
-  description = "Access Policy for demo-pgweb_role"
-  policy      = data.aws_iam_policy_document.iam_role_demo-pgweb_role_st_demo-aurora-state_doc.json
-}
-
 data "aws_iam_policy_document" "instance_demo-pgweb_st_demo-aurora-state_doc" {
   statement {
     sid       = "AllowRDSDataApidemoaurora"
@@ -93,12 +63,6 @@ data "aws_iam_policy_document" "instance_demo-pgweb_st_demo-aurora-state_doc" {
     effect    = "Allow"
     actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
     resources = [aws_rds_cluster.demo-aurora.master_user_secret[0].secret_arn]
-  }
-  statement {
-    sid       = "ReadLambdaLogs"
-    effect    = "Allow"
-    actions   = ["logs:DescribeLogGroups", "logs:DescribeLogStreams", "logs:FilterLogEvents", "logs:GetLogEvents"]
-    resources = ["arn:aws:logs:us-west-2:952133486861:log-group:/aws/lambda/demo-aurora-*"]
   }
 }
 
@@ -454,11 +418,6 @@ resource "aws_iam_role_policy_attachment" "db_proxy_demo-aurora-rds-proxy_st_dem
   role       = aws_iam_role.role_rds_proxy_demo-aurora-rds-proxy.name
 }
 
-resource "aws_iam_role_policy_attachment" "iam_instance_profile_demo-pgweb_profile_st_demo-aurora-state_attach" {
-  policy_arn = aws_iam_policy.iam_instance_profile_demo-pgweb_profile_st_demo-aurora-state.arn
-  role       = aws_iam_role.demo-pgweb_role.name
-}
-
 resource "aws_iam_role_policy_attachment" "instance_demo-pgweb_st_demo-aurora-state_attach" {
   policy_arn = aws_iam_policy.instance_demo-pgweb_st_demo-aurora-state.arn
   role       = aws_iam_role.demo-pgweb_role.name
@@ -627,14 +586,8 @@ resource "aws_security_group" "lambda_function_demo-aurora-direct_group" {
 }
 
 resource "aws_security_group" "lambda_function_demo-aurora-iam_group" {
-  name                   = "lambda_function_demo-aurora-iam_group"
-  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
-  revoke_rules_on_delete = false
-  tags = {
-    Name           = "lambda_function_demo-aurora-iam_group"
-    State          = "demo-aurora-state"
-    Struct8Creator = "Contato Struct"
-  }
+  name   = "lambda_function_demo-aurora-iam_group"
+  vpc_id = aws_vpc.aurora-serverless-access-patterns-lab.id
 }
 
 resource "aws_security_group" "lambda_function_demo-aurora-proxy_group" {
@@ -747,6 +700,15 @@ resource "aws_security_group_rule" "rule_lambda_function_demo_aurora_direct_grou
   protocol                 = "tcp"
   to_port                  = 5432
   type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lambda_function_demo_aurora_iam_group_egress_all_protocols" {
+  security_group_id = aws_security_group.lambda_function_demo-aurora-iam_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
 }
 
 resource "aws_security_group_rule" "rule_lambda_function_demo_aurora_iam_group_to_rds_cluster_demo_aurora_group_tcp_5432" {
