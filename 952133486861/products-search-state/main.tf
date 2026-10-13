@@ -30,7 +30,7 @@ data "aws_region" "current" {}
 ### SYSTEM DATA SOURCES ###
 
 data "aws_route53_zone" "cloudman-zone" {
-  name = "cloudman.pro"
+  name = "example.pro"
 }
 
 data "aws_cloudfront_origin_request_policy" "policy_cors_s3origin" {
@@ -329,7 +329,7 @@ resource "aws_iam_role_policy_attachment" "lambda_function_lambda-search_st_prod
 }
 
 resource "aws_acm_certificate" "hardstore-cert" {
-  domain_name       = "hardstore.cloudman.pro"
+  domain_name       = "hardstore.example.pro"
   key_algorithm     = "RSA_2048"
   region            = "us-east-1"
   validation_method = "DNS"
@@ -349,7 +349,7 @@ resource "aws_acm_certificate" "hardstore-cert" {
 resource "aws_acm_certificate_validation" "Validation_hardstore-cert" {
   certificate_arn         = aws_acm_certificate.hardstore-cert.arn
   region                  = "us-east-1"
-  validation_record_fqdns = [for record in aws_route53_record.Route53_Record_hardstore-cert_hardstore_cloudman_pro : record.fqdn]
+  validation_record_fqdns = [for record in aws_route53_record.Route53_Record_hardstore-cert_hardstore_example_pro : record.fqdn]
 }
 
 
@@ -393,10 +393,10 @@ resource "aws_subnet" "private-b" {
   }
 }
 
-resource "aws_route53_record" "Route53_Record_hardstore-cert_hardstore_cloudman_pro" {
+resource "aws_route53_record" "Route53_Record_hardstore-cert_hardstore_example_pro" {
   for_each = {
     for dvo in aws_acm_certificate.hardstore-cert.domain_validation_options : dvo.domain_name => dvo
-    if dvo.domain_name == "hardstore.cloudman.pro"
+    if dvo.domain_name == "hardstore.example.pro"
   }
   name            = each.value.resource_record_name
   zone_id         = data.aws_route53_zone.cloudman-zone.zone_id
@@ -406,8 +406,8 @@ resource "aws_route53_record" "Route53_Record_hardstore-cert_hardstore_cloudman_
   type            = each.value.resource_record_type
 }
 
-resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_site-cdn_hardstore_cloudman_pro" {
-  name    = "hardstore.cloudman.pro"
+resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_site-cdn_hardstore_example_pro" {
+  name    = "hardstore.example.pro"
   zone_id = data.aws_route53_zone.cloudman-zone.zone_id
   type    = "A"
   alias {
@@ -417,8 +417,8 @@ resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_site-cdn_hard
   }
 }
 
-resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_site-cdn_hardstore_cloudman_pro" {
-  name    = "hardstore.cloudman.pro"
+resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_site-cdn_hardstore_example_pro" {
+  name    = "hardstore.example.pro"
   zone_id = data.aws_route53_zone.cloudman-zone.zone_id
   type    = "AAAA"
   alias {
@@ -521,7 +521,7 @@ resource "aws_apigatewayv2_stage" "default-stage" {
 }
 
 resource "aws_cloudfront_distribution" "site-cdn" {
-  aliases             = ["hardstore.cloudman.pro"]
+  aliases             = ["hardstore.example.pro"]
   comment             = "CDN do site de busca de produtos"
   default_root_object = "index.html"
   enabled             = true
