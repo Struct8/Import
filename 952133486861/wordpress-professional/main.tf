@@ -1,5 +1,8 @@
 terraform {
   required_providers {
+    archive = {
+      source = "hashicorp/archive"
+    }
     aws = {
       source = "hashicorp/aws"
     }
@@ -70,6 +73,10 @@ data "aws_ssm_parameter" "wpAdminPassword" {
 
 data "aws_cloudfront_realtime_log_config" "cdnLogConfig" {
   name = "cdnLogConfig"
+}
+
+data "aws_lambda_function_url" "analyticsUrl" {
+  function_name = "analyticsPage"
 }
 
 
@@ -1009,6 +1016,16 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
     path_pattern               = "/wp-content/*"
     viewer_protocol_policy     = "redirect-to-https"
   }
+  ordered_cache_behavior {
+    cache_policy_id            = data.aws_cloudfront_cache_policy.policy_cachingdisabled.id
+    origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.policy_allviewerexcepthostheader.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.policy_securityheaderspolicy.id
+    target_origin_id           = "analytics"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    path_pattern               = "/analytics*"
+    viewer_protocol_policy     = "redirect-to-https"
+  }
   origin {
     domain_name              = aws_s3_bucket.wpMedia.bucket_regional_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.oac_wpmedia.id
@@ -1025,6 +1042,16 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
       http_port              = 80
       https_port             = 443
       ip_address_type        = "ipv6"
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+  origin {
+    domain_name = trimsuffix(trimprefix(data.aws_lambda_function_url.analyticsUrl.function_url, "https://"), "/")
+    origin_id   = "analytics"
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
