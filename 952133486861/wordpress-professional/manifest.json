@@ -7,12 +7,13 @@
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
         "templates/ec2-nat-private/v1/user_data",
-        "templates/wordpress-professional/v1/container"
+        "templates/wordpress-professional/v1/container",
+        "templates/wordpress-professional/v1/lambda/analytics"
       ]
     }
   ],
   "action": "apply",
-  "trigger_id": "1791840080230",
+  "trigger_id": "1791850941628",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
