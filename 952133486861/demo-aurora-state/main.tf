@@ -708,6 +708,16 @@ resource "aws_security_group_rule" "rule_lambda_function_demo_aurora_direct_grou
   type                     = "ingress"
 }
 
+resource "aws_security_group_rule" "rule_lambda_function_demo_aurora_iam_group_to_rds_cluster_demo_aurora_group_tcp_5432" {
+  security_group_id        = aws_security_group.rds_cluster_demo-aurora_group.id
+  source_security_group_id = aws_security_group.lambda_function_demo-aurora-iam_group.id
+  description              = "Allow from lambda_function_demo-aurora-iam_group (tcp:5432-5432)"
+  from_port                = 5432
+  protocol                 = "tcp"
+  to_port                  = 5432
+  type                     = "ingress"
+}
+
 resource "aws_security_group_rule" "rule_lambda_function_demo_aurora_proxy_group_egress_all_protocols" {
   security_group_id = aws_security_group.lambda_function_demo-aurora-proxy_group.id
   cidr_blocks       = ["0.0.0.0/0"]
