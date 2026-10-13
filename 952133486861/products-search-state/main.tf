@@ -6,6 +6,9 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+    time = {
+      source = "hashicorp/time"
+    }
   }
 
   backend "s3" {
@@ -979,6 +982,7 @@ resource "aws_lambda_invocation" "init-db-invocation" {
   triggers = {
     rds_cluster = aws_rds_cluster.products-aurora.id
   }
+  depends_on = [time_sleep.init-db-invocation_role_propagation]
 }
 
 resource "aws_lambda_permission" "perm_aws_apigatewayv2_api_products-http-api_to_lambda-presign" {
@@ -1089,6 +1093,19 @@ resource "aws_cloudwatch_log_group" "search-logs" {
     Name           = "search-logs"
     State          = "products-search-state"
     Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+resource "time_sleep" "init-db-invocation_role_propagation" {
+  create_duration = "30s"
+  triggers = {
+    policy_attachment = aws_iam_role_policy_attachment.lambda_function_lambda-init-db_st_products-search-state_attach.id
+    policy            = aws_iam_policy.lambda_function_lambda-init-db_st_products-search-state.policy
   }
 }
 
