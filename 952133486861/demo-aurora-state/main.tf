@@ -24,16 +24,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### RENAMES ###
-
-moved {
-  from = aws_cloudwatch_log_group.demo-aurora
-  to   = aws_cloudwatch_log_group.demo-aurora-instance
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "demo-pgweb_profile" {
@@ -61,6 +51,16 @@ resource "aws_iam_policy" "db_proxy_demo-aurora-rds-proxy_st_demo-aurora-state" 
   policy      = data.aws_iam_policy_document.db_proxy_demo-aurora-rds-proxy_st_demo-aurora-state_doc.json
 }
 
+resource "aws_iam_policy" "demo-dataapi-access" {
+  name        = "demo-dataapi-access"
+  description = "Concede à Lambda demo-aurora-dataapi o acesso ao Aurora via Data API (rds-data + leitura do secret)"
+  tags = {
+    Name           = "demo-dataapi-access"
+    State          = "demo-aurora-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 data "aws_iam_policy_document" "instance_demo-pgweb_st_demo-aurora-state_doc" {
   statement {
     sid       = "AllowRDSDataApidemoaurora"
@@ -83,6 +83,12 @@ resource "aws_iam_policy" "instance_demo-pgweb_st_demo-aurora-state" {
 }
 
 data "aws_iam_policy_document" "lambda_function_demo-aurora-dataapi_st_demo-aurora-state_doc" {
+  statement {
+    sid       = "AllowWriteLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.demo-aurora-dataapi-logs.arn}:*"]
+  }
   statement {
     sid       = "AllowRDSDataApidemoaurora"
     effect    = "Allow"
@@ -210,7 +216,7 @@ data "aws_iam_policy_document" "Debug_debug_permissions" {
     resources = ["arn:aws:ec2:*:*:instance/*"]
     condition {
       test     = "StringEquals"
-      values   = ["n2L5m9CkjzH7IUewAgbOZ"]
+      values   = ["wfmMmg88f5htTllDsPPgg"]
       variable = "aws:ResourceTag/Struct8Debug"
     }
   }
@@ -218,7 +224,7 @@ data "aws_iam_policy_document" "Debug_debug_permissions" {
     sid       = "PinnedDocumentOnly"
     effect    = "Allow"
     actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-n2L5m9CkjzH7IUewAgbOZ"]
+    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-wfmMmg88f5htTllDsPPgg"]
   }
   statement {
     sid       = "ReadOwnResults"
@@ -233,7 +239,7 @@ data "aws_iam_policy_document" "Debug_debug_permissions" {
     resources = ["arn:aws:ec2:*:*:instance/*"]
     condition {
       test     = "StringEquals"
-      values   = ["n2L5m9CkjzH7IUewAgbOZ"]
+      values   = ["wfmMmg88f5htTllDsPPgg"]
       variable = "aws:ResourceTag/Struct8Debug"
     }
   }
@@ -251,7 +257,7 @@ data "aws_iam_policy_document" "Debug_debug_trust" {
 }
 
 resource "aws_iam_role" "Struct8Debug-Debug" {
-  name                 = "Struct8Debug-n2L5m9CkjzH7IUewAgbOZ"
+  name                 = "Struct8Debug-wfmMmg88f5htTllDsPPgg"
   assume_role_policy   = data.aws_iam_policy_document.Debug_debug_trust.json
   max_session_duration = 3600
 }
@@ -401,7 +407,7 @@ resource "aws_iam_role" "role_rds_proxy_demo-aurora-rds-proxy" {
 }
 
 resource "aws_iam_role_policy" "Struct8Debug-Debug_policy" {
-  name   = "Struct8Debug-n2L5m9CkjzH7IUewAgbOZ-policy"
+  name   = "Struct8Debug-wfmMmg88f5htTllDsPPgg-policy"
   policy = data.aws_iam_policy_document.Debug_debug_permissions.json
   role   = aws_iam_role.Struct8Debug-Debug.id
 }
@@ -566,39 +572,6 @@ resource "aws_security_group" "db_proxy_demo-aurora-rds-proxy_group" {
   }
 }
 
-resource "aws_security_group" "demo-aurora-direct" {
-  name                   = "demo-aurora-direct"
-  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
-  revoke_rules_on_delete = false
-  tags = {
-    Name           = "demo-aurora-direct"
-    State          = "demo-aurora-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_security_group" "demo-aurora-iam" {
-  name                   = "demo-aurora-iam"
-  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
-  revoke_rules_on_delete = false
-  tags = {
-    Name           = "demo-aurora-iam"
-    State          = "demo-aurora-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-resource "aws_security_group" "demo-aurora-proxy" {
-  name                   = "demo-aurora-proxy"
-  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
-  revoke_rules_on_delete = false
-  tags = {
-    Name           = "demo-aurora-proxy"
-    State          = "demo-aurora-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 resource "aws_security_group" "instance_demo-pgweb_group" {
   name                   = "instance_demo-pgweb_group"
   vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
@@ -606,6 +579,33 @@ resource "aws_security_group" "instance_demo-pgweb_group" {
   revoke_rules_on_delete = false
   tags = {
     Name           = "instance_demo-pgweb_group"
+    State          = "demo-aurora-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "lambda_function_demo-aurora-direct_group" {
+  name   = "lambda_function_demo-aurora-direct_group"
+  vpc_id = aws_vpc.aurora-serverless-access-patterns-lab.id
+}
+
+resource "aws_security_group" "lambda_function_demo-aurora-iam_group" {
+  name                   = "lambda_function_demo-aurora-iam_group"
+  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "lambda_function_demo-aurora-iam_group"
+    State          = "demo-aurora-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "lambda_function_demo-aurora-proxy_group" {
+  name                   = "lambda_function_demo-aurora-proxy_group"
+  vpc_id                 = aws_vpc.aurora-serverless-access-patterns-lab.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "lambda_function_demo-aurora-proxy_group"
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
@@ -665,63 +665,6 @@ resource "aws_security_group_rule" "rule_db_proxy_demo_aurora_rds_proxy_group_to
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "rule_demo_aurora_direct_egress_all_protocols" {
-  security_group_id = aws_security_group.demo-aurora-direct.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 0
-  protocol          = "-1"
-  to_port           = 0
-  type              = "egress"
-}
-
-resource "aws_security_group_rule" "rule_demo_aurora_direct_to_rds_cluster_demo_aurora_group_tcp_5432" {
-  security_group_id        = aws_security_group.rds_cluster_demo-aurora_group.id
-  source_security_group_id = aws_security_group.demo-aurora-direct.id
-  description              = "Allow from demo-aurora-direct (tcp:5432-5432)"
-  from_port                = 5432
-  protocol                 = "tcp"
-  to_port                  = 5432
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_demo_aurora_iam_egress_all_protocols" {
-  security_group_id = aws_security_group.demo-aurora-iam.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 0
-  protocol          = "-1"
-  to_port           = 0
-  type              = "egress"
-}
-
-resource "aws_security_group_rule" "rule_demo_aurora_iam_to_rds_cluster_demo_aurora_group_tcp_5432" {
-  security_group_id        = aws_security_group.rds_cluster_demo-aurora_group.id
-  source_security_group_id = aws_security_group.demo-aurora-iam.id
-  description              = "Allow from demo-aurora-iam (tcp:5432-5432)"
-  from_port                = 5432
-  protocol                 = "tcp"
-  to_port                  = 5432
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_demo_aurora_proxy_egress_all_protocols" {
-  security_group_id = aws_security_group.demo-aurora-proxy.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 0
-  protocol          = "-1"
-  to_port           = 0
-  type              = "egress"
-}
-
-resource "aws_security_group_rule" "rule_demo_aurora_proxy_to_db_proxy_demo_aurora_rds_proxy_group_tcp_5432" {
-  security_group_id        = aws_security_group.db_proxy_demo-aurora-rds-proxy_group.id
-  source_security_group_id = aws_security_group.demo-aurora-proxy.id
-  description              = "Allow from demo-aurora-proxy (tcp:5432-5432)"
-  from_port                = 5432
-  protocol                 = "tcp"
-  to_port                  = 5432
-  type                     = "ingress"
-}
-
 resource "aws_security_group_rule" "rule_instance_demo_pgweb_group_egress_all_protocols" {
   security_group_id = aws_security_group.instance_demo-pgweb_group.id
   cidr_blocks       = ["0.0.0.0/0"]
@@ -744,6 +687,44 @@ resource "aws_security_group_rule" "rule_instance_demo_pgweb_group_to_rds_cluste
   security_group_id        = aws_security_group.rds_cluster_demo-aurora_group.id
   source_security_group_id = aws_security_group.instance_demo-pgweb_group.id
   description              = "Allow from instance_demo-pgweb_group (tcp:5432-5432)"
+  from_port                = 5432
+  protocol                 = "tcp"
+  to_port                  = 5432
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lambda_function_demo_aurora_direct_group_egress_all_protocols" {
+  security_group_id = aws_security_group.lambda_function_demo-aurora-direct_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_lambda_function_demo_aurora_direct_group_to_rds_cluster_demo_aurora_group_tcp_5432" {
+  security_group_id        = aws_security_group.rds_cluster_demo-aurora_group.id
+  source_security_group_id = aws_security_group.lambda_function_demo-aurora-direct_group.id
+  description              = "Allow from lambda_function_demo-aurora-direct_group (tcp:5432-5432)"
+  from_port                = 5432
+  protocol                 = "tcp"
+  to_port                  = 5432
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lambda_function_demo_aurora_proxy_group_egress_all_protocols" {
+  security_group_id = aws_security_group.lambda_function_demo-aurora-proxy_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_lambda_function_demo_aurora_proxy_group_to_db_proxy_demo_aurora_rds_proxy_group_tcp_5432" {
+  security_group_id        = aws_security_group.db_proxy_demo-aurora-rds-proxy_group.id
+  source_security_group_id = aws_security_group.lambda_function_demo-aurora-proxy_group.id
+  description              = "Allow from lambda_function_demo-aurora-proxy_group (tcp:5432-5432)"
   from_port                = 5432
   protocol                 = "tcp"
   to_port                  = 5432
@@ -822,7 +803,7 @@ resource "aws_db_proxy" "demo-aurora-rds-proxy" {
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_cloudwatch_log_group.demo-aurora-rds-proxy, aws_iam_role_policy_attachment.db_proxy_demo-aurora-rds-proxy_st_demo-aurora-state_attach]
+  depends_on = [aws_cloudwatch_log_group.LogGroup, aws_iam_role_policy_attachment.db_proxy_demo-aurora-rds-proxy_st_demo-aurora-state_attach]
 }
 
 resource "aws_db_proxy_target" "demo-aurora-rds-proxy_target" {
@@ -869,7 +850,7 @@ resource "aws_rds_cluster" "demo-aurora" {
   copy_tags_to_snapshot               = true
   database_insights_mode              = "standard"
   enable_http_endpoint                = true
-  enabled_cloudwatch_logs_exports     = ["iam-db-auth-error", "instance", "postgresql"]
+  enabled_cloudwatch_logs_exports     = ["instance", "postgresql", "iam-db-auth-error"]
   engine                              = "aurora-postgresql"
   engine_version                      = "16.8"
   iam_database_authentication_enabled = true
@@ -882,15 +863,15 @@ resource "aws_rds_cluster" "demo-aurora" {
   storage_encrypted                   = true
   vpc_security_group_ids              = [aws_security_group.rds_cluster_demo-aurora_group.id]
   serverlessv2_scaling_configuration {
-    max_capacity = 1
-    min_capacity = 0.5
+    max_capacity = 2
+    min_capacity = 0
   }
   tags = {
     Name           = "demo-aurora"
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_cloudwatch_log_group.demo-aurora-auth, aws_cloudwatch_log_group.demo-aurora-instance, aws_cloudwatch_log_group.demo-aurora-postgres]
+  depends_on = [aws_cloudwatch_log_group.demo-aurora-instance, aws_cloudwatch_log_group.demo-aurora-postgres, aws_cloudwatch_log_group.demo-aurora-auth]
 }
 
 data "aws_resourcegroupstaggingapi_resources" "parameter_group_demo-aurora-instance-params" {
@@ -951,7 +932,7 @@ resource "aws_instance" "demo-pgweb" {
   ami                         = data.aws_ami.AMI_Data_Source_demo-pgweb.id
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.demo-pgweb_profile.name
-  instance_type               = "t3.micro"
+  instance_type               = "t3.small"
   user_data_base64 = base64encode(<<-EOFUData
 #!/bin/bash
 
@@ -990,7 +971,7 @@ EOFUData
     volume_type = "gp3"
   }
   tags = {
-    Struct8Debug   = "n2L5m9CkjzH7IUewAgbOZ"
+    Struct8Debug   = "wfmMmg88f5htTllDsPPgg"
     Name           = "demo-pgweb"
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
@@ -1078,7 +1059,7 @@ resource "aws_lambda_function" "demo-aurora-direct" {
     Struct8Creator = "Contato Struct"
   }
   vpc_config {
-    security_group_ids = [aws_security_group.demo-aurora-direct.id]
+    security_group_ids = [aws_security_group.lambda_function_demo-aurora-direct_group.id]
     subnet_ids         = [aws_subnet.demo-aurora-private-a.id, aws_subnet.demo-aurora-private-b.id]
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_demo-aurora-direct_st_demo-aurora-state_attach]
@@ -1124,7 +1105,7 @@ resource "aws_lambda_function" "demo-aurora-iam" {
     Struct8Creator = "Contato Struct"
   }
   vpc_config {
-    security_group_ids = [aws_security_group.demo-aurora-iam.id]
+    security_group_ids = [aws_security_group.lambda_function_demo-aurora-iam_group.id]
     subnet_ids         = [aws_subnet.demo-aurora-private-a.id, aws_subnet.demo-aurora-private-b.id]
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_demo-aurora-iam_st_demo-aurora-state_attach]
@@ -1168,7 +1149,7 @@ resource "aws_lambda_function" "demo-aurora-proxy" {
     Struct8Creator = "Contato Struct"
   }
   vpc_config {
-    security_group_ids = [aws_security_group.demo-aurora-proxy.id]
+    security_group_ids = [aws_security_group.lambda_function_demo-aurora-proxy_group.id]
     subnet_ids         = [aws_subnet.demo-aurora-private-a.id, aws_subnet.demo-aurora-private-b.id]
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_demo-aurora-proxy_st_demo-aurora-state_attach]
@@ -1251,6 +1232,18 @@ resource "aws_cloudwatch_event_target" "Target3" {
 
 ### CATEGORY: MONITORING ###
 
+resource "aws_cloudwatch_log_group" "LogGroup" {
+  name              = "/aws/rds/proxy/demo-aurora-rds-proxy"
+  log_group_class   = "STANDARD"
+  retention_in_days = 1
+  skip_destroy      = false
+  tags = {
+    Name           = "LogGroup"
+    State          = "demo-aurora-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_cloudwatch_log_group" "demo-aurora-auth" {
   name              = "/aws/rds/cluster/demo-aurora/iam-db-auth-error"
   log_group_class   = "STANDARD"
@@ -1258,6 +1251,18 @@ resource "aws_cloudwatch_log_group" "demo-aurora-auth" {
   skip_destroy      = false
   tags = {
     Name           = "demo-aurora-auth"
+    State          = "demo-aurora-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "demo-aurora-dataapi-logs" {
+  name              = "/aws/lambda/demo-aurora-dataapi"
+  log_group_class   = "STANDARD"
+  retention_in_days = 30
+  skip_destroy      = false
+  tags = {
+    Name           = "demo-aurora-dataapi-logs"
     State          = "demo-aurora-state"
     Struct8Creator = "Contato Struct"
   }
@@ -1323,25 +1328,13 @@ resource "aws_cloudwatch_log_group" "demo-aurora-proxy-logs" {
   }
 }
 
-resource "aws_cloudwatch_log_group" "demo-aurora-rds-proxy" {
-  name              = "/aws/rds/proxy/demo-aurora-rds-proxy"
-  log_group_class   = "STANDARD"
-  retention_in_days = 1
-  skip_destroy      = false
-  tags = {
-    Name           = "demo-aurora-rds-proxy"
-    State          = "demo-aurora-state"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 
 
 
 ### CATEGORY: CONFIG ###
 
 resource "aws_ssm_document" "Struct8Probe-Debug" {
-  name = "Struct8Probe-n2L5m9CkjzH7IUewAgbOZ"
+  name = "Struct8Probe-wfmMmg88f5htTllDsPPgg"
   content = <<EOF
 {
   "schemaVersion": "2.2",
