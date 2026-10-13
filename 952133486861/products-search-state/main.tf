@@ -980,7 +980,8 @@ resource "aws_lambda_invocation" "init-db-invocation" {
   function_name = aws_lambda_function.lambda-init-db.function_name
   input         = "{}"
   triggers = {
-    rds_cluster = aws_rds_cluster.products-aurora.id
+    rds_cluster          = aws_rds_cluster.products-aurora.id
+    rds_cluster_instance = aws_rds_cluster_instance.products-aurora-instance.id
   }
   depends_on = [time_sleep.init-db-invocation_role_propagation]
 }
