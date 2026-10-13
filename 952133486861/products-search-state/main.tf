@@ -977,8 +977,7 @@ resource "aws_lambda_invocation" "init-db-invocation" {
   function_name = aws_lambda_function.lambda-init-db.function_name
   input         = "{}"
   triggers = {
-    cluster  = aws_rds_cluster.products-aurora.arn
-    instance = aws_rds_cluster_instance.products-aurora-instance.id
+    rds_cluster = aws_rds_cluster.products-aurora.id
   }
 }
 
