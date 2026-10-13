@@ -29,6 +29,10 @@ data "aws_region" "current" {}
 
 ### SYSTEM DATA SOURCES ###
 
+data "aws_route53_zone" "cloudman-zone" {
+  name = "example.pro"
+}
+
 data "aws_cloudfront_origin_request_policy" "policy_cors_s3origin" {
   name = "Managed-CORS-S3Origin"
 }
@@ -324,6 +328,30 @@ resource "aws_iam_role_policy_attachment" "lambda_function_lambda-search_st_prod
   role       = aws_iam_role.lambda-search_role.name
 }
 
+resource "aws_acm_certificate" "hardstore-cert" {
+  domain_name       = "hardstore.example.pro"
+  key_algorithm     = "RSA_2048"
+  region            = "us-east-1"
+  validation_method = "DNS"
+  lifecycle {
+    create_before_destroy = true
+  }
+  options {
+    certificate_transparency_logging_preference = "ENABLED"
+  }
+  tags = {
+    Name           = "hardstore-cert"
+    State          = "products-search-state"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_acm_certificate_validation" "Validation_hardstore-cert" {
+  certificate_arn         = aws_acm_certificate.hardstore-cert.arn
+  region                  = "us-east-1"
+  validation_record_fqdns = [for record in aws_route53_record.Route53_Record_hardstore-cert_hardstore_example_pro : record.fqdn]
+}
+
 
 
 
@@ -362,6 +390,41 @@ resource "aws_subnet" "private-b" {
     Name           = "private-b"
     State          = "products-search-state"
     Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_route53_record" "Route53_Record_hardstore-cert_hardstore_example_pro" {
+  for_each = {
+    for dvo in aws_acm_certificate.hardstore-cert.domain_validation_options : dvo.domain_name => dvo
+    if dvo.domain_name == "hardstore.example.pro"
+  }
+  name            = each.value.resource_record_name
+  zone_id         = data.aws_route53_zone.cloudman-zone.zone_id
+  allow_overwrite = true
+  records         = [each.value.resource_record_value]
+  ttl             = 300
+  type            = each.value.resource_record_type
+}
+
+resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_site-cdn_hardstore_example_pro" {
+  name    = "hardstore.example.pro"
+  zone_id = data.aws_route53_zone.cloudman-zone.zone_id
+  type    = "A"
+  alias {
+    name                   = aws_cloudfront_distribution.site-cdn.domain_name
+    zone_id                = aws_cloudfront_distribution.site-cdn.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_site-cdn_hardstore_example_pro" {
+  name    = "hardstore.example.pro"
+  zone_id = data.aws_route53_zone.cloudman-zone.zone_id
+  type    = "AAAA"
+  alias {
+    name                   = aws_cloudfront_distribution.site-cdn.domain_name
+    zone_id                = aws_cloudfront_distribution.site-cdn.hosted_zone_id
+    evaluate_target_health = false
   }
 }
 
@@ -458,6 +521,7 @@ resource "aws_apigatewayv2_stage" "default-stage" {
 }
 
 resource "aws_cloudfront_distribution" "site-cdn" {
+  aliases             = ["hardstore.example.pro"]
   comment             = "CDN do site de busca de produtos"
   default_root_object = "index.html"
   enabled             = true
@@ -527,7 +591,10 @@ resource "aws_cloudfront_distribution" "site-cdn" {
     Struct8Creator = "Contato Struct"
   }
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn            = aws_acm_certificate_validation.Validation_hardstore-cert.certificate_arn
+    cloudfront_default_certificate = false
+    minimum_protocol_version       = "TLSv1.2_2021"
+    ssl_support_method             = "sni-only"
   }
 }
 
