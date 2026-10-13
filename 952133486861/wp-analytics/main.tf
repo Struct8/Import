@@ -546,7 +546,8 @@ ORDER BY 1 DESC, 3 DESC;
 }
 
 resource "aws_athena_workgroup" "cdnAnalytics" {
-  name = "cdnAnalytics"
+  name          = "cdnAnalytics"
+  force_destroy = true
   configuration {
     bytes_scanned_cutoff_per_query = 10737418240
     result_configuration {
