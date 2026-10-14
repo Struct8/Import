@@ -340,23 +340,7 @@ resource "aws_lambda_function" "analyticsPage" {
 
 resource "aws_lambda_function_url" "analyticsUrl" {
   function_name      = aws_lambda_function.analyticsPage.function_name
-  authorization_type = "NONE"
-}
-
-resource "aws_lambda_permission" "perm_aws_lambda_function_url_analyticsUrl_to_analyticsPage" {
-  function_name          = aws_lambda_function.analyticsPage.function_name
-  statement_id           = "perm_aws_lambda_function_url_analyticsUrl_to_analyticsPage"
-  principal              = "*"
-  action                 = "lambda:InvokeFunctionUrl"
-  function_url_auth_type = "NONE"
-}
-
-resource "aws_lambda_permission" "perm_aws_lambda_function_url_analyticsUrl_to_analyticsPage_invoke" {
-  function_name            = aws_lambda_function.analyticsPage.function_name
-  statement_id             = "perm_aws_lambda_function_url_analyticsUrl_to_analyticsPage_invoke"
-  principal                = "*"
-  action                   = "lambda:InvokeFunction"
-  invoked_via_function_url = true
+  authorization_type = "AWS_IAM"
 }
 
 
