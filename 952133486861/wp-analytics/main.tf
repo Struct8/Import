@@ -309,7 +309,7 @@ resource "aws_lambda_function" "analyticsPage" {
   description                    = "Analytics page: runs the CDN log queries in Athena and returns HTML."
   filename                       = data.archive_file.archive_struct8-templates_analyticsPage.output_path
   handler                        = "index.handler"
-  memory_size                    = 256
+  memory_size                    = 1900
   publish                        = false
   reserved_concurrent_executions = -1
   role                           = aws_iam_role.analyticsPage_role.arn
