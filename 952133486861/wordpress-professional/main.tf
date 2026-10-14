@@ -1433,11 +1433,10 @@ resource "aws_elasticache_replication_group" "wpRedis" {
   replication_group_id       = "wp-object-cache"
   subnet_group_name          = aws_elasticache_subnet_group.subnet_group_wpRedis.name
   at_rest_encryption_enabled = true
-  automatic_failover_enabled = true
   cluster_mode               = "disabled"
   description                = "WordPress object cache for wp_options, postmeta and transients."
   engine_version             = "7.1"
-  node_type                  = "cache.t4g.micro"
+  node_type                  = "cache.c7gn.cache.c7gn.large"
   num_cache_clusters         = 1
   security_group_ids         = [aws_security_group.elasticache_replication_group_wpRedis_group.id]
   snapshot_retention_limit   = 7
