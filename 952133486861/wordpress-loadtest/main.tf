@@ -1,5 +1,8 @@
 terraform {
   required_providers {
+    archive = {
+      source = "hashicorp/archive"
+    }
     aws = {
       source = "hashicorp/aws"
     }
@@ -59,6 +62,50 @@ resource "aws_iam_instance_profile" "k6Generator_profile" {
     State          = "wordpress-loadtest"
     Struct8Creator = "Contato Struct"
   }
+}
+
+data "aws_iam_policy_document" "synthetics_canary_wpReadCanary_st_wordpress-loadtest_doc" {
+  statement {
+    sid       = "AllowCanaryArtifactBucketLocation"
+    effect    = "Allow"
+    actions   = ["s3:GetBucketLocation"]
+    resources = [aws_s3_bucket.canaryArtifacts.arn]
+  }
+  statement {
+    sid       = "AllowCanaryArtifactObjects"
+    effect    = "Allow"
+    actions   = ["s3:GetObject", "s3:PutObject"]
+    resources = ["${aws_s3_bucket.canaryArtifacts.arn}/*"]
+  }
+  statement {
+    sid       = "CanaryMetrics"
+    effect    = "Allow"
+    actions   = ["cloudwatch:PutMetricData"]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      variable = "cloudwatch:namespace"
+      values   = ["CloudWatchSynthetics"]
+    }
+  }
+  statement {
+    sid       = "CanaryListBuckets"
+    effect    = "Allow"
+    actions   = ["s3:ListAllMyBuckets"]
+    resources = ["*"]
+  }
+  statement {
+    sid       = "CanaryLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/cwsyn-wpreadcanary-*"]
+  }
+}
+
+resource "aws_iam_policy" "synthetics_canary_wpReadCanary_st_wordpress-loadtest" {
+  name        = "synthetics_canary_wpReadCanary_st_wordpress-loadtest"
+  description = "Access Policy for wpReadCanary"
+  policy      = data.aws_iam_policy_document.synthetics_canary_wpReadCanary_st_wordpress-loadtest_doc.json
 }
 
 data "aws_iam_policy_document" "Debug1_debug_permissions" {
@@ -139,6 +186,30 @@ resource "aws_iam_role" "k6Generator_role" {
   }
 }
 
+resource "aws_iam_role" "wpReadCanary_role" {
+  name = "wpReadCanary_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "wpReadCanary_role"
+    State          = "wordpress-loadtest"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role_policy" "Struct8Debug-Debug1_policy" {
   name   = "Struct8Debug-2zeRq_EaN5iT0PSAbe6RL-policy"
   policy = data.aws_iam_policy_document.Debug1_debug_permissions.json
@@ -148,6 +219,11 @@ resource "aws_iam_role_policy" "Struct8Debug-Debug1_policy" {
 resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_k6Generator_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   role       = aws_iam_role.k6Generator_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "synthetics_canary_wpReadCanary_st_wordpress-loadtest_attach" {
+  policy_arn = aws_iam_policy.synthetics_canary_wpReadCanary_st_wordpress-loadtest.arn
+  role       = aws_iam_role.wpReadCanary_role.name
 }
 
 
@@ -219,6 +295,56 @@ resource "aws_eip" "eip-generator" {
     Name           = "eip-generator"
     State          = "wordpress-loadtest"
     Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: STORAGE ###
+
+resource "aws_s3_bucket" "canaryArtifacts" {
+  bucket              = "canaryartifacts-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+  bucket_namespace    = "account-regional"
+  force_destroy       = false
+  object_lock_enabled = false
+  tags = {
+    Name           = "canaryArtifacts"
+    State          = "wordpress-loadtest"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "canaryArtifacts_controls" {
+  bucket = aws_s3_bucket.canaryArtifacts.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "canaryArtifacts_block" {
+  block_public_acls       = true
+  block_public_policy     = true
+  bucket                  = aws_s3_bucket.canaryArtifacts.id
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "canaryArtifacts_configuration" {
+  bucket = aws_s3_bucket.canaryArtifacts.id
+  rule {
+    bucket_key_enabled = true
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "canaryArtifacts_versioning" {
+  bucket = aws_s3_bucket.canaryArtifacts.id
+  versioning_configuration {
+    mfa_delete = "Disabled"
+    status     = "Suspended"
   }
 }
 
@@ -337,6 +463,53 @@ resource "aws_ssm_document" "Struct8Probe-Debug1" {
   EOF
   document_format = "JSON"
   document_type   = "Command"
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+data "archive_file" "canary_struct8-templates_wpReadCanary" {
+  output_path = "${path.module}/canary_struct8-templates_wpReadCanary_${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/wordpress-professional/v1/canary", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/wordpress-professional/v1/canary/${f}")}"])), 0, 16)}.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/wordpress-professional/v1/canary"
+  type        = "zip"
+}
+
+resource "aws_synthetics_canary" "wpReadCanary" {
+  name                 = "wpreadcanary"
+  artifact_s3_location = "s3://${aws_s3_bucket.canaryArtifacts.bucket}/canary/wpreadcanary"
+  delete_lambda        = true
+  execution_role_arn   = aws_iam_role.wpReadCanary_role.arn
+  handler              = "index.handler"
+  runtime_version      = "syn-nodejs-playwright-9.0"
+  start_canary         = true
+  zip_file             = data.archive_file.canary_struct8-templates_wpReadCanary.output_path
+  run_config {
+    active_tracing     = false
+    ephemeral_storage  = 1024
+    memory_in_mb       = 960
+    timeout_in_seconds = 120
+    environment_variables = {
+    NAME                 = "wpReadCanary"
+    REGION               = data.aws_region.current.region
+    ACCOUNT              = data.aws_caller_identity.current.account_id
+    AWS_S3_BUCKET_NAME_0 = "canaryartifacts-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+    TARGET_URL           = "https://wp.cloudman.pro/"
+  }
+  }
+  schedule {
+    expression = "rate(1 hour)"
+    retry_config {
+      max_retries = 0
+    }
+  }
+  tags = {
+    Name           = "wpReadCanary"
+    State          = "wordpress-loadtest"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_iam_role_policy_attachment.synthetics_canary_wpReadCanary_st_wordpress-loadtest_attach]
 }
 
 
