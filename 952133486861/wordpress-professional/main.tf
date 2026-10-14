@@ -41,10 +41,6 @@ data "aws_cloudfront_cache_policy" "policy_cachingdisabled" {
   name = "Managed-CachingDisabled"
 }
 
-data "aws_cloudfront_response_headers_policy" "policy_securityheaderspolicy" {
-  name = "Managed-SecurityHeadersPolicy"
-}
-
 data "aws_cloudfront_cache_policy" "policy_cachingoptimized" {
   name = "Managed-CachingOptimized"
 }
@@ -69,6 +65,10 @@ data "aws_secretsmanager_secret" "wpSecrets" {
 data "aws_ssm_parameter" "wpAdminPassword" {
   name            = "wpAdminPassword"
   with_decryption = false
+}
+
+data "aws_cloudfront_response_headers_policy" "cspReportOnly" {
+  name = "cspReportOnly"
 }
 
 data "aws_cloudfront_realtime_log_config" "cdnLogConfig" {
@@ -977,7 +977,7 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
   default_cache_behavior {
     cache_policy_id            = data.aws_cloudfront_cache_policy.policy_cachingdisabled.id
     origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.policy_allviewerexcepthostheader.id
-    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.policy_securityheaderspolicy.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cspReportOnly.id
     target_origin_id           = "originAlb"
     allowed_methods            = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods             = ["GET", "HEAD", "OPTIONS"]
@@ -991,7 +991,7 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
   ordered_cache_behavior {
     cache_policy_id            = data.aws_cloudfront_cache_policy.policy_cachingdisabled.id
     origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.policy_allviewerexcepthostheader.id
-    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.policy_securityheaderspolicy.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cspReportOnly.id
     target_origin_id           = "originAlb"
     allowed_methods            = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods             = ["GET", "HEAD", "OPTIONS"]
@@ -1000,7 +1000,7 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
   }
   ordered_cache_behavior {
     cache_policy_id            = data.aws_cloudfront_cache_policy.policy_cachingoptimized.id
-    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.policy_securityheaderspolicy.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cspReportOnly.id
     target_origin_id           = "originMedia"
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD", "OPTIONS"]
@@ -1009,7 +1009,7 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
   }
   ordered_cache_behavior {
     cache_policy_id            = data.aws_cloudfront_cache_policy.policy_cachingoptimized.id
-    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.policy_securityheaderspolicy.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cspReportOnly.id
     target_origin_id           = "originAlb"
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD", "OPTIONS"]
@@ -1019,7 +1019,7 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
   ordered_cache_behavior {
     cache_policy_id            = data.aws_cloudfront_cache_policy.policy_cachingdisabled.id
     origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.policy_allviewerexcepthostheader.id
-    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.policy_securityheaderspolicy.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cspReportOnly.id
     target_origin_id           = "analytics"
     allowed_methods            = ["GET", "HEAD"]
     cached_methods             = ["GET", "HEAD"]
@@ -1165,6 +1165,18 @@ resource "aws_s3_bucket" "wpSetupFiles" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "albLogs_lifecycle" {
+  bucket = aws_s3_bucket.albLogs.id
+  rule {
+    id     = "expire-alb-logs-7d"
+    status = "Enabled"
+    expiration {
+      days                         = 7
+      expired_object_delete_marker = false
+    }
+  }
+}
+
 resource "aws_s3_bucket_ownership_controls" "albLogs_controls" {
   bucket = aws_s3_bucket.albLogs.id
   rule {
@@ -1271,7 +1283,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "wpMedia_configura
   rule {
     bucket_key_enabled = true
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      kms_master_key_id = data.aws_kms_key.kmsWordpress.arn
+      sse_algorithm     = "aws:kms"
     }
   }
 }
@@ -1433,11 +1446,12 @@ resource "aws_elasticache_replication_group" "wpRedis" {
   replication_group_id       = "wp-object-cache"
   subnet_group_name          = aws_elasticache_subnet_group.subnet_group_wpRedis.name
   at_rest_encryption_enabled = true
+  automatic_failover_enabled = true
   cluster_mode               = "disabled"
   description                = "WordPress object cache for wp_options, postmeta and transients."
   engine_version             = "7.1"
-  node_type                  = "cache.c7gn.cache.c7gn.large"
-  num_cache_clusters         = 1
+  node_type                  = "cache.t4g.micro"
+  num_cache_clusters         = 2
   security_group_ids         = [aws_security_group.elasticache_replication_group_wpRedis_group.id]
   snapshot_retention_limit   = 7
   transit_encryption_enabled = true
