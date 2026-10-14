@@ -1438,7 +1438,7 @@ resource "aws_elasticache_replication_group" "wpRedis" {
   description                = "WordPress object cache for wp_options, postmeta and transients."
   engine_version             = "7.1"
   node_type                  = "cache.t4g.micro"
-  num_cache_clusters         = 2
+  num_cache_clusters         = 1
   security_group_ids         = [aws_security_group.elasticache_replication_group_wpRedis_group.id]
   snapshot_retention_limit   = 7
   transit_encryption_enabled = true
