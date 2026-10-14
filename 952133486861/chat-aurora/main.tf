@@ -35,15 +35,6 @@ data "aws_rds_cluster" "wp-aurora" {
 
 ### CATEGORY: IAM ###
 
-resource "aws_iam_policy" "Policy" {
-  name = "Policy"
-  tags = {
-    Name           = "Policy"
-    State          = "chat-aurora"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 data "aws_iam_policy_document" "lambda_function_db_query_st_chat-aurora_doc" {
   statement {
     sid       = "AllowWriteLogs"
