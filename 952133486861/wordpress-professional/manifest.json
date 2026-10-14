@@ -10,12 +10,13 @@
         "templates/wordpress-professional/v1/container",
         "templates/wordpress-professional/v1/lambda/analytics",
         "templates/vpc-flowlogs-amp/v1/lambda/process-flow-logs",
-        "templates/wordpress-professional/v1/lambda/csp-receiver"
+        "templates/wordpress-professional/v1/lambda/csp-receiver",
+        "templates/wordpress-professional/v1/canary"
       ]
     }
   ],
-  "action": "apply",
-  "trigger_id": "1791983397908",
+  "action": "plan",
+  "trigger_id": "1792010002984",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
