@@ -177,6 +177,12 @@ data "aws_iam_policy_document" "ecs_task_definition_wordpress_st_wordpress-profe
     resources = [aws_efs_file_system.wpContent.arn]
   }
   statement {
+    sid       = "AllowRDSDataApiwpaurora"
+    effect    = "Allow"
+    actions   = ["rds-data:BatchExecuteStatement", "rds-data:BeginTransaction", "rds-data:CommitTransaction", "rds-data:ExecuteStatement", "rds-data:RollbackTransaction"]
+    resources = [aws_rds_cluster.wp-aurora.arn]
+  }
+  statement {
     sid       = "AllowRDSSecretAccesswpaurora"
     effect    = "Allow"
     actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
@@ -1358,6 +1364,7 @@ resource "aws_efs_access_point" "ap_wordpress_wpContent" {
 }
 
 resource "aws_efs_file_system" "wpContent" {
+  kms_key_id      = data.aws_kms_key.kmsWordpress.arn
   encrypted       = true
   throughput_mode = "elastic"
   tags = {
@@ -1404,6 +1411,7 @@ resource "aws_rds_cluster" "wp-aurora" {
   cluster_identifier          = "wp-aurora"
   copy_tags_to_snapshot       = true
   database_insights_mode      = "standard"
+  enable_http_endpoint        = true
   engine                      = "aurora-mysql"
   engine_version              = "8.4.mysql_aurora.8.4.8"
   manage_master_user_password = true
@@ -1928,6 +1936,10 @@ service:
         value = tostring(one(aws_rds_cluster.wp-aurora.master_user_secret[*].secret_arn))
       },
       {
+        name  = "AWS_RDS_CLUSTER_ARN_0"
+        value = tostring(aws_rds_cluster.wp-aurora.arn)
+      },
+      {
         name  = "AWS_S3_BUCKET_NAME_0"
         value = "wp-pro-media-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
       },
@@ -2101,6 +2113,10 @@ service:
       {
         name  = "AWS_RDS_CLUSTER_SECRET_ARN_0"
         value = tostring(one(aws_rds_cluster.wp-aurora.master_user_secret[*].secret_arn))
+      },
+      {
+        name  = "AWS_RDS_CLUSTER_ARN_0"
+        value = tostring(aws_rds_cluster.wp-aurora.arn)
       },
       {
         name  = "AWS_S3_BUCKET_NAME_0"
