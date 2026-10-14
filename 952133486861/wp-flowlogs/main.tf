@@ -60,7 +60,7 @@ data "aws_iam_policy_document" "lambda_function_wp-process-flow-logs_st_wp-flowl
   statement {
     sid       = "AllowReadingWhoOwnsEachAddress"
     effect    = "Allow"
-    actions   = ["ec2:DescribeInstances", "ec2:DescribeNatGateways", "ec2:DescribeNetworkInterfaces", "ec2:DescribeVpcEndpoints", "ec2:DescribeVpcs", "elasticloadbalancing:DescribeTags", "lambda:ListTags", "rds:DescribeDBInstances"]
+    actions   = ["ec2:DescribeInstances", "ec2:DescribeNatGateways", "ec2:DescribeNetworkInterfaces", "ec2:DescribeVpcEndpoints", "ec2:DescribeVpcs", "elasticloadbalancing:DescribeTags", "lambda:ListTags", "rds:DescribeDBInstances", "rds:DescribeDBProxies", "tag:GetResources"]
     resources = ["*"]
   }
 }
