@@ -315,6 +315,21 @@ resource "aws_s3_bucket" "canaryArtifacts" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "canaryArtifacts_lifecycle" {
+  bucket = aws_s3_bucket.canaryArtifacts.id
+  rule {
+    id     = "abort-incomplete-uploads"
+    status = "Enabled"
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+    expiration {
+      days                         = 15
+      expired_object_delete_marker = false
+    }
+  }
+}
+
 resource "aws_s3_bucket_ownership_controls" "canaryArtifacts_controls" {
   bucket = aws_s3_bucket.canaryArtifacts.id
   rule {
