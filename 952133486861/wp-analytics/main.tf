@@ -99,6 +99,12 @@ data "aws_iam_policy_document" "lambda_function_analyticsPage_st_wp-analytics_do
     resources = ["${aws_cloudwatch_log_group.analyticsPageLogs.arn}:*"]
   }
   statement {
+    sid       = "AllowCspTableScan"
+    effect    = "Allow"
+    actions   = ["dynamodb:Scan"]
+    resources = [aws_dynamodb_table.cspTable.arn]
+  }
+  statement {
     sid       = "AllowReadTable"
     effect    = "Allow"
     actions   = ["glue:GetTable"]
@@ -449,6 +455,7 @@ resource "aws_lambda_function" "analyticsPage" {
     AWS_S3_BUCKET_NAME_0           = "cdnlogbucket-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
     AWS_ATHENA_WORKGROUP_NAME_0    = "cdnAnalytics"
     AWS_GLUE_CATALOG_TABLE_NAME_0  = "cdn_log"
+    AWS_DYNAMODB_TABLE_NAME_0      = "cspTable"
   }
   }
   tags = {
