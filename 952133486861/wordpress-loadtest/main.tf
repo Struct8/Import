@@ -306,7 +306,7 @@ resource "aws_eip" "eip-generator" {
 resource "aws_s3_bucket" "canaryArtifacts" {
   bucket              = "canaryartifacts-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
   bucket_namespace    = "account-regional"
-  force_destroy       = false
+  force_destroy       = true
   object_lock_enabled = false
   tags = {
     Name           = "canaryArtifacts"
