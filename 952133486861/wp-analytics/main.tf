@@ -473,7 +473,7 @@ resource "aws_lambda_function" "cspReceiver" {
   handler                        = "index.handler"
   memory_size                    = 256
   publish                        = false
-  reserved_concurrent_executions = 5
+  reserved_concurrent_executions = -1
   role                           = aws_iam_role.cspReceiver_role.arn
   runtime                        = "python3.13"
   source_code_hash               = data.archive_file.archive_struct8-templates_cspReceiver.output_base64sha256
