@@ -8,12 +8,13 @@
       "folders": [
         "templates/ec2-nat-private/v1/user_data",
         "templates/wordpress-professional/v1/container",
-        "templates/wordpress-professional/v1/lambda/analytics"
+        "templates/wordpress-professional/v1/lambda/analytics",
+        "templates/vpc-flowlogs-amp/v1/lambda/process-flow-logs"
       ]
     }
   ],
   "action": "apply",
-  "trigger_id": "1791852044708",
+  "trigger_id": "1791943204550",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
