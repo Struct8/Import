@@ -26,16 +26,16 @@ data "aws_region" "current" {}
 
 ### SYSTEM DATA SOURCES ###
 
+data "aws_route53_zone" "zoneWordpress" {
+  name = "cloudman.pro"
+}
+
 data "aws_cloudfront_origin_request_policy" "policy_allviewerexcepthostheader" {
   name = "Managed-AllViewerExceptHostHeader"
 }
 
 data "aws_cloudfront_cache_policy" "policy_cachingdisabled" {
   name = "Managed-CachingDisabled"
-}
-
-data "aws_cloudfront_response_headers_policy" "policy_securityheaderspolicy" {
-  name = "Managed-SecurityHeadersPolicy"
 }
 
 
@@ -136,6 +136,27 @@ resource "aws_iam_policy" "lambda_function_analyticsPage_st_wp-analytics" {
   policy      = data.aws_iam_policy_document.lambda_function_analyticsPage_st_wp-analytics_doc.json
 }
 
+data "aws_iam_policy_document" "lambda_function_cspReceiver_st_wp-analytics_doc" {
+  statement {
+    sid       = "AllowWriteLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.cspReceiverLogs.arn}:*"]
+  }
+  statement {
+    sid       = "AllowCountReports"
+    effect    = "Allow"
+    actions   = ["dynamodb:UpdateItem"]
+    resources = [aws_dynamodb_table.cspTable.arn]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_cspReceiver_st_wp-analytics" {
+  name        = "lambda_function_cspReceiver_st_wp-analytics"
+  description = "Access Policy for cspReceiver"
+  policy      = data.aws_iam_policy_document.lambda_function_cspReceiver_st_wp-analytics_doc.json
+}
+
 resource "aws_iam_role" "analyticsPage_role" {
   name = "analyticsPage_role"
   assume_role_policy = jsonencode({
@@ -208,6 +229,30 @@ resource "aws_iam_role" "cdnLogFirehose_role" {
   }
 }
 
+resource "aws_iam_role" "cspReceiver_role" {
+  name = "cspReceiver_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "cspReceiver_role"
+    State          = "wp-analytics"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "cloudfront_realtime_log_config_cdnLogConfig_st_wp-analytics_attach" {
   policy_arn = aws_iam_policy.cloudfront_realtime_log_config_cdnLogConfig_st_wp-analytics.arn
   role       = aws_iam_role.cdnLogConfig_role.name
@@ -221,6 +266,11 @@ resource "aws_iam_role_policy_attachment" "kinesis_firehose_delivery_stream_cdnL
 resource "aws_iam_role_policy_attachment" "lambda_function_analyticsPage_st_wp-analytics_attach" {
   policy_arn = aws_iam_policy.lambda_function_analyticsPage_st_wp-analytics.arn
   role       = aws_iam_role.analyticsPage_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_cspReceiver_st_wp-analytics_attach" {
+  policy_arn = aws_iam_policy.lambda_function_cspReceiver_st_wp-analytics.arn
+  role       = aws_iam_role.cspReceiver_role.name
 }
 
 
@@ -240,6 +290,40 @@ resource "aws_cloudfront_realtime_log_config" "cdnLogConfig" {
     }
   }
   depends_on = [aws_iam_role_policy_attachment.cloudfront_realtime_log_config_cdnLogConfig_st_wp-analytics_attach]
+}
+
+resource "aws_cloudfront_response_headers_policy" "cspReportOnly" {
+  name    = "cspReportOnly"
+  comment = "Copies the security headers of Managed-SecurityHeadersPolicy and adds a report-only CSP."
+  custom_headers_config {
+    items {
+      header   = "Content-Security-Policy-Report-Only"
+      override = true
+      value    = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:; frame-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; report-uri ${aws_lambda_function_url.cspReceiverUrl.function_url}"
+    }
+  }
+  security_headers_config {
+    content_type_options {
+      override = true
+    }
+    frame_options {
+      frame_option = "SAMEORIGIN"
+      override     = false
+    }
+    referrer_policy {
+      override        = false
+      referrer_policy = "strict-origin-when-cross-origin"
+    }
+    strict_transport_security {
+      access_control_max_age_sec = 31536000
+      override                   = false
+    }
+    xss_protection {
+      mode_block = true
+      override   = false
+      protection = true
+    }
+  }
 }
 
 
@@ -295,6 +379,43 @@ resource "aws_s3_bucket_versioning" "cdnLogBucket_versioning" {
 
 
 
+### CATEGORY: DATABASE ###
+
+resource "aws_dynamodb_table" "cspTable" {
+  name                        = "cspTable"
+  billing_mode                = "PROVISIONED"
+  deletion_protection_enabled = false
+  hash_key                    = "pk"
+  range_key                   = "sk"
+  read_capacity               = 3
+  stream_enabled              = false
+  table_class                 = "STANDARD"
+  write_capacity              = 3
+  attribute {
+    name = "pk"
+    type = "S"
+  }
+  attribute {
+    name = "sk"
+    type = "S"
+  }
+  lifecycle {
+    ignore_changes = [read_capacity]
+  }
+  tags = {
+    Name           = "cspTable"
+    State          = "wp-analytics"
+    Struct8Creator = "Contato Struct"
+  }
+  ttl {
+    attribute_name = "expires_at"
+    enabled        = true
+  }
+}
+
+
+
+
 ### CATEGORY: COMPUTE ###
 
 data "archive_file" "archive_struct8-templates_analyticsPage" {
@@ -338,9 +459,94 @@ resource "aws_lambda_function" "analyticsPage" {
   depends_on = [aws_iam_role_policy_attachment.lambda_function_analyticsPage_st_wp-analytics_attach]
 }
 
+data "archive_file" "archive_struct8-templates_cspReceiver" {
+  output_path = "${path.module}/struct8-templates_cspReceiver.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/wordpress-professional/v1/lambda/csp-receiver"
+  type        = "zip"
+}
+
+resource "aws_lambda_function" "cspReceiver" {
+  function_name                  = "cspReceiver"
+  architectures                  = ["arm64"]
+  description                    = "Receives CSP violation reports from browsers and counts them in cspTable."
+  filename                       = data.archive_file.archive_struct8-templates_cspReceiver.output_path
+  handler                        = "index.handler"
+  memory_size                    = 256
+  publish                        = false
+  reserved_concurrent_executions = 5
+  role                           = aws_iam_role.cspReceiver_role.arn
+  runtime                        = "python3.13"
+  source_code_hash               = data.archive_file.archive_struct8-templates_cspReceiver.output_base64sha256
+  timeout                        = 10
+  environment {
+    variables = {
+    NAME                           = "cspReceiver"
+    REGION                         = data.aws_region.current.region
+    ACCOUNT                        = data.aws_caller_identity.current.account_id
+    AWS_LAMBDA_FUNCTION_URL_NAME_0 = "cspReceiverUrl"
+    AWS_DYNAMODB_TABLE_NAME_0      = "cspTable"
+    SITE_HOST                      = "wp.cloudman.pro"
+  }
+  }
+  tags = {
+    Name           = "cspReceiver"
+    State          = "wp-analytics"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_iam_role_policy_attachment.lambda_function_cspReceiver_st_wp-analytics_attach]
+}
+
 resource "aws_lambda_function_url" "analyticsUrl" {
   function_name      = aws_lambda_function.analyticsPage.function_name
   authorization_type = "AWS_IAM"
+}
+
+resource "aws_lambda_function_url" "cspReceiverUrl" {
+  function_name      = aws_lambda_function.cspReceiver.function_name
+  authorization_type = "NONE"
+}
+
+resource "aws_lambda_permission" "perm_aws_lambda_function_url_cspReceiverUrl_to_cspReceiver" {
+  function_name          = aws_lambda_function.cspReceiver.function_name
+  statement_id           = "perm_aws_lambda_function_url_cspReceiverUrl_to_cspReceiver"
+  principal              = "*"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_url_auth_type = "NONE"
+}
+
+resource "aws_lambda_permission" "perm_aws_lambda_function_url_cspReceiverUrl_to_cspReceiver_invoke" {
+  function_name            = aws_lambda_function.cspReceiver.function_name
+  statement_id             = "perm_aws_lambda_function_url_cspReceiverUrl_to_cspReceiver_invoke"
+  principal                = "*"
+  action                   = "lambda:InvokeFunction"
+  invoked_via_function_url = true
+}
+
+resource "aws_appautoscaling_policy" "sc_policy_Read_cspTable" {
+  name               = "DynamoDBReadCapacityUtilization:sc_target_Read_cspTable"
+  resource_id        = aws_appautoscaling_target.sc_target_Read_cspTable.resource_id
+  policy_type        = "TargetTrackingScaling"
+  scalable_dimension = aws_appautoscaling_target.sc_target_Read_cspTable.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.sc_target_Read_cspTable.service_namespace
+  target_tracking_scaling_policy_configuration {
+    target_value = 70.0
+    predefined_metric_specification {
+      predefined_metric_type = "DynamoDBReadCapacityUtilization"
+    }
+  }
+}
+
+resource "aws_appautoscaling_target" "sc_target_Read_cspTable" {
+  resource_id        = "table/${aws_dynamodb_table.cspTable.name}"
+  max_capacity       = 20
+  min_capacity       = 5
+  scalable_dimension = "dynamodb:table:ReadCapacityUnits"
+  service_namespace  = "dynamodb"
+  tags = {
+    Name           = "sc_target_Read_cspTable"
+    State          = "wp-analytics"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 
@@ -593,10 +799,22 @@ resource "aws_kinesis_stream" "cdnLogStream" {
 resource "aws_cloudwatch_log_group" "analyticsPageLogs" {
   name              = "/aws/lambda/analyticsPage"
   log_group_class   = "STANDARD"
-  retention_in_days = 14
+  retention_in_days = 7
   skip_destroy      = false
   tags = {
     Name           = "analyticsPageLogs"
+    State          = "wp-analytics"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "cspReceiverLogs" {
+  name              = "/aws/lambda/cspReceiver"
+  log_group_class   = "STANDARD"
+  retention_in_days = 7
+  skip_destroy      = false
+  tags = {
+    Name           = "cspReceiverLogs"
     State          = "wp-analytics"
     Struct8Creator = "Contato Struct"
   }
