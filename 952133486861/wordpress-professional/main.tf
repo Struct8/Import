@@ -1047,8 +1047,9 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
     }
   }
   origin {
-    domain_name = trimsuffix(trimprefix(data.aws_lambda_function_url.analyticsUrl.function_url, "https://"), "/")
-    origin_id   = "analytics"
+    domain_name              = trimsuffix(trimprefix(data.aws_lambda_function_url.analyticsUrl.function_url, "https://"), "/")
+    origin_access_control_id = aws_cloudfront_origin_access_control.OAC.id
+    origin_id                = "analytics"
     custom_origin_config {
       http_port              = 80
       https_port             = 443
@@ -1105,6 +1106,13 @@ EOF
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_cloudfront_origin_access_control" "OAC" {
+  name                              = "OAC"
+  origin_access_control_origin_type = "lambda"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
 }
 
 resource "aws_cloudfront_origin_access_control" "oac_wpmedia" {
@@ -1681,6 +1689,22 @@ resource "aws_autoscaling_group" "asgWordpress" {
     propagate_at_launch = true
     value               = "Contato Struct"
   }
+}
+
+resource "aws_lambda_permission" "perm_aws_cloudfront_distribution_cdnWordpress_to_analyticsUrl" {
+  function_name = data.aws_lambda_function_url.analyticsUrl.function_name
+  statement_id  = "perm_aws_cloudfront_distribution_cdnWordpress_to_analyticsUrl"
+  principal     = "cloudfront.amazonaws.com"
+  action        = "lambda:InvokeFunctionUrl"
+  source_arn    = aws_cloudfront_distribution.cdnWordpress.arn
+}
+
+resource "aws_lambda_permission" "perm_aws_cloudfront_distribution_cdnWordpress_to_analyticsUrl_invoke" {
+  function_name = data.aws_lambda_function_url.analyticsUrl.function_name
+  statement_id  = "perm_aws_cloudfront_distribution_cdnWordpress_to_analyticsUrl_invoke"
+  principal     = "cloudfront.amazonaws.com"
+  action        = "lambda:InvokeFunction"
+  source_arn    = aws_cloudfront_distribution.cdnWordpress.arn
 }
 
 resource "aws_appautoscaling_policy" "scalingWordpress-cpu" {
