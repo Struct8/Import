@@ -277,7 +277,7 @@ resource "aws_lambda_function" "web_chat" {
   handler                        = "index.handler"
   memory_size                    = 512
   publish                        = false
-  reserved_concurrent_executions = 2
+  reserved_concurrent_executions = -1
   role                           = aws_iam_role.web_chat_role.arn
   runtime                        = "python3.13"
   source_code_hash               = data.archive_file.archive_struct8-templates_web_chat.output_base64sha256
