@@ -460,7 +460,7 @@ resource "aws_synthetics_canary" "wpReadCanary" {
   }
   }
   schedule {
-    expression = "rate(1 hour)"
+    expression = "rate(5 minutes)"
     retry_config {
       max_retries = 0
     }
