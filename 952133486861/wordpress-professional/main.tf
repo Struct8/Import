@@ -226,6 +226,155 @@ resource "aws_iam_policy" "ecs_task_definition_wordpress_st_wordpress-profession
   policy      = data.aws_iam_policy_document.ecs_task_definition_wordpress_st_wordpress-professional_doc.json
 }
 
+data "aws_iam_policy_document" "Debug_debug_permissions" {
+  statement {
+    sid       = "RunProbeTaskwordpress"
+    effect    = "Allow"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:*:*:task-definition/Struct8Probe-t1eAUxGPRo-vo6lIyc15I-wordpress:*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.wp-cluster.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadProbeTaskwordpress"
+    effect    = "Allow"
+    actions   = ["ecs:DescribeTasks", "ecs:StopTask"]
+    resources = ["arn:aws:ecs:*:*:task/*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.wp-cluster.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadServiceNetworkwordpress"
+    effect    = "Allow"
+    actions   = ["ecs:DescribeServices"]
+    resources = ["arn:aws:ecs:*:*:service/wp-cluster/wordpress_service"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.wp-cluster.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "ReadProbeOutputwordpress"
+    effect    = "Allow"
+    actions   = ["logs:GetLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug_wordpress_logs.arn}:*"]
+  }
+  statement {
+    sid       = "PassProbeExecutionRolewordpress"
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution_role_ecs_wordpress.arn]
+    condition {
+      test     = "StringEquals"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
+  statement {
+    sid       = "ExecIntoContainerShellwordpress"
+    effect    = "Allow"
+    actions   = ["ecs:ExecuteCommand"]
+    resources = ["arn:aws:ecs:*:*:task/wp-cluster/*", aws_ecs_cluster.wp-cluster.arn]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.wp-cluster.arn]
+      variable = "ecs:cluster"
+    }
+    condition {
+      test     = "StringEquals"
+      values   = ["otel-collector"]
+      variable = "ecs:container-name"
+    }
+  }
+  statement {
+    sid       = "ExecFindTaskwordpress"
+    effect    = "Allow"
+    actions   = ["ecs:ListTasks", "ecs:DescribeTasks"]
+    resources = ["*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.wp-cluster.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "RunScratchTaskwordpress"
+    effect    = "Allow"
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:*:*:task-definition/Struct8Scratch-t1eAUxGPRo-vo6lIyc15I-wordpress:*"]
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_ecs_cluster.wp-cluster.arn]
+      variable = "ecs:cluster"
+    }
+  }
+  statement {
+    sid       = "PassScratchRoleswordpress"
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [aws_iam_role.execution_role_ecs_wordpress.arn, aws_iam_role.task_role_ecs_wordpress.arn]
+    condition {
+      test     = "StringEquals"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "Debug_debug_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
+      type        = "AWS"
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug_wordpress_exec_channel" {
+  statement {
+    sid       = "Struct8ExecChannel"
+    effect    = "Allow"
+    actions   = ["ssmmessages:CreateControlChannel", "ssmmessages:CreateDataChannel", "ssmmessages:OpenControlChannel", "ssmmessages:OpenDataChannel"]
+    resources = ["*"]
+  }
+  statement {
+    sid       = "Struct8ExecLogGroups"
+    effect    = "Allow"
+    actions   = ["logs:DescribeLogGroups"]
+    resources = ["*"]
+  }
+  statement {
+    sid       = "Struct8ExecLogWrite"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:DescribeLogStreams", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.logsWordpress.arn}:*"]
+  }
+}
+
+data "aws_iam_policy_document" "Debug_wordpress_probe_logs" {
+  statement {
+    sid       = "Struct8ProbeLogs"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug_wordpress_logs.arn}:*"]
+  }
+}
+
+resource "aws_iam_role" "Struct8Debug-Debug" {
+  name                 = "Struct8Debug-t1eAUxGPRo-vo6lIyc15I"
+  assume_role_policy   = data.aws_iam_policy_document.Debug_debug_trust.json
+  max_session_duration = 3600
+}
+
 resource "aws_iam_role" "asgWordpress_role" {
   name = "asgWordpress_role"
   assume_role_policy = jsonencode({
@@ -320,6 +469,24 @@ resource "aws_iam_role" "task_role_ecs_wordpress" {
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
+}
+
+resource "aws_iam_role_policy" "Struct8Debug-Debug_policy" {
+  name   = "Struct8Debug-t1eAUxGPRo-vo6lIyc15I-policy"
+  policy = data.aws_iam_policy_document.Debug_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-Debug.id
+}
+
+resource "aws_iam_role_policy" "Struct8Exec-Debug-wordpress" {
+  name   = "Struct8Exec-t1eAUxGPRo-vo6lIyc15I-wordpress"
+  policy = data.aws_iam_policy_document.Debug_wordpress_exec_channel.json
+  role   = aws_iam_role.task_role_ecs_wordpress.id
+}
+
+resource "aws_iam_role_policy" "Struct8ProbeLogs-Debug-wordpress" {
+  name   = "Struct8ProbeLogs-t1eAUxGPRo-vo6lIyc15I-wordpress"
+  policy = data.aws_iam_policy_document.Debug_wordpress_probe_logs.json
+  role   = aws_iam_role.execution_role_ecs_wordpress.id
 }
 
 resource "aws_iam_role_policy_attachment" "autoscaling_group_asgWordpress_st_wordpress-professional_attach" {
@@ -1797,7 +1964,9 @@ resource "aws_ecs_service" "wordpress_service" {
   cluster                           = aws_ecs_cluster.wp-cluster.id
   desired_count                     = 2
   enable_ecs_managed_tags           = true
+  enable_execute_command            = true
   force_delete                      = true
+  force_new_deployment              = true
   health_check_grace_period_seconds = 600
   propagate_tags                    = "TASK_DEFINITION"
   scheduling_strategy               = "REPLICA"
@@ -1834,6 +2003,27 @@ resource "aws_ecs_service" "wordpress_service" {
     Struct8Creator = "Contato Struct"
   }
   depends_on = [aws_lb_listener_rule.ruleFromCloudFront]
+}
+
+resource "aws_ecs_task_definition" "Struct8Probe_Debug_wordpress" {
+  container_definitions    = jsonencode([{"name":"probe","image":"${local.container_def_wordpress_otel-collector.image}","essential":true,"entryPoint":["/bin/sh","-c","echo \"struct8 probe: host=$1 port=$2\"\ngetent hosts \"$1\" || nslookup \"$1\" 2>/dev/null || echo \"no DNS answer\"\nping -c 3 -W 2 \"$1\" 2>/dev/null || echo \"no ICMP reply (filtered, or not permitted in this container; not conclusive)\"\nif command -v nc >/dev/null 2>&1; then\n  if nc -z -w 5 \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelif command -v bash >/dev/null 2>&1; then\n  if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelse\n  echo \"port $2 not tested: this image has neither nc nor bash\"\nfi","probe"],"command":["localhost","80"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug_wordpress_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"probe"}}}])
+  cpu                      = "256"
+  execution_role_arn       = aws_iam_role.execution_role_ecs_wordpress.arn
+  family                   = "Struct8Probe-t1eAUxGPRo-vo6lIyc15I-wordpress"
+  memory                   = "512"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+}
+
+resource "aws_ecs_task_definition" "Struct8Scratch_Debug_wordpress" {
+  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_wordpress_otel-collector.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug_wordpress_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
+  cpu                      = "1024"
+  execution_role_arn       = aws_iam_role.execution_role_ecs_wordpress.arn
+  family                   = "Struct8Scratch-t1eAUxGPRo-vo6lIyc15I-wordpress"
+  memory                   = "768"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+  task_role_arn            = aws_iam_role.task_role_ecs_wordpress.arn
 }
 
 locals {
@@ -2245,6 +2435,11 @@ resource "aws_sesv2_email_identity" "wpMail" {
 
 
 ### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_log_group" "Struct8Probe_Debug_wordpress_logs" {
+  name              = "/struct8/probe/t1eAUxGPRo-vo6lIyc15I/wordpress"
+  retention_in_days = 1
+}
 
 resource "aws_cloudwatch_log_group" "logsWordpress" {
   name              = "/ecs/wordpress"
