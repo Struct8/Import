@@ -1987,7 +1987,7 @@ service:
     image             = "public.ecr.aws/docker/library/wordpress:latest"
     essential         = true
     cpu               = 512
-    memory            = 640
+    memory            = 768
     memoryReservation = 512
     stopTimeout       = 30
     portMappings = [
@@ -2193,7 +2193,7 @@ resource "aws_ecs_task_definition" "wordpress" {
   cpu                      = "512"
   execution_role_arn       = aws_iam_role.execution_role_ecs_wordpress.arn
   family                   = "wordpress"
-  memory                   = "640"
+  memory                   = "768"
   network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
   task_role_arn            = aws_iam_role.task_role_ecs_wordpress.arn
