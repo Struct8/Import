@@ -961,7 +961,7 @@ resource "aws_lb_target_group" "tgWordpress" {
     healthy_threshold   = 3
     interval            = 30
     matcher             = "200-399"
-    path                = "/"
+    path                = "/wp-includes/images/blank.gif"
     port                = 443
     protocol            = "HTTPS"
     timeout             = 5
@@ -1667,8 +1667,8 @@ resource "aws_autoscaling_group" "asgWordpress" {
   mixed_instances_policy {
     instances_distribution {
       on_demand_allocation_strategy            = "prioritized"
-      on_demand_base_capacity                  = 0
-      on_demand_percentage_above_base_capacity = 25
+      on_demand_base_capacity                  = 1
+      on_demand_percentage_above_base_capacity = 0
       spot_allocation_strategy                 = "price-capacity-optimized"
     }
     launch_template {
@@ -1681,12 +1681,6 @@ resource "aws_autoscaling_group" "asgWordpress" {
       }
       override {
         instance_type = "c6g.large"
-      }
-      override {
-        instance_type = "m7g.large"
-      }
-      override {
-        instance_type = "m6g.large"
       }
     }
   }
@@ -1986,7 +1980,7 @@ service:
     name              = "wordpress"
     image             = "public.ecr.aws/docker/library/wordpress:latest"
     essential         = true
-    cpu               = 512
+    cpu               = 1024
     memory            = 768
     memoryReservation = 512
     stopTimeout       = 30
@@ -2190,7 +2184,7 @@ service:
 
 resource "aws_ecs_task_definition" "wordpress" {
   container_definitions    = jsonencode([local.container_def_wordpress_otel-collector, local.container_def_wordpress_wordpress_1])
-  cpu                      = "512"
+  cpu                      = "1024"
   execution_role_arn       = aws_iam_role.execution_role_ecs_wordpress.arn
   family                   = "wordpress"
   memory                   = "768"
