@@ -226,7 +226,7 @@ resource "aws_iam_policy" "ecs_task_definition_wordpress_st_wordpress-profession
   policy      = data.aws_iam_policy_document.ecs_task_definition_wordpress_st_wordpress-professional_doc.json
 }
 
-data "aws_iam_policy_document" "Debug_debug_permissions" {
+data "aws_iam_policy_document" "debug-wp_debug_permissions" {
   statement {
     sid       = "RunProbeTaskwordpress"
     effect    = "Allow"
@@ -264,7 +264,7 @@ data "aws_iam_policy_document" "Debug_debug_permissions" {
     sid       = "ReadProbeOutputwordpress"
     effect    = "Allow"
     actions   = ["logs:GetLogEvents"]
-    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug_wordpress_logs.arn}:*"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_debug-wp_wordpress_logs.arn}:*"]
   }
   statement {
     sid       = "PassProbeExecutionRolewordpress"
@@ -289,7 +289,7 @@ data "aws_iam_policy_document" "Debug_debug_permissions" {
     }
     condition {
       test     = "StringEquals"
-      values   = ["otel-collector"]
+      values   = ["wordpress"]
       variable = "ecs:container-name"
     }
   }
@@ -328,7 +328,7 @@ data "aws_iam_policy_document" "Debug_debug_permissions" {
   }
 }
 
-data "aws_iam_policy_document" "Debug_debug_trust" {
+data "aws_iam_policy_document" "debug-wp_debug_trust" {
   statement {
     effect = "Allow"
     principals {
@@ -339,7 +339,7 @@ data "aws_iam_policy_document" "Debug_debug_trust" {
   }
 }
 
-data "aws_iam_policy_document" "Debug_wordpress_exec_channel" {
+data "aws_iam_policy_document" "debug-wp_wordpress_exec_channel" {
   statement {
     sid       = "Struct8ExecChannel"
     effect    = "Allow"
@@ -360,18 +360,18 @@ data "aws_iam_policy_document" "Debug_wordpress_exec_channel" {
   }
 }
 
-data "aws_iam_policy_document" "Debug_wordpress_probe_logs" {
+data "aws_iam_policy_document" "debug-wp_wordpress_probe_logs" {
   statement {
     sid       = "Struct8ProbeLogs"
     effect    = "Allow"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["${aws_cloudwatch_log_group.Struct8Probe_Debug_wordpress_logs.arn}:*"]
+    resources = ["${aws_cloudwatch_log_group.Struct8Probe_debug-wp_wordpress_logs.arn}:*"]
   }
 }
 
-resource "aws_iam_role" "Struct8Debug-Debug" {
+resource "aws_iam_role" "Struct8Debug-debug-wp" {
   name                 = "Struct8Debug-t1eAUxGPRo-vo6lIyc15I"
-  assume_role_policy   = data.aws_iam_policy_document.Debug_debug_trust.json
+  assume_role_policy   = data.aws_iam_policy_document.debug-wp_debug_trust.json
   max_session_duration = 3600
 }
 
@@ -471,21 +471,21 @@ resource "aws_iam_role" "task_role_ecs_wordpress" {
   }
 }
 
-resource "aws_iam_role_policy" "Struct8Debug-Debug_policy" {
+resource "aws_iam_role_policy" "Struct8Debug-debug-wp_policy" {
   name   = "Struct8Debug-t1eAUxGPRo-vo6lIyc15I-policy"
-  policy = data.aws_iam_policy_document.Debug_debug_permissions.json
-  role   = aws_iam_role.Struct8Debug-Debug.id
+  policy = data.aws_iam_policy_document.debug-wp_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-debug-wp.id
 }
 
-resource "aws_iam_role_policy" "Struct8Exec-Debug-wordpress" {
+resource "aws_iam_role_policy" "Struct8Exec-debug-wp-wordpress" {
   name   = "Struct8Exec-t1eAUxGPRo-vo6lIyc15I-wordpress"
-  policy = data.aws_iam_policy_document.Debug_wordpress_exec_channel.json
+  policy = data.aws_iam_policy_document.debug-wp_wordpress_exec_channel.json
   role   = aws_iam_role.task_role_ecs_wordpress.id
 }
 
-resource "aws_iam_role_policy" "Struct8ProbeLogs-Debug-wordpress" {
+resource "aws_iam_role_policy" "Struct8ProbeLogs-debug-wp-wordpress" {
   name   = "Struct8ProbeLogs-t1eAUxGPRo-vo6lIyc15I-wordpress"
-  policy = data.aws_iam_policy_document.Debug_wordpress_probe_logs.json
+  policy = data.aws_iam_policy_document.debug-wp_wordpress_probe_logs.json
   role   = aws_iam_role.execution_role_ecs_wordpress.id
 }
 
@@ -2005,8 +2005,8 @@ resource "aws_ecs_service" "wordpress_service" {
   depends_on = [aws_lb_listener_rule.ruleFromCloudFront]
 }
 
-resource "aws_ecs_task_definition" "Struct8Probe_Debug_wordpress" {
-  container_definitions    = jsonencode([{"name":"probe","image":"${local.container_def_wordpress_otel-collector.image}","essential":true,"entryPoint":["/bin/sh","-c","echo \"struct8 probe: host=$1 port=$2\"\ngetent hosts \"$1\" || nslookup \"$1\" 2>/dev/null || echo \"no DNS answer\"\nping -c 3 -W 2 \"$1\" 2>/dev/null || echo \"no ICMP reply (filtered, or not permitted in this container; not conclusive)\"\nif command -v nc >/dev/null 2>&1; then\n  if nc -z -w 5 \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelif command -v bash >/dev/null 2>&1; then\n  if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelse\n  echo \"port $2 not tested: this image has neither nc nor bash\"\nfi","probe"],"command":["localhost","80"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug_wordpress_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"probe"}}}])
+resource "aws_ecs_task_definition" "Struct8Probe_debug-wp_wordpress" {
+  container_definitions    = jsonencode([{"name":"probe","image":"${local.container_def_wordpress_otel-collector.image}","essential":true,"entryPoint":["/bin/sh","-c","echo \"struct8 probe: host=$1 port=$2\"\ngetent hosts \"$1\" || nslookup \"$1\" 2>/dev/null || echo \"no DNS answer\"\nping -c 3 -W 2 \"$1\" 2>/dev/null || echo \"no ICMP reply (filtered, or not permitted in this container; not conclusive)\"\nif command -v nc >/dev/null 2>&1; then\n  if nc -z -w 5 \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelif command -v bash >/dev/null 2>&1; then\n  if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$1\" \"$2\" 2>/dev/null; then echo \"port $2 open\"; else echo \"port $2 closed or filtered\"; fi\nelse\n  echo \"port $2 not tested: this image has neither nc nor bash\"\nfi","probe"],"command":["localhost","80"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_debug-wp_wordpress_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"probe"}}}])
   cpu                      = "256"
   execution_role_arn       = aws_iam_role.execution_role_ecs_wordpress.arn
   family                   = "Struct8Probe-t1eAUxGPRo-vo6lIyc15I-wordpress"
@@ -2015,8 +2015,8 @@ resource "aws_ecs_task_definition" "Struct8Probe_Debug_wordpress" {
   requires_compatibilities = ["EC2"]
 }
 
-resource "aws_ecs_task_definition" "Struct8Scratch_Debug_wordpress" {
-  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_wordpress_otel-collector.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_Debug_wordpress_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
+resource "aws_ecs_task_definition" "Struct8Scratch_debug-wp_wordpress" {
+  container_definitions    = jsonencode([{"name":"scratch","image":"${local.container_def_wordpress_otel-collector.image}","essential":true,"entryPoint":["/bin/sh","-c"],"command":["echo 'no script was passed to this task'"],"logConfiguration":{"logDriver":"awslogs","options":{"awslogs-group":"${aws_cloudwatch_log_group.Struct8Probe_debug-wp_wordpress_logs.name}","awslogs-region":"${data.aws_region.current.region}","awslogs-stream-prefix":"scratch"}}}])
   cpu                      = "1024"
   execution_role_arn       = aws_iam_role.execution_role_ecs_wordpress.arn
   family                   = "Struct8Scratch-t1eAUxGPRo-vo6lIyc15I-wordpress"
@@ -2436,7 +2436,7 @@ resource "aws_sesv2_email_identity" "wpMail" {
 
 ### CATEGORY: MONITORING ###
 
-resource "aws_cloudwatch_log_group" "Struct8Probe_Debug_wordpress_logs" {
+resource "aws_cloudwatch_log_group" "Struct8Probe_debug-wp_wordpress_logs" {
   name              = "/struct8/probe/t1eAUxGPRo-vo6lIyc15I/wordpress"
   retention_in_days = 1
 }
