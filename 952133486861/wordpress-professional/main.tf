@@ -2447,7 +2447,7 @@ service:
     mountPoints = [
       {
         sourceVolume  = "wpContent"
-        containerPath = "/var/www/html"
+        containerPath = "/var/www/html/wp-content/uploads"
         readOnly      = false
       }
     ]
