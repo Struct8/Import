@@ -82,26 +82,6 @@ data "aws_lambda_function_url" "analyticsUrl" {
 
 
 
-### RENAMES ###
-
-moved {
-  from = aws_iam_role.Struct8Debug-Debug-otel
-  to   = aws_iam_role.Struct8Debug-debug-otel
-}
-
-moved {
-  from = aws_iam_role_policy.Struct8Debug-Debug-otel_policy
-  to   = aws_iam_role_policy.Struct8Debug-debug-otel_policy
-}
-
-moved {
-  from = aws_iam_role_policy.Struct8Exec-Debug-otel-wordpress
-  to   = aws_iam_role_policy.Struct8Exec-debug-otel-wordpress
-}
-
-
-
-
 ### CATEGORY: IAM ###
 
 resource "aws_iam_instance_profile" "asgWordpress_profile" {
@@ -2356,6 +2336,10 @@ service:
       {
         name  = "WP_SHOP"
         value = "true"
+      },
+      {
+        name  = "APACHE_MAX_WORKERS"
+        value = "12"
       },
       {
         name  = "NAME"
