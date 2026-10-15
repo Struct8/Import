@@ -19,7 +19,7 @@
     }
   ],
   "action": "destroy",
-  "trigger_id": "1792033018561",
+  "trigger_id": "1792067766629",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -31,7 +31,7 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "DESTROY ALL: wordpress-backup (1/4)",
+      "stage_name": "DESTROY ALL: wordpress-professional (1/2)",
       "parallel_execution": true,
       "max_parallel": 4,
       "states": [
@@ -65,7 +65,7 @@
       ]
     },
     {
-      "stage_name": "DESTROY ALL: wordpress-backup (2/4)",
+      "stage_name": "DESTROY ALL: wordpress-professional (2/2)",
       "parallel_execution": true,
       "max_parallel": 4,
       "states": [
@@ -81,45 +81,6 @@
             "952133486861/wordpress-loadtest",
             "952133486861/wp-flowlogs",
             "952133486861/chat-aurora"
-          ]
-        }
-      ]
-    },
-    {
-      "stage_name": "DESTROY ALL: wordpress-backup (3/4)",
-      "parallel_execution": true,
-      "max_parallel": 4,
-      "states": [
-        {
-          "path": "952133486861/wp-analytics",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
-            "secret_name": "AUTH_AWS_952133486861"
-          },
-          "depends_on": [
-            "952133486861/wordpress-professional"
-          ]
-        }
-      ]
-    },
-    {
-      "stage_name": "DESTROY ALL: wordpress-backup (4/4)",
-      "parallel_execution": true,
-      "max_parallel": 4,
-      "states": [
-        {
-          "path": "952133486861/wordpress-backup",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
-            "secret_name": "AUTH_AWS_952133486861"
-          },
-          "depends_on": [
-            "952133486861/wordpress-professional",
-            "952133486861/wp-analytics"
           ]
         }
       ]
