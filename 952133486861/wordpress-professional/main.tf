@@ -1222,8 +1222,8 @@ resource "aws_lb_target_group" "tgWordpress" {
     path                = "/wp-includes/images/blank.gif"
     port                = 443
     protocol            = "HTTPS"
-    timeout             = 5
-    unhealthy_threshold = 3
+    timeout             = 10
+    unhealthy_threshold = 5
   }
   tags = {
     Name           = "tgWordpress"
