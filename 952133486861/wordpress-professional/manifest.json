@@ -11,12 +11,15 @@
         "templates/wordpress-professional/v1/lambda/analytics",
         "templates/vpc-flowlogs-amp/v1/lambda/process-flow-logs",
         "templates/wordpress-professional/v1/lambda/csp-receiver",
-        "templates/wordpress-professional/v1/canary"
+        "templates/wordpress-professional/v1/canary",
+        "templates/vpc-k6-load-generator/v3/user_data",
+        "templates/wordpress-professional/v1/lambda/db-query",
+        "templates/wordpress-professional/v1/lambda/web-chat"
       ]
     }
   ],
   "action": "apply",
-  "trigger_id": "1792066601393",
+  "trigger_id": "1792069412461",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -28,8 +31,9 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "Manual Trigger: wordpress-professional",
-      "parallel_execution": false,
+      "stage_name": "APPLY ALL: wordpress-professional (1/2)",
+      "parallel_execution": true,
+      "max_parallel": 4,
       "states": [
         {
           "path": "952133486861/wordpress-professional",
@@ -41,6 +45,53 @@
           }
         }
       ]
+    },
+    {
+      "stage_name": "APPLY ALL: wordpress-professional (2/2)",
+      "parallel_execution": true,
+      "max_parallel": 4,
+      "states": [
+        {
+          "path": "952133486861/wordpress-loadtest",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "depends_on": [
+            "952133486861/wordpress-professional"
+          ]
+        },
+        {
+          "path": "952133486861/wp-flowlogs",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "depends_on": [
+            "952133486861/wordpress-professional"
+          ]
+        },
+        {
+          "path": "952133486861/chat-aurora",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "depends_on": [
+            "952133486861/wordpress-professional"
+          ]
+        }
+      ]
     }
-  ]
+  ],
+  "pipeline_schedule": {
+    "mode": "dependency",
+    "max_parallel": 4
+  }
 }
