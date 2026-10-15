@@ -7,12 +7,19 @@
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
         "templates/vpc-k6-load-generator/v3/user_data",
-        "templates/wordpress-professional/v1/canary"
+        "templates/wordpress-professional/v1/canary",
+        "templates/vpc-flowlogs-amp/v1/lambda/process-flow-logs",
+        "templates/wordpress-professional/v1/lambda/db-query",
+        "templates/wordpress-professional/v1/lambda/web-chat",
+        "templates/ec2-nat-private/v1/user_data",
+        "templates/wordpress-professional/v1/container",
+        "templates/wordpress-professional/v1/lambda/analytics",
+        "templates/wordpress-professional/v1/lambda/csp-receiver"
       ]
     }
   ],
-  "action": "apply",
-  "trigger_id": "1792026300195",
+  "action": "destroy",
+  "trigger_id": "1792033018561",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -24,8 +31,9 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "Manual Trigger: wordpress-loadtest",
-      "parallel_execution": false,
+      "stage_name": "DESTROY ALL: wordpress-backup (1/4)",
+      "parallel_execution": true,
+      "max_parallel": 4,
       "states": [
         {
           "path": "952133486861/wordpress-loadtest",
@@ -35,8 +43,90 @@
             "region": "us-west-2",
             "secret_name": "AUTH_AWS_952133486861"
           }
+        },
+        {
+          "path": "952133486861/wp-flowlogs",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        },
+        {
+          "path": "952133486861/chat-aurora",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        }
+      ]
+    },
+    {
+      "stage_name": "DESTROY ALL: wordpress-backup (2/4)",
+      "parallel_execution": true,
+      "max_parallel": 4,
+      "states": [
+        {
+          "path": "952133486861/wordpress-professional",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "depends_on": [
+            "952133486861/wordpress-loadtest",
+            "952133486861/wp-flowlogs",
+            "952133486861/chat-aurora"
+          ]
+        }
+      ]
+    },
+    {
+      "stage_name": "DESTROY ALL: wordpress-backup (3/4)",
+      "parallel_execution": true,
+      "max_parallel": 4,
+      "states": [
+        {
+          "path": "952133486861/wp-analytics",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "depends_on": [
+            "952133486861/wordpress-professional"
+          ]
+        }
+      ]
+    },
+    {
+      "stage_name": "DESTROY ALL: wordpress-backup (4/4)",
+      "parallel_execution": true,
+      "max_parallel": 4,
+      "states": [
+        {
+          "path": "952133486861/wordpress-backup",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "depends_on": [
+            "952133486861/wordpress-professional",
+            "952133486861/wp-analytics"
+          ]
         }
       ]
     }
-  ]
+  ],
+  "pipeline_schedule": {
+    "mode": "dependency",
+    "max_parallel": 4
+  }
 }
