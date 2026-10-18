@@ -24,7 +24,11 @@ data "aws_region" "current" {}
 ### CATEGORY: INTEGRATION ###
 
 resource "aws_sns_topic" "Topic1" {
-  name = "Topic1"
+  name                        = "Topic1.fifo"
+  content_based_deduplication = false
+  delivery_policy             = "{\"a\":\"b\"}"
+  fifo_throughput_scope       = "Topic"
+  fifo_topic                  = true
   tags = {
     Name           = "Topic1"
     State          = "StateCB"
