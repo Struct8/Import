@@ -24,17 +24,6 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### VARIABLES ###
-
-variable "alert_email" {
-  type        = string
-  default     = "alerts@example.com"
-  description = "Email address that receives the alarm on failed builds of the engine's CodeBuild project."
-}
-
-
-
-
 ### EXTERNAL REFERENCES ###
 
 data "aws_codestarconnections_connection" "struct8-engine-github" {
@@ -117,7 +106,7 @@ resource "aws_sns_topic" "struct8-engine-alerts" {
 }
 
 resource "aws_sns_topic_subscription" "struct8-engine-alerts-email" {
-  endpoint  = var.alert_email
+  endpoint  = "rbpmconsulting@gmail.com"
   protocol  = "email"
   topic_arn = aws_sns_topic.struct8-engine-alerts.arn
 }
