@@ -1,9 +1,9 @@
 {
   "external_repositories": [],
-  "action": "apply",
-  "trigger_id": "1791388309626",
-  "triggered_by": "assistant.Contato_Struct",
-  "engine_ref": "devlocal",
+  "action": "plan",
+  "trigger_id": "1792345815183",
+  "triggered_by": "Contato Struct",
+  "engine_ref": "dev",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
     "provider": "aws",
