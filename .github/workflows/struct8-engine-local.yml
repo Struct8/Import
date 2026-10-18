@@ -1,0 +1,32 @@
+name: Struct8 Engine on CodeBuild
+
+# Written by Struct8. cloudman-deploy.yml calls this file when the commit that
+# started the run ends with the line "Struct8-Runner: codebuild".
+# The AWS role of this repository accepts this file on main, so what it runs,
+# runs with that role.
+on:
+  workflow_call:
+    inputs:
+      stage:
+        type: string
+        required: false
+        default: dev
+      runner_project:
+        type: string
+        required: true
+
+permissions:
+  id-token: write
+  contents: write
+  actions: read
+
+jobs:
+  engine:
+    name: Struct8 GitOps Engine
+    runs-on: codebuild-${{ inputs.runner_project }}-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Struct8 GitOps Engine
+        uses: Struct8/cloudman-core/.github/actions/engine-run@devlocal
+        with:
+          stage: ${{ inputs.stage }}
+          secrets_json: ${{ toJSON(secrets) }}
