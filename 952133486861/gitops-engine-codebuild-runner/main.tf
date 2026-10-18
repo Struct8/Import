@@ -3,6 +3,9 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+    time = {
+      source = "hashicorp/time"
+    }
   }
 
   backend "s3" {
@@ -20,6 +23,17 @@ provider "aws" {
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
+
+### VARIABLES ###
+
+variable "alert_email" {
+  type        = string
+  default     = "alerts@example.com"
+  description = "Email address that receives the alarm on failed builds of the engine's CodeBuild project."
+}
+
+
+
 
 ### EXTERNAL REFERENCES ###
 
@@ -91,6 +105,26 @@ resource "aws_iam_role_policy_attachment" "codebuild_project_struct8-engine_st_g
 
 
 
+### CATEGORY: INTEGRATION ###
+
+resource "aws_sns_topic" "struct8-engine-alerts" {
+  name = "struct8-engine-alerts"
+  tags = {
+    Name           = "struct8-engine-alerts"
+    State          = "gitops-engine-codebuild-runner"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_sns_topic_subscription" "struct8-engine-alerts-email" {
+  endpoint  = var.alert_email
+  protocol  = "email"
+  topic_arn = aws_sns_topic.struct8-engine-alerts.arn
+}
+
+
+
+
 ### CATEGORY: MONITORING ###
 
 resource "aws_cloudwatch_log_group" "struct8-engine-logs" {
@@ -100,6 +134,28 @@ resource "aws_cloudwatch_log_group" "struct8-engine-logs" {
   skip_destroy      = false
   tags = {
     Name           = "struct8-engine-logs"
+    State          = "gitops-engine-codebuild-runner"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "struct8-engine-failed-builds" {
+  alarm_name          = "struct8-engine-failed-builds"
+  metric_name         = "FailedBuilds"
+  alarm_actions       = [aws_sns_topic.struct8-engine-alerts.arn]
+  alarm_description   = "A build of the CodeBuild project that runs the GitOps engine failed. Check the build logs and the run in GitHub Actions."
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  namespace           = "AWS/CodeBuild"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  treat_missing_data  = "notBreaching"
+  dimensions = {
+    ProjectName = aws_codebuild_project.struct8-engine.name
+  }
+  tags = {
+    Name           = "struct8-engine-failed-builds"
     State          = "gitops-engine-codebuild-runner"
     Struct8Creator = "Contato Struct"
   }
@@ -171,7 +227,7 @@ resource "aws_codebuild_project" "struct8-engine" {
     State          = "gitops-engine-codebuild-runner"
     Struct8Creator = "Contato Struct"
   }
-  depends_on = [aws_iam_role_policy_attachment.codebuild_project_struct8-engine_st_gitops-engine-codebuild-runner_attach]
+  depends_on = [aws_iam_role_policy_attachment.codebuild_project_struct8-engine_st_gitops-engine-codebuild-runner_attach, time_sleep.struct8-engine_role_propagation]
 }
 
 resource "aws_codebuild_webhook" "struct8-engine_webhook" {
@@ -182,6 +238,19 @@ resource "aws_codebuild_webhook" "struct8-engine_webhook" {
       pattern                 = "WORKFLOW_JOB_QUEUED"
       type                    = "EVENT"
     }
+  }
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+resource "time_sleep" "struct8-engine_role_propagation" {
+  create_duration = "30s"
+  triggers = {
+    policy_attachment = aws_iam_role_policy_attachment.codebuild_project_struct8-engine_st_gitops-engine-codebuild-runner_attach.id
+    policy            = aws_iam_policy.codebuild_project_struct8-engine_st_gitops-engine-codebuild-runner.policy
   }
 }
 
