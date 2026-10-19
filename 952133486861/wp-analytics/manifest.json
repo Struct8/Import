@@ -7,19 +7,12 @@
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
         "templates/wordpress-professional/v1/lambda/analytics",
-        "templates/wordpress-professional/v1/lambda/csp-receiver",
-        "templates/ec2-nat-private/v1/user_data",
-        "templates/wordpress-professional/v1/container",
-        "templates/vpc-flowlogs-amp/v1/lambda/process-flow-logs",
-        "templates/wordpress-professional/v1/canary",
-        "templates/vpc-k6-load-generator/v3/user_data",
-        "templates/wordpress-professional/v1/lambda/db-query",
-        "templates/wordpress-professional/v1/lambda/web-chat"
+        "templates/wordpress-professional/v1/lambda/csp-receiver"
       ]
     }
   ],
-  "action": "apply",
-  "trigger_id": "1792012945392",
+  "action": "destroy",
+  "trigger_id": "1792407106986",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -31,9 +24,8 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "APPLY ALL: wp-analytics (1/3)",
-      "parallel_execution": true,
-      "max_parallel": 4,
+      "stage_name": "Manual Trigger: wp-analytics",
+      "parallel_execution": false,
       "states": [
         {
           "path": "952133486861/wp-analytics",
@@ -45,72 +37,6 @@
           }
         }
       ]
-    },
-    {
-      "stage_name": "APPLY ALL: wp-analytics (2/3)",
-      "parallel_execution": true,
-      "max_parallel": 4,
-      "states": [
-        {
-          "path": "952133486861/wordpress-professional",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
-            "secret_name": "AUTH_AWS_952133486861"
-          },
-          "depends_on": [
-            "952133486861/wp-analytics"
-          ]
-        }
-      ]
-    },
-    {
-      "stage_name": "APPLY ALL: wp-analytics (3/3)",
-      "parallel_execution": true,
-      "max_parallel": 4,
-      "states": [
-        {
-          "path": "952133486861/wordpress-loadtest",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
-            "secret_name": "AUTH_AWS_952133486861"
-          },
-          "depends_on": [
-            "952133486861/wordpress-professional"
-          ]
-        },
-        {
-          "path": "952133486861/wp-flowlogs",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
-            "secret_name": "AUTH_AWS_952133486861"
-          },
-          "depends_on": [
-            "952133486861/wordpress-professional"
-          ]
-        },
-        {
-          "path": "952133486861/chat-aurora",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
-            "secret_name": "AUTH_AWS_952133486861"
-          },
-          "depends_on": [
-            "952133486861/wordpress-professional"
-          ]
-        }
-      ]
     }
-  ],
-  "pipeline_schedule": {
-    "mode": "dependency",
-    "max_parallel": 4
-  }
+  ]
 }
