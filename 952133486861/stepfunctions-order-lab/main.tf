@@ -964,7 +964,7 @@ resource "aws_sns_topic_policy" "aws_sns_topic_policy_order-events_st_stepfuncti
   policy = data.aws_iam_policy_document.aws_sns_topic_policy_order-events_st_stepfunctions-order-lab_doc.json
 }
 
-resource "aws_sns_topic_subscription" "Subscription5" {
+resource "aws_sns_topic_subscription" "events-to-notifications" {
   endpoint  = aws_sqs_queue.order-notifications.arn
   protocol  = "sqs"
   topic_arn = aws_sns_topic.order-events.arn
@@ -992,7 +992,7 @@ resource "aws_cloudwatch_event_rule" "order-failure-alerts" {
   depends_on = [aws_sns_topic_policy.aws_sns_topic_policy_order-events_st_stepfunctions-order-lab]
 }
 
-resource "aws_cloudwatch_event_target" "Target4" {
+resource "aws_cloudwatch_event_target" "failure-alerts-to-events" {
   arn  = aws_sns_topic.order-events.arn
   rule = aws_cloudwatch_event_rule.order-failure-alerts.name
 }
