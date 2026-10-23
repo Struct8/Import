@@ -843,6 +843,7 @@ resource "aws_lambda_permission" "perm_aws_lambda_function_url_order-console-url
   principal              = "*"
   action                 = "lambda:InvokeFunctionUrl"
   function_url_auth_type = "NONE"
+  depends_on             = [aws_lambda_function_url.order-console-url]
 }
 
 resource "aws_lambda_permission" "perm_aws_lambda_function_url_order-console-url_to_order-console_invoke" {
@@ -851,6 +852,7 @@ resource "aws_lambda_permission" "perm_aws_lambda_function_url_order-console-url
   principal                = "*"
   action                   = "lambda:InvokeFunction"
   invoked_via_function_url = true
+  depends_on               = [aws_lambda_function_url.order-console-url, aws_lambda_permission.perm_aws_lambda_function_url_order-console-url_to_order-console]
 }
 
 
