@@ -17,20 +17,7 @@ permissions:
 jobs:
   infrastructure:
     name: Call GitOps Engine
-    if: "${{ !contains(github.event.head_commit.message, 'Struct8-Runner: codebuild') }}"
     uses: Struct8/cloudman-core/.github/workflows/engine.yml@devlocal
     secrets: inherit
     with:
       stage: dev
-
-  # The same run on a CodeBuild project of this repository's AWS account. It runs
-  # when the commit that started the run ends with the line
-  # "Struct8-Runner: codebuild", which Struct8 writes when the run is set to CodeBuild.
-  infrastructure_codebuild:
-    name: Call GitOps Engine (CodeBuild)
-    if: "${{ contains(github.event.head_commit.message, 'Struct8-Runner: codebuild') }}"
-    uses: ./.github/workflows/struct8-engine-local.yml
-    secrets: inherit
-    with:
-      stage: dev
-      runner_project: struct8-engine
