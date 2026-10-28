@@ -494,8 +494,8 @@ resource "aws_lambda_permission" "perm_aws_lambda_function_url_agent-lab-chat-ur
 
 resource "aws_bedrock_guardrail" "agent-lab-guardrail" {
   name                      = "agent-lab-guardrail"
-  blocked_input_messaging   = "Sorry, the model cannot answer this question."
-  blocked_outputs_messaging = "Sorry, the model cannot answer this question."
+  blocked_input_messaging   = "I can only help with Bean Lab Coffee orders. Ask about an order by its id, for example: What is the status of order 1001?"
+  blocked_outputs_messaging = "I can only help with Bean Lab Coffee orders."
   content_policy_config {
     filters_config {
       input_strength  = "HIGH"
@@ -515,6 +515,20 @@ resource "aws_bedrock_guardrail" "agent-lab-guardrail" {
     Name           = "agent-lab-guardrail"
     State          = "bedrock-agent-lab"
     Struct8Creator = "Contato Struct"
+  }
+  topic_policy_config {
+    topics_config {
+      name       = "Travel"
+      definition = "Planning or taking trips: destinations, routes and transport between cities or countries, flights, trains, hotels, tourism and visas."
+      examples   = ["How can I get to Paris?", "What is the cheapest flight to Lisbon?", "Which hotels are near the Eiffel Tower?", "Do I need a visa to visit Japan?"]
+      type       = "DENY"
+    }
+    topics_config {
+      name       = "General knowledge"
+      definition = "Facts about geography, history, science, politics, sports and famous people, such as capitals, dates of events, records and definitions."
+      examples   = ["What is the capital of France?", "Who won the last World Cup?", "When did World War II end?", "How far is the Moon from Earth?"]
+      type       = "DENY"
+    }
   }
 }
 
@@ -590,7 +604,7 @@ resource "aws_bedrockagentcore_harness" "agent_lab_orders" {
     }
   }
   system_prompt {
-    text = "You are the order assistant of Bean Lab Coffee, a fictional coffee roaster used in a lab. Answer questions about orders. To learn the status of an order, call the get_order_status tool with the order id, even when the user context mentions that order, since its status may have changed. The user context, when present, summarizes this customer's earlier conversations: use it to answer questions about them and to find an order id the customer already gave. Never make up order details; if the tool says an order was not found, say so. Use only an order id that the question or the user context gives, never one you guess; when neither gives one, ask the customer for it. Keep answers short."
+    text = "You are the order assistant of Bean Lab Coffee, a fictional coffee roaster used in a lab. Answer only questions about Bean Lab Coffee orders. If a question is about anything else, reply that you can only help with Bean Lab Coffee orders, and do not answer it. To learn the status of an order, call the get_order_status tool with the order id, even when the user context mentions that order, since its status may have changed. The user context, when present, summarizes this customer's earlier conversations: use it to answer questions about them and to find an order id the customer already gave. Never make up order details; if the tool says an order was not found, say so. Use only an order id that the question or the user context gives, never one you guess; when neither gives one, ask the customer for it. Keep answers short."
   }
   tags = {
     Name           = "agent_lab_orders"
