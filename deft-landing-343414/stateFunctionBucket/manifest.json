@@ -1,0 +1,41 @@
+{
+  "external_repositories": [
+    {
+      "repo_name": "structCICDTest",
+      "org": "Struct8",
+      "branch": "main",
+      "target_dir": ".external_modules/structCICDTest",
+      "folders": [
+        "gcp-function-test/function",
+        "gcp-function-test/site"
+      ]
+    }
+  ],
+  "action": "plan",
+  "trigger_id": "1793207873328",
+  "triggered_by": "assistant.Contato_Struct",
+  "engine_ref": "devlocal",
+  "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
+  "backend_global_config": {
+    "provider": "aws",
+    "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+    "region": "us-west-2",
+    "bucket": "struct8-import"
+  },
+  "pipeline_stages": [
+    {
+      "stage_name": "Manual Trigger: stateFunctionBucket",
+      "parallel_execution": false,
+      "states": [
+        {
+          "path": "deft-landing-343414/stateFunctionBucket",
+          "provider": "google",
+          "target_auth": {
+            "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
+            "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
+          }
+        }
+      ]
+    }
+  ]
+}
