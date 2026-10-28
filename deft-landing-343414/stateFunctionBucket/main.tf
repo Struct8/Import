@@ -148,7 +148,10 @@ resource "google_cloudfunctions2_function" "function" {
   service_config {
     service_account_email = google_service_account.function_sa.email
     environment_variables = {
-    DATA_BUCKET = "deft-landing-343414-fn-data"
+    NAME                          = "function"
+    GOOGLE_STORAGE_BUCKET_NAME_0  = "deft-landing-343414-fn-data"
+    GOOGLE_SERVICE_ACCOUNT_NAME_0 = "function_sa"
+    DATA_BUCKET                   = "deft-landing-343414-fn-data"
   }
   }
   depends_on = [google_storage_bucket_iam_member.deft-landing-343414-fn-data-function_sa-storage-objectCreator, google_project_service.artifactregistry, google_project_service.cloudbuild, google_project_service.cloudfunctions, google_project_service.run]
