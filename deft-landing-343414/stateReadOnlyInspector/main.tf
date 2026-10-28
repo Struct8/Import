@@ -35,13 +35,6 @@ resource "google_project_service" "iam" {
 
 ### CATEGORY: IAM ###
 
-resource "google_project_iam_member" "inspector-browser" {
-  member     = google_service_account.struct8-inspector.member
-  project    = "deft-landing-343414"
-  role       = "roles/browser"
-  depends_on = [google_project_service.cloudresourcemanager]
-}
-
 resource "google_project_iam_member" "inspector-cloudasset-viewer" {
   member     = google_service_account.struct8-inspector.member
   project    = "deft-landing-343414"
@@ -56,38 +49,10 @@ resource "google_project_iam_member" "inspector-logging-viewer" {
   depends_on = [google_project_service.cloudresourcemanager]
 }
 
-resource "google_project_iam_member" "inspector-pubsub-viewer" {
-  member     = google_service_account.struct8-inspector.member
-  project    = "deft-landing-343414"
-  role       = "roles/pubsub.viewer"
-  depends_on = [google_project_service.cloudresourcemanager]
-}
-
-resource "google_project_iam_member" "inspector-run-viewer" {
-  member     = google_service_account.struct8-inspector.member
-  project    = "deft-landing-343414"
-  role       = "roles/run.viewer"
-  depends_on = [google_project_service.cloudresourcemanager]
-}
-
-resource "google_project_iam_member" "inspector-secretmanager-viewer" {
-  member     = google_service_account.struct8-inspector.member
-  project    = "deft-landing-343414"
-  role       = "roles/secretmanager.viewer"
-  depends_on = [google_project_service.cloudresourcemanager]
-}
-
 resource "google_project_iam_member" "inspector-serviceusage-consumer" {
   member     = google_service_account.struct8-inspector.member
   project    = "deft-landing-343414"
   role       = "roles/serviceusage.serviceUsageConsumer"
-  depends_on = [google_project_service.cloudresourcemanager]
-}
-
-resource "google_project_iam_member" "inspector-storage-bucketviewer" {
-  member     = google_service_account.struct8-inspector.member
-  project    = "deft-landing-343414"
-  role       = "roles/storage.bucketViewer"
   depends_on = [google_project_service.cloudresourcemanager]
 }
 
