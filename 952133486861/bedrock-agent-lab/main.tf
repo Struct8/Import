@@ -471,18 +471,20 @@ resource "aws_lambda_function_url" "agent-lab-chat-url" {
 
 resource "aws_lambda_permission" "perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat" {
   function_name          = aws_lambda_function.agent-lab-chat.function_name
-  statement_id           = "perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat"
   principal              = "*"
   action                 = "lambda:InvokeFunctionUrl"
   function_url_auth_type = "NONE"
+  statement_id_prefix    = "perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat"
+  depends_on             = [aws_lambda_function_url.agent-lab-chat-url]
 }
 
 resource "aws_lambda_permission" "perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat_invoke" {
   function_name            = aws_lambda_function.agent-lab-chat.function_name
-  statement_id             = "perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat_invoke"
   principal                = "*"
   action                   = "lambda:InvokeFunction"
   invoked_via_function_url = true
+  statement_id_prefix      = "perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat_invoke"
+  depends_on               = [aws_lambda_function_url.agent-lab-chat-url, aws_lambda_permission.perm_aws_lambda_function_url_agent-lab-chat-url_to_agent-lab-chat]
 }
 
 
