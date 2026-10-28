@@ -6,6 +6,9 @@ terraform {
     google = {
       source = "hashicorp/google"
     }
+    time = {
+      source = "hashicorp/time"
+    }
   }
 
   backend "s3" {
@@ -346,7 +349,7 @@ resource "google_pubsub_subscription" "hub-events-archive" {
     filename_prefix = "events/"
     max_duration    = "60s"
   }
-  depends_on = [google_storage_bucket_iam_member.deft-landing-343414-hub-archive-pubsub-storage-objectCreator, google_storage_bucket_iam_member.deft-landing-343414-hub-archive-pubsub-storage-legacyBucketReader, google_project_service.pubsub]
+  depends_on = [time_sleep.hub-events-archive-iam-wait, google_project_service.pubsub]
 }
 
 resource "google_pubsub_subscription" "hub-events-pull" {
@@ -378,6 +381,16 @@ resource "google_pubsub_topic_iam_member" "hub-events-hub-sink_sa-pubsub-publish
   member = google_service_account.hub-sink_sa.member
   role   = "roles/pubsub.publisher"
   topic  = google_pubsub_topic.hub-events.name
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+resource "time_sleep" "hub-events-archive-iam-wait" {
+  create_duration = "120s"
+  depends_on      = [google_storage_bucket_iam_member.deft-landing-343414-hub-archive-pubsub-storage-objectCreator, google_storage_bucket_iam_member.deft-landing-343414-hub-archive-pubsub-storage-legacyBucketReader]
 }
 
 
