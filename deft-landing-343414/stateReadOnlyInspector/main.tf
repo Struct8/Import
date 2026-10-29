@@ -35,6 +35,13 @@ resource "google_project_service" "iam" {
 
 ### CATEGORY: IAM ###
 
+resource "google_project_iam_member" "inspector-bigquery-metadata-viewer" {
+  member     = google_service_account.struct8-inspector.member
+  project    = "deft-landing-343414"
+  role       = "roles/bigquery.metadataViewer"
+  depends_on = [google_project_service.cloudresourcemanager]
+}
+
 resource "google_project_iam_member" "inspector-browser" {
   member     = google_service_account.struct8-inspector.member
   project    = "deft-landing-343414"
@@ -49,10 +56,31 @@ resource "google_project_iam_member" "inspector-cloudasset-viewer" {
   depends_on = [google_project_service.cloudresourcemanager]
 }
 
+resource "google_project_iam_member" "inspector-compute-viewer" {
+  member     = google_service_account.struct8-inspector.member
+  project    = "deft-landing-343414"
+  role       = "roles/compute.viewer"
+  depends_on = [google_project_service.cloudresourcemanager]
+}
+
+resource "google_project_iam_member" "inspector-functions-viewer" {
+  member     = google_service_account.struct8-inspector.member
+  project    = "deft-landing-343414"
+  role       = "roles/cloudfunctions.viewer"
+  depends_on = [google_project_service.cloudresourcemanager]
+}
+
 resource "google_project_iam_member" "inspector-logging-viewer" {
   member     = google_service_account.struct8-inspector.member
   project    = "deft-landing-343414"
   role       = "roles/logging.viewer"
+  depends_on = [google_project_service.cloudresourcemanager]
+}
+
+resource "google_project_iam_member" "inspector-monitoring-viewer" {
+  member     = google_service_account.struct8-inspector.member
+  project    = "deft-landing-343414"
+  role       = "roles/monitoring.viewer"
   depends_on = [google_project_service.cloudresourcemanager]
 }
 
@@ -70,10 +98,24 @@ resource "google_project_iam_member" "inspector-run-viewer" {
   depends_on = [google_project_service.cloudresourcemanager]
 }
 
+resource "google_project_iam_member" "inspector-scheduler-viewer" {
+  member     = google_service_account.struct8-inspector.member
+  project    = "deft-landing-343414"
+  role       = "roles/cloudscheduler.viewer"
+  depends_on = [google_project_service.cloudresourcemanager]
+}
+
 resource "google_project_iam_member" "inspector-secretmanager-viewer" {
   member     = google_service_account.struct8-inspector.member
   project    = "deft-landing-343414"
   role       = "roles/secretmanager.viewer"
+  depends_on = [google_project_service.cloudresourcemanager]
+}
+
+resource "google_project_iam_member" "inspector-servicemanagement-reader" {
+  member     = google_service_account.struct8-inspector.member
+  project    = "deft-landing-343414"
+  role       = "roles/servicemanagement.reader"
   depends_on = [google_project_service.cloudresourcemanager]
 }
 
@@ -88,6 +130,20 @@ resource "google_project_iam_member" "inspector-storage-bucketviewer" {
   member     = google_service_account.struct8-inspector.member
   project    = "deft-landing-343414"
   role       = "roles/storage.bucketViewer"
+  depends_on = [google_project_service.cloudresourcemanager]
+}
+
+resource "google_project_iam_member" "inspector-tasks-viewer" {
+  member     = google_service_account.struct8-inspector.member
+  project    = "deft-landing-343414"
+  role       = "roles/cloudtasks.viewer"
+  depends_on = [google_project_service.cloudresourcemanager]
+}
+
+resource "google_project_iam_member" "inspector-workflows-viewer" {
+  member     = google_service_account.struct8-inspector.member
+  project    = "deft-landing-343414"
+  role       = "roles/workflows.viewer"
   depends_on = [google_project_service.cloudresourcemanager]
 }
 
