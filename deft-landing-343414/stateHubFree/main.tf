@@ -29,6 +29,9 @@ provider "google" {
 data "google_project" "pubsub-project" {
 }
 
+data "google_storage_project_service_account" "notification-storage-agent" {
+}
+
 
 
 
@@ -296,8 +299,6 @@ resource "google_secret_manager_secret_iam_member" "free-last-message-free-relay
 resource "google_compute_network" "free-vpc" {
   name                                      = "free-vpc"
   auto_create_subnetworks                   = false
-  bgp_always_compare_med                    = false
-  delete_bgp_always_compare_med             = false
   delete_default_routes_on_create           = false
   deletion_policy                           = "DELETE"
   enable_ula_internal_ipv6                  = false
@@ -493,8 +494,8 @@ resource "google_storage_bucket_object" "free-sink-source" {
 resource "google_storage_notification" "free-notify" {
   bucket         = google_storage_bucket.deft-landing-343414-free-data.name
   payload_format = "JSON_API_V1"
-  topic          = google_pubsub_topic.free-events.name
-  depends_on     = [google_project_service.pubsub, google_project_service.storage]
+  topic          = google_pubsub_topic.free-events.id
+  depends_on     = [google_pubsub_topic_iam_member.free-events-gcs-pubsub-publisher, google_project_service.pubsub, google_project_service.storage]
 }
 
 resource "google_artifact_registry_repository" "free-repo" {
@@ -853,11 +854,10 @@ resource "google_pubsub_topic_iam_member" "free-events-free-sink_sa-pubsub-publi
   topic  = google_pubsub_topic.free-events.name
 }
 
-resource "google_pubsub_topic_iam_member" "free-events-storage-publisher" {
-  member     = "serviceAccount:service-233610591017@gs-project-accounts.iam.gserviceaccount.com"
-  role       = "roles/pubsub.publisher"
-  topic      = google_pubsub_topic.free-events.name
-  depends_on = [google_project_service.pubsub]
+resource "google_pubsub_topic_iam_member" "free-events-gcs-pubsub-publisher" {
+  member = data.google_storage_project_service_account.notification-storage-agent.member
+  role   = "roles/pubsub.publisher"
+  topic  = google_pubsub_topic.free-events.name
 }
 
 resource "google_cloud_scheduler_job" "free-scheduler" {
