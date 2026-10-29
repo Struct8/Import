@@ -112,13 +112,6 @@ resource "google_project_iam_member" "inspector-secretmanager-viewer" {
   depends_on = [google_project_service.cloudresourcemanager]
 }
 
-resource "google_project_iam_member" "inspector-servicemanagement-reader" {
-  member     = google_service_account.struct8-inspector.member
-  project    = "deft-landing-343414"
-  role       = "roles/servicemanagement.reader"
-  depends_on = [google_project_service.cloudresourcemanager]
-}
-
 resource "google_project_iam_member" "inspector-serviceusage-consumer" {
   member     = google_service_account.struct8-inspector.member
   project    = "deft-landing-343414"
