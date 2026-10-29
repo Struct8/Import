@@ -74,15 +74,63 @@ resource "google_compute_subnetwork" "mig-subnet" {
   depends_on                       = [google_project_service.compute]
 }
 
+resource "google_compute_firewall" "kuma-3001" {
+  name            = "kuma-3001"
+  deletion_policy = "DELETE"
+  direction       = "INGRESS"
+  disabled        = false
+  enable_logging  = false
+  network         = google_compute_network.mig-vpc.id
+  priority        = 1000
+  source_ranges   = ["45.166.205.227/32"]
+  allow {
+    ports    = ["3001"]
+    protocol = "tcp"
+  }
+  depends_on = [google_project_service.compute]
+}
+
 
 
 
 ### CATEGORY: COMPUTE ###
 
+data "local_file" "startup_script_mig-template" {
+  filename = "${path.module}/.external_modules/struct8-templates/templates/multi-cloud-uptime-kuma/v1/user_data/Kuma.sh"
+}
+
 resource "google_compute_instance_template" "mig-template" {
   can_ip_forward = false
   machine_type   = "e2-micro"
-  name_prefix    = "mig-template"
+  metadata_startup_script = <<EOF
+#!/bin/bash
+# --- BEGIN STRUCT8 VARIABLES ---
+STRUCT8_MD=http://metadata.google.internal/computeMetadata/v1
+STRUCT8_ZONE="$(curl -sf --retry 5 -H 'Metadata-Flavor: Google' "$STRUCT8_MD/instance/zone")"
+STRUCT8_ZONE="$(echo "$STRUCT8_ZONE" | sed 's|.*/||')"
+: > /etc/struct8_env
+echo "PROJECT=\"$(curl -sf --retry 5 -H 'Metadata-Flavor: Google' "$STRUCT8_MD/project/project-id")\"" >> /etc/struct8_env
+echo "ZONE=\"$STRUCT8_ZONE\"" >> /etc/struct8_env
+echo "REGION=\"$(echo "$STRUCT8_ZONE" | sed 's/-[^-]*$//')\"" >> /etc/struct8_env
+cat << 'EOFENV' >> /etc/struct8_env
+NAME="mig-template"
+GOOGLE_COMPUTE_REGION_INSTANCE_GROUP_MANAGER_NAME_0="mig-group"
+GOOGLE_SERVICE_ACCOUNT_NAME_0="mig-template_sa"
+EOFENV
+chmod 644 /etc/struct8_env
+sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
+chmod 644 /etc/profile.d/struct8_vars.sh
+touch /etc/environment
+sed -i '/^# BEGIN STRUCT8$/,/^# END STRUCT8$/d' /etc/environment
+{ echo '# BEGIN STRUCT8'; cat /etc/struct8_env; echo '# END STRUCT8'; } >> /etc/environment
+set -a
+. /etc/struct8_env
+set +a
+# --- END STRUCT8 VARIABLES ---
+
+${data.local_file.startup_script_mig-template.content}
+  EOF
+  name_prefix = "mig-template"
   disk {
     auto_delete  = true
     boot         = true
@@ -96,6 +144,9 @@ resource "google_compute_instance_template" "mig-template" {
   network_interface {
     stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.mig-subnet.id
+    access_config {
+      network_tier = "PREMIUM"
+    }
   }
   service_account {
     email  = google_service_account.mig-template_sa.email
@@ -127,8 +178,8 @@ resource "google_compute_region_autoscaler" "mig-autoscaler" {
   target          = google_compute_region_instance_group_manager.mig-group.id
   autoscaling_policy {
     cooldown_period = 60
-    max_replicas    = 3
-    min_replicas    = 2
+    max_replicas    = 1
+    min_replicas    = 1
     mode            = "ON"
     cpu_utilization {
       predictive_method = "NONE"
