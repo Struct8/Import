@@ -49,6 +49,16 @@ resource "google_project_service" "cloudfunctions" {
   service            = "cloudfunctions.googleapis.com"
 }
 
+resource "google_project_service" "endpoints" {
+  disable_on_destroy = false
+  service            = "endpoints.googleapis.com"
+}
+
+resource "google_project_service" "hub-api-enable" {
+  disable_on_destroy = false
+  service            = google_endpoints_service.hub-api.service_name
+}
+
 resource "google_project_service" "iam" {
   disable_on_destroy = false
   service            = "iam.googleapis.com"
@@ -69,6 +79,16 @@ resource "google_project_service" "secretmanager" {
   service            = "secretmanager.googleapis.com"
 }
 
+resource "google_project_service" "servicecontrol" {
+  disable_on_destroy = false
+  service            = "servicecontrol.googleapis.com"
+}
+
+resource "google_project_service" "servicemanagement" {
+  disable_on_destroy = false
+  service            = "servicemanagement.googleapis.com"
+}
+
 resource "google_project_service" "storage" {
   disable_on_destroy = false
   service            = "storage.googleapis.com"
@@ -78,6 +98,20 @@ resource "google_project_service" "storage" {
 
 
 ### CATEGORY: IAM ###
+
+resource "google_project_iam_member" "marisa-demo1-hub-api_sa-servicemanagement-serviceController" {
+  member  = google_service_account.hub-api_sa.member
+  project = "deft-landing-343414"
+  role    = "roles/servicemanagement.serviceController"
+}
+
+resource "google_service_account" "hub-api_sa" {
+  account_id                   = "hub-api-sa"
+  create_ignore_already_exists = false
+  deletion_policy              = "DELETE"
+  disabled                     = false
+  depends_on                   = [google_project_service.iam]
+}
 
 resource "google_service_account" "hub-entry_sa" {
   account_id                   = "hub-entry-sa"
@@ -240,6 +274,41 @@ resource "google_storage_bucket_object" "hub-sink-source" {
 
 ### CATEGORY: COMPUTE ###
 
+resource "google_cloud_run_v2_service" "hub-api-esp" {
+  name                = "hub-api-esp"
+  deletion_protection = false
+  location            = "us-central1"
+  template {
+    service_account = google_service_account.hub-api_sa.email
+    containers {
+      image = "gcr.io/endpoints-release/endpoints-runtime-serverless:2"
+      env {
+        name  = "ENDPOINTS_SERVICE_NAME"
+        value = google_endpoints_service.hub-api.service_name
+      }
+      env {
+        name  = "ENDPOINTS_SERVICE_VERSION"
+        value = google_endpoints_service.hub-api.config_id
+      }
+    }
+  }
+  depends_on = [google_project_service.hub-api-enable, google_project_iam_member.marisa-demo1-hub-api_sa-servicemanagement-serviceController]
+}
+
+resource "google_cloud_run_v2_service_iam_member" "hub-api-esp-allusers-run-invoker" {
+  name     = google_cloud_run_v2_service.hub-api-esp.name
+  location = google_cloud_run_v2_service.hub-api-esp.location
+  member   = "allUsers"
+  role     = "roles/run.invoker"
+}
+
+resource "google_cloud_run_v2_service_iam_member" "hub-entry-hub-api_sa-run-invoker" {
+  name     = google_cloudfunctions2_function.hub-entry.name
+  location = google_cloudfunctions2_function.hub-entry.location
+  member   = google_service_account.hub-api_sa.member
+  role     = "roles/run.invoker"
+}
+
 resource "google_cloud_run_v2_service_iam_member" "hub-relay-hub-entry_sa-run-invoker" {
   name     = google_cloudfunctions2_function.hub-relay.name
   location = google_cloudfunctions2_function.hub-relay.location
@@ -381,6 +450,32 @@ resource "google_pubsub_topic_iam_member" "hub-events-hub-sink_sa-pubsub-publish
   member = google_service_account.hub-sink_sa.member
   role   = "roles/pubsub.publisher"
   topic  = google_pubsub_topic.hub-events.name
+}
+
+resource "google_endpoints_service" "hub-api" {
+  service_name    = "hub-api.endpoints.deft-landing-343414.cloud.goog"
+  deletion_policy = "DELETE"
+  openapi_config = <<EOF
+swagger: "2.0"
+info:
+  title: hub-api
+  version: "1.0.0"
+host: hub-api.endpoints.deft-landing-343414.cloud.goog
+schemes:
+  - https
+produces:
+  - application/json
+paths:
+  /hub-entry:
+    post:
+      operationId: post_hub_entry
+      x-google-backend:
+        address: ${google_cloudfunctions2_function.hub-entry.url}
+      responses:
+        "200":
+          description: OK
+  EOF
+  depends_on = [google_cloud_run_v2_service_iam_member.hub-entry-hub-api_sa-run-invoker, google_project_service.endpoints, google_project_service.run, google_project_service.servicecontrol, google_project_service.servicemanagement]
 }
 
 
