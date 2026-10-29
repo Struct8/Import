@@ -35,6 +35,36 @@ data "google_storage_project_service_account" "notification-storage-agent" {
 
 
 
+### RENAMES ###
+
+moved {
+  from = google_endpoints_service.free-api
+  to   = google_endpoints_service.free-api-2
+}
+
+moved {
+  from = google_service_account.free-api_sa
+  to   = google_service_account.free-api-2_sa
+}
+
+moved {
+  from = google_firestore_database.free-firestore
+  to   = google_firestore_database.free-firestore-2
+}
+
+moved {
+  from = google_iam_workload_identity_pool.free-pool
+  to   = google_iam_workload_identity_pool.free-pool-2
+}
+
+moved {
+  from = google_cloud_tasks_queue.free-queue
+  to   = google_cloud_tasks_queue.free-queue-2
+}
+
+
+
+
 ### CATEGORY: FOUNDATION ###
 
 resource "google_project_service" "artifactregistry" {
@@ -82,9 +112,9 @@ resource "google_project_service" "firestore" {
   service            = "firestore.googleapis.com"
 }
 
-resource "google_project_service" "free-api-enable" {
+resource "google_project_service" "free-api-2-enable" {
   disable_on_destroy = false
-  service            = google_endpoints_service.free-api.service_name
+  service            = google_endpoints_service.free-api-2.service_name
 }
 
 resource "google_project_service" "iam" {
@@ -142,8 +172,8 @@ resource "google_project_service" "workflows" {
 
 ### CATEGORY: IAM ###
 
-resource "google_iam_workload_identity_pool" "free-pool" {
-  workload_identity_pool_id = "free-pool"
+resource "google_iam_workload_identity_pool" "free-pool-2" {
+  workload_identity_pool_id = "free-pool-2"
   deletion_policy           = "DELETE"
   disabled                  = false
   mode                      = "FEDERATION_ONLY"
@@ -151,7 +181,7 @@ resource "google_iam_workload_identity_pool" "free-pool" {
 }
 
 resource "google_iam_workload_identity_pool_provider" "free-provider" {
-  workload_identity_pool_id          = google_iam_workload_identity_pool.free-pool.workload_identity_pool_id
+  workload_identity_pool_id          = google_iam_workload_identity_pool.free-pool-2.workload_identity_pool_id
   workload_identity_pool_provider_id = "free-provider"
   attribute_condition                = "assertion.repository_owner == \"Struct8\""
   deletion_policy                    = "DELETE"
@@ -175,14 +205,14 @@ resource "google_project_iam_custom_role" "free-role" {
   depends_on      = [google_project_service.iam]
 }
 
-resource "google_project_iam_member" "marisa-demo1-free-api_sa-cloudtrace-agent" {
-  member  = google_service_account.free-api_sa.member
+resource "google_project_iam_member" "marisa-demo1-free-api-2_sa-cloudtrace-agent" {
+  member  = google_service_account.free-api-2_sa.member
   project = "deft-landing-343414"
   role    = "roles/cloudtrace.agent"
 }
 
-resource "google_project_iam_member" "marisa-demo1-free-api_sa-servicemanagement-serviceController" {
-  member  = google_service_account.free-api_sa.member
+resource "google_project_iam_member" "marisa-demo1-free-api-2_sa-servicemanagement-serviceController" {
+  member  = google_service_account.free-api-2_sa.member
   project = "deft-landing-343414"
   role    = "roles/servicemanagement.serviceController"
 }
@@ -205,7 +235,7 @@ resource "google_project_iam_member" "marisa-demo1-free-workflow_sa-logging-logW
   role    = "roles/logging.logWriter"
 }
 
-resource "google_service_account" "free-api_sa" {
+resource "google_service_account" "free-api-2_sa" {
   account_id                   = "free-api-sa"
   create_ignore_already_exists = false
   deletion_policy              = "DELETE"
@@ -526,9 +556,9 @@ resource "google_artifact_registry_repository_iam_member" "free-repo-free-vm_sa-
 
 ### CATEGORY: DATABASE ###
 
-resource "google_firestore_database" "free-firestore" {
+resource "google_firestore_database" "free-firestore-2" {
   location_id             = "nam5"
-  name                    = "free-firestore"
+  name                    = "free-firestore-2"
   database_edition        = "STANDARD"
   delete_protection_state = "DELETE_PROTECTION_DISABLED"
   type                    = "FIRESTORE_NATIVE"
@@ -624,38 +654,38 @@ resource "google_cloud_run_v2_job" "free-job" {
   depends_on = [google_pubsub_topic_iam_member.free-events-free-job_sa-pubsub-publisher, google_project_service.run]
 }
 
-resource "google_cloud_run_v2_service" "free-api-esp" {
-  name                = "free-api-esp"
+resource "google_cloud_run_v2_service" "free-api-2-esp" {
+  name                = "free-api-2-esp"
   deletion_protection = false
   location            = "us-central1"
   template {
-    service_account = google_service_account.free-api_sa.email
+    service_account = google_service_account.free-api-2_sa.email
     containers {
       image = "gcr.io/endpoints-release/endpoints-runtime-serverless:2"
       env {
         name  = "ENDPOINTS_SERVICE_NAME"
-        value = google_endpoints_service.free-api.service_name
+        value = google_endpoints_service.free-api-2.service_name
       }
       env {
         name  = "ENDPOINTS_SERVICE_VERSION"
-        value = google_endpoints_service.free-api.config_id
+        value = google_endpoints_service.free-api-2.config_id
       }
     }
   }
-  depends_on = [google_project_service.free-api-enable, google_project_iam_member.marisa-demo1-free-api_sa-servicemanagement-serviceController, google_project_iam_member.marisa-demo1-free-api_sa-cloudtrace-agent]
+  depends_on = [google_project_service.free-api-2-enable, google_project_iam_member.marisa-demo1-free-api-2_sa-servicemanagement-serviceController, google_project_iam_member.marisa-demo1-free-api-2_sa-cloudtrace-agent]
 }
 
-resource "google_cloud_run_v2_service_iam_member" "free-api-esp-allusers-run-invoker" {
-  name     = google_cloud_run_v2_service.free-api-esp.name
-  location = google_cloud_run_v2_service.free-api-esp.location
+resource "google_cloud_run_v2_service_iam_member" "free-api-2-esp-allusers-run-invoker" {
+  name     = google_cloud_run_v2_service.free-api-2-esp.name
+  location = google_cloud_run_v2_service.free-api-2-esp.location
   member   = "allUsers"
   role     = "roles/run.invoker"
 }
 
-resource "google_cloud_run_v2_service_iam_member" "free-entry-free-api_sa-run-invoker" {
+resource "google_cloud_run_v2_service_iam_member" "free-entry-free-api-2_sa-run-invoker" {
   name     = google_cloudfunctions2_function.free-entry.name
   location = google_cloudfunctions2_function.free-entry.location
-  member   = google_service_account.free-api_sa.member
+  member   = google_service_account.free-api-2_sa.member
   role     = "roles/run.invoker"
 }
 
@@ -881,8 +911,8 @@ resource "google_cloud_scheduler_job" "free-scheduler" {
   depends_on = [google_project_iam_member.marisa-demo1-free-scheduler-sa-workflows-invoker, google_project_service.cloudscheduler]
 }
 
-resource "google_cloud_tasks_queue" "free-queue" {
-  name       = "free-queue"
+resource "google_cloud_tasks_queue" "free-queue-2" {
+  name       = "free-queue-2"
   location   = "us-central1"
   depends_on = [google_project_service.cloudtasks]
 }
@@ -914,7 +944,7 @@ main:
   depends_on = [google_project_iam_member.marisa-demo1-free-workflow_sa-logging-logWriter, google_cloud_run_v2_service_iam_member.free-entry-free-workflow_sa-run-invoker, google_project_service.workflows]
 }
 
-resource "google_endpoints_service" "free-api" {
+resource "google_endpoints_service" "free-api-2" {
   service_name    = "free-api.endpoints.deft-landing-343414.cloud.goog"
   deletion_policy = "DELETE"
   openapi_config = <<EOF
@@ -937,7 +967,7 @@ paths:
         "200":
           description: OK
   EOF
-  depends_on = [google_cloud_run_v2_service_iam_member.free-entry-free-api_sa-run-invoker, google_project_service.endpoints, google_project_service.run, google_project_service.servicecontrol, google_project_service.servicemanagement]
+  depends_on = [google_cloud_run_v2_service_iam_member.free-entry-free-api-2_sa-run-invoker, google_project_service.endpoints, google_project_service.run, google_project_service.servicecontrol, google_project_service.servicemanagement]
 }
 
 
