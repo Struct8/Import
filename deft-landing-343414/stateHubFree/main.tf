@@ -943,6 +943,9 @@ resource "google_monitoring_uptime_check_config" "free-uptime" {
   log_check_failures = false
   period             = "900s"
   timeout            = "10s"
+  content_matchers {
+    content = "not defined by this API"
+  }
   http_check {
     path         = "/"
     port         = 443
@@ -955,7 +958,7 @@ resource "google_monitoring_uptime_check_config" "free-uptime" {
   monitored_resource {
     type = "uptime_url"
     labels = {
-    host       = "free-api-esp-233610591017.us-central1.run.app"
+    host       = "free-api-2-esp-233610591017.us-central1.run.app"
     project_id = "deft-landing-343414"
   }
   }
