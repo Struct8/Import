@@ -35,36 +35,6 @@ data "google_storage_project_service_account" "notification-storage-agent" {
 
 
 
-### RENAMES ###
-
-moved {
-  from = google_endpoints_service.free-api
-  to   = google_endpoints_service.free-api-2
-}
-
-moved {
-  from = google_service_account.free-api_sa
-  to   = google_service_account.free-api-2_sa
-}
-
-moved {
-  from = google_firestore_database.free-firestore
-  to   = google_firestore_database.free-firestore-2
-}
-
-moved {
-  from = google_iam_workload_identity_pool.free-pool
-  to   = google_iam_workload_identity_pool.free-pool-2
-}
-
-moved {
-  from = google_cloud_tasks_queue.free-queue
-  to   = google_cloud_tasks_queue.free-queue-2
-}
-
-
-
-
 ### CATEGORY: FOUNDATION ###
 
 resource "google_project_service" "artifactregistry" {
@@ -236,7 +206,7 @@ resource "google_project_iam_member" "marisa-demo1-free-workflow_sa-logging-logW
 }
 
 resource "google_service_account" "free-api-2_sa" {
-  account_id                   = "free-api-sa"
+  account_id                   = "free-api-2-sa"
   create_ignore_already_exists = false
   deletion_policy              = "DELETE"
   disabled                     = false
@@ -945,14 +915,14 @@ main:
 }
 
 resource "google_endpoints_service" "free-api-2" {
-  service_name    = "free-api.endpoints.deft-landing-343414.cloud.goog"
+  service_name    = "free-api-2.endpoints.deft-landing-343414.cloud.goog"
   deletion_policy = "DELETE"
   openapi_config = <<EOF
 swagger: "2.0"
 info:
-  title: free-api
+  title: free-api-2
   version: "1.0.0"
-host: free-api.endpoints.deft-landing-343414.cloud.goog
+host: free-api-2.endpoints.deft-landing-343414.cloud.goog
 schemes:
   - https
 produces:
