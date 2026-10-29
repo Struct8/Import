@@ -175,6 +175,12 @@ resource "google_project_iam_custom_role" "free-role" {
   depends_on      = [google_project_service.iam]
 }
 
+resource "google_project_iam_member" "marisa-demo1-free-api_sa-cloudtrace-agent" {
+  member  = google_service_account.free-api_sa.member
+  project = "deft-landing-343414"
+  role    = "roles/cloudtrace.agent"
+}
+
 resource "google_project_iam_member" "marisa-demo1-free-api_sa-servicemanagement-serviceController" {
   member  = google_service_account.free-api_sa.member
   project = "deft-landing-343414"
@@ -636,7 +642,7 @@ resource "google_cloud_run_v2_service" "free-api-esp" {
       }
     }
   }
-  depends_on = [google_project_service.free-api-enable, google_project_iam_member.marisa-demo1-free-api_sa-servicemanagement-serviceController]
+  depends_on = [google_project_service.free-api-enable, google_project_iam_member.marisa-demo1-free-api_sa-servicemanagement-serviceController, google_project_iam_member.marisa-demo1-free-api_sa-cloudtrace-agent]
 }
 
 resource "google_cloud_run_v2_service_iam_member" "free-api-esp-allusers-run-invoker" {
