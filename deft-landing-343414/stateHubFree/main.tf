@@ -112,11 +112,6 @@ resource "google_project_service" "run" {
   service            = "run.googleapis.com"
 }
 
-resource "google_project_service" "secretmanager" {
-  disable_on_destroy = false
-  service            = "secretmanager.googleapis.com"
-}
-
 resource "google_project_service" "servicecontrol" {
   disable_on_destroy = false
   service            = "servicecontrol.googleapis.com"
@@ -275,26 +270,6 @@ resource "google_service_account" "free-workflow_sa" {
   deletion_policy              = "DELETE"
   disabled                     = false
   depends_on                   = [google_project_service.iam]
-}
-
-resource "google_secret_manager_secret" "free-last-message" {
-  secret_id           = "free-last-message"
-  deletion_policy     = "DELETE"
-  deletion_protection = false
-  replication {
-    user_managed {
-      replicas {
-        location = "us-central1"
-      }
-    }
-  }
-  depends_on = [google_project_service.secretmanager]
-}
-
-resource "google_secret_manager_secret_iam_member" "free-last-message-free-relay_sa-secretmanager-secretVersionAdder" {
-  secret_id = google_secret_manager_secret.free-last-message.secret_id
-  member    = google_service_account.free-relay_sa.member
-  role      = "roles/secretmanager.secretVersionAdder"
 }
 
 
@@ -725,11 +700,10 @@ resource "google_cloudfunctions2_function" "free-relay" {
     environment_variables = {
     NAME                                  = "free-relay"
     GOOGLE_CLOUDFUNCTIONS2_FUNCTION_URL_0 = google_cloudfunctions2_function.free-sink.url
-    GOOGLE_SECRET_MANAGER_SECRET_NAME_0   = "free-last-message"
     GOOGLE_SERVICE_ACCOUNT_NAME_0         = "free-relay_sa"
   }
   }
-  depends_on = [google_secret_manager_secret_iam_member.free-last-message-free-relay_sa-secretmanager-secretVersionAdder, google_cloud_run_v2_service_iam_member.free-sink-free-relay_sa-run-invoker, google_project_service.artifactregistry, google_project_service.cloudbuild, google_project_service.cloudfunctions, google_project_service.run]
+  depends_on = [google_cloud_run_v2_service_iam_member.free-sink-free-relay_sa-run-invoker, google_project_service.artifactregistry, google_project_service.cloudbuild, google_project_service.cloudfunctions, google_project_service.run]
 }
 
 resource "google_cloudfunctions2_function" "free-sink" {
