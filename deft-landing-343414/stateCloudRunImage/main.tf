@@ -107,9 +107,6 @@ resource "google_cloud_run_v2_service" "hello-image" {
       max_instance_count = 100
       min_instance_count = 0
     }
-    vpc_access {
-      egress = "PRIVATE_RANGES_ONLY"
-    }
   }
   depends_on = [terraform_data.seed_run-images, google_artifact_registry_repository_iam_member.run-images-run-image-sa-artifactregistry-reader, google_project_service.run]
 }
