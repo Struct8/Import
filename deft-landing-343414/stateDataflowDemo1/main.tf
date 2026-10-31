@@ -3,6 +3,9 @@ terraform {
     google = {
       source = "hashicorp/google"
     }
+    time = {
+      source = "hashicorp/time"
+    }
   }
 
   backend "s3" {
@@ -101,7 +104,17 @@ resource "google_dataflow_job" "wordcount-teste" {
     inputFile = "gs://dataflow-samples/shakespeare/kinglear.txt"
     output    = "gs://struct8-dataflow-teste-7k3q/output/wc"
   }
-  depends_on = [google_project_iam_member.marisa-demo1-wordcount-teste_sa-dataflow-worker, google_storage_bucket_iam_member.struct8-dataflow-teste-7k3q-wordcount-teste_sa-storage-objectAdmin, google_project_service.compute, google_project_service.dataflow]
+  depends_on = [time_sleep.wordcount-teste-iam-wait, google_storage_bucket_iam_member.struct8-dataflow-teste-7k3q-wordcount-teste_sa-storage-objectAdmin, google_project_service.compute, google_project_service.dataflow]
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+resource "time_sleep" "wordcount-teste-iam-wait" {
+  create_duration = "120s"
+  depends_on      = [google_project_service.dataflow, google_project_iam_member.marisa-demo1-wordcount-teste_sa-dataflow-worker]
 }
 
 
