@@ -63,6 +63,13 @@ resource "google_project_iam_member" "inspector-compute-viewer" {
   depends_on = [google_project_service.cloudresourcemanager]
 }
 
+resource "google_project_iam_member" "inspector-dataflow-viewer" {
+  member     = google_service_account.struct8-inspector.member
+  project    = "deft-landing-343414"
+  role       = "roles/dataflow.viewer"
+  depends_on = [google_project_service.cloudresourcemanager]
+}
+
 resource "google_project_iam_member" "inspector-functions-viewer" {
   member     = google_service_account.struct8-inspector.member
   project    = "deft-landing-343414"
@@ -109,6 +116,13 @@ resource "google_project_iam_member" "inspector-secretmanager-viewer" {
   member     = google_service_account.struct8-inspector.member
   project    = "deft-landing-343414"
   role       = "roles/secretmanager.viewer"
+  depends_on = [google_project_service.cloudresourcemanager]
+}
+
+resource "google_project_iam_member" "inspector-security-reviewer" {
+  member     = google_service_account.struct8-inspector.member
+  project    = "deft-landing-343414"
+  role       = "roles/iam.securityReviewer"
   depends_on = [google_project_service.cloudresourcemanager]
 }
 
