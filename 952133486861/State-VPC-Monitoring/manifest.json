@@ -1,7 +1,7 @@
 {
   "external_repositories": [],
   "action": "apply",
-  "trigger_id": "1793458600516",
+  "trigger_id": "1793460456968",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -21,7 +21,7 @@
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
+            "region": "us-east-1",
             "secret_name": "AUTH_AWS_952133486861"
           }
         },
@@ -30,7 +30,7 @@
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
+            "region": "us-east-1",
             "secret_name": "AUTH_AWS_952133486861"
           }
         },
@@ -39,7 +39,7 @@
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-west-2",
+            "region": "us-east-1",
             "secret_name": "AUTH_AWS_952133486861"
           }
         }
