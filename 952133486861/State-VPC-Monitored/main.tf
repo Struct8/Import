@@ -15,7 +15,7 @@ terraform {
 
 # --- Main Cloud Provider ---
 provider "aws" {
-  region = "us-west-2"
+  region = "us-east-1"
 }
 
 data "aws_caller_identity" "current" {}
@@ -35,7 +35,7 @@ resource "aws_vpc" "VPC-Monitored" {
 
 resource "aws_subnet" "subnet-private-b" {
   vpc_id                  = aws_vpc.VPC-Monitored.id
-  availability_zone       = "us-west-2a"
+  availability_zone       = "us-east-1a"
   cidr_block              = "10.1.1.0/24"
   map_public_ip_on_launch = false
   tags = {
@@ -47,7 +47,7 @@ resource "aws_subnet" "subnet-private-b" {
 
 resource "aws_subnet" "subnet-public-b" {
   vpc_id                  = aws_vpc.VPC-Monitored.id
-  availability_zone       = "us-west-2a"
+  availability_zone       = "us-east-1a"
   cidr_block              = "10.1.0.0/24"
   map_public_ip_on_launch = false
   tags = {
