@@ -1,7 +1,7 @@
 {
   "external_repositories": [],
   "action": "apply",
-  "trigger_id": "1793458560336",
+  "trigger_id": "1793458600516",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -13,11 +13,29 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "Manual Trigger: State-VPC-Monitoring",
+      "stage_name": "APPLY ALL: State-VPC-Monitoring",
       "parallel_execution": false,
       "states": [
         {
           "path": "952133486861/State-VPC-Monitoring",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        },
+        {
+          "path": "952133486861/State-VPC-Monitored",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          }
+        },
+        {
+          "path": "952133486861/State-Peering",
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
