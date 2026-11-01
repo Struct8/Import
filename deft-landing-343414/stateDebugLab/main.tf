@@ -52,6 +52,14 @@ resource "google_service_account" "debug-lab-access" {
   depends_on   = [google_project_service.iam, google_project_service.iamcredentials]
 }
 
+resource "google_service_account" "debug-mig-tpl_sa" {
+  account_id                   = "debug-mig-tpl-sa"
+  create_ignore_already_exists = false
+  deletion_policy              = "DELETE"
+  disabled                     = false
+  depends_on                   = [google_project_service.iam]
+}
+
 resource "google_service_account" "debug-vm-min_sa" {
   account_id                   = "debug-vm-min-sa"
   create_ignore_already_exists = false
@@ -206,6 +214,81 @@ ${data.local_file.startup_script_debug-vm-min.content}
   depends_on = [google_project_service.compute]
 }
 
+resource "google_compute_instance_template" "debug-mig-tpl" {
+  can_ip_forward = false
+  machine_type   = "e2-small"
+  metadata_startup_script = <<EOF
+#!/bin/bash
+# --- BEGIN STRUCT8 DEBUG ACCESS (MIG lab, drawn by hand) ---
+mkdir -p /var/lib/struct8-debug
+for i in 1 2 3 4 5 6; do
+  curl -sf --max-time 10 -H 'Metadata-Flavor: Google' -o /var/lib/struct8-debug/struct8-debug.sh.new \
+    http://metadata.google.internal/computeMetadata/v1/instance/attributes/struct8-debug-program && break
+  sleep 5
+done
+[ -s /var/lib/struct8-debug/struct8-debug.sh.new ] && mv /var/lib/struct8-debug/struct8-debug.sh.new /var/lib/struct8-debug/struct8-debug.sh
+cat > /etc/struct8-debug.env << 'STRUCT8_DEBUG_ENV'
+STRUCT8_DEBUG_SUBSCRIPTION=projects/deft-landing-343414/subscriptions/debug-mig-cmd
+STRUCT8_DEBUG_OUTPUT_TOPIC=projects/deft-landing-343414/topics/struct8-debug-out-wbmavl
+STRUCT8_DEBUG_ENV
+cat > /etc/systemd/system/struct8-debug.service << 'STRUCT8_DEBUG_UNIT'
+[Unit]
+Description=Struct8 debug access
+Wants=network-online.target
+After=network-online.target
+[Service]
+EnvironmentFile=/etc/struct8-debug.env
+ExecStart=/bin/sh /var/lib/struct8-debug/struct8-debug.sh
+Restart=on-failure
+RestartSec=10
+[Install]
+WantedBy=multi-user.target
+STRUCT8_DEBUG_UNIT
+systemctl daemon-reload
+systemctl enable struct8-debug.service
+systemctl restart struct8-debug.service
+# --- END STRUCT8 DEBUG ACCESS ---
+  EOF
+  name_prefix = "debug-mig-tpl"
+  disk {
+    auto_delete  = true
+    boot         = true
+    source_image = "debian-cloud/debian-12"
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+  metadata = {
+    struct8-debug-program = data.local_file.debug_program_debug-lab-access.content
+    struct8-debug-level   = "probes"
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.debug-lab-subnet.id
+  }
+  service_account {
+    email  = google_service_account.debug-mig-tpl_sa.email
+    scopes = ["cloud-platform"]
+  }
+  depends_on = [google_pubsub_subscription_iam_member.debug-mig-cmd-debug-mig-tpl_sa-pubsub-subscriber, google_project_service.compute]
+}
+
+resource "google_compute_region_instance_group_manager" "debug-mig" {
+  version {
+    instance_template = google_compute_instance_template.debug-mig-tpl.self_link_unique
+  }
+  base_instance_name               = "debug-mig"
+  name                             = "debug-mig"
+  deletion_policy                  = "DELETE"
+  distribution_policy_target_shape = "EVEN"
+  distribution_policy_zones        = ["us-central1-a"]
+  region                           = "us-central1"
+  target_size                      = 2
+  target_stopped_size              = 0
+  target_suspended_size            = 0
+  wait_for_instances               = false
+  depends_on                       = [google_project_service.compute]
+}
+
 
 
 
@@ -234,6 +317,19 @@ resource "google_pubsub_subscription" "debug-lab-access_output" {
   depends_on = [google_project_service.pubsub]
 }
 
+resource "google_pubsub_subscription" "debug-mig-cmd" {
+  name                         = "debug-mig-cmd"
+  ack_deadline_seconds         = 600
+  deletion_policy              = "DELETE"
+  enable_exactly_once_delivery = false
+  enable_message_ordering      = false
+  filter                       = "attributes.instance = \"debug-mig\""
+  message_retention_duration   = "604800s"
+  retain_acked_messages        = false
+  topic                        = google_pubsub_topic.debug-mig-cmd-topic.name
+  depends_on                   = [google_project_service.pubsub]
+}
+
 resource "google_pubsub_subscription_iam_member" "debug-lab-access_debug-vm-min_pull" {
   member       = google_service_account.debug-vm-min_sa.member
   role         = "roles/pubsub.subscriber"
@@ -246,6 +342,12 @@ resource "google_pubsub_subscription_iam_member" "debug-lab-access_read_output" 
   subscription = google_pubsub_subscription.debug-lab-access_output.name
 }
 
+resource "google_pubsub_subscription_iam_member" "debug-mig-cmd-debug-mig-tpl_sa-pubsub-subscriber" {
+  member       = google_service_account.debug-mig-tpl_sa.member
+  role         = "roles/pubsub.subscriber"
+  subscription = google_pubsub_subscription.debug-mig-cmd.name
+}
+
 resource "google_pubsub_topic" "debug-lab-access_commands" {
   name       = "struct8-debug-cmd-wbmavl"
   depends_on = [google_project_service.pubsub]
@@ -254,6 +356,13 @@ resource "google_pubsub_topic" "debug-lab-access_commands" {
 resource "google_pubsub_topic" "debug-lab-access_output" {
   name       = "struct8-debug-out-wbmavl"
   depends_on = [google_project_service.pubsub]
+}
+
+resource "google_pubsub_topic" "debug-mig-cmd-topic" {
+  name                       = "debug-mig-cmd-topic"
+  deletion_policy            = "DELETE"
+  message_retention_duration = "604800s"
+  depends_on                 = [google_project_service.pubsub]
 }
 
 resource "google_pubsub_topic_iam_member" "debug-lab-access_debug-vm-min_send_output" {
@@ -266,6 +375,20 @@ resource "google_pubsub_topic_iam_member" "debug-lab-access_send_commands" {
   member = google_service_account.debug-lab-access.member
   role   = "roles/pubsub.publisher"
   topic  = google_pubsub_topic.debug-lab-access_commands.name
+}
+
+resource "google_pubsub_topic_iam_member" "debug-mig-cmd-sender" {
+  member     = "serviceAccount:s8-debug-wbmavl@deft-landing-343414.iam.gserviceaccount.com"
+  role       = "roles/pubsub.publisher"
+  topic      = google_pubsub_topic.debug-mig-cmd-topic.name
+  depends_on = [google_project_service.pubsub]
+}
+
+resource "google_pubsub_topic_iam_member" "debug-mig-out-publisher" {
+  member     = "serviceAccount:debug-mig-tpl-sa@deft-landing-343414.iam.gserviceaccount.com"
+  role       = "roles/pubsub.publisher"
+  topic      = "projects/deft-landing-343414/topics/struct8-debug-out-wbmavl"
+  depends_on = [google_project_service.pubsub]
 }
 
 
