@@ -282,7 +282,7 @@ resource "google_compute_region_instance_group_manager" "debug-mig" {
   distribution_policy_target_shape = "EVEN"
   distribution_policy_zones        = ["us-central1-a"]
   region                           = "us-central1"
-  target_size                      = 2
+  target_size                      = 3
   target_stopped_size              = 0
   target_suspended_size            = 0
   wait_for_instances               = false
