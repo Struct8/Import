@@ -6,6 +6,9 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+    random = {
+      source = "hashicorp/random"
+    }
   }
 
   backend "s3" {
@@ -225,6 +228,30 @@ resource "aws_subnet" "wp-app-b" {
   map_public_ip_on_launch = false
   tags = {
     Name           = "wp-app-b"
+    State          = "beanstalk-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "wp-data-a" {
+  vpc_id                  = aws_vpc.vpc-beanstalk-wordpress.id
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.41.20.0/24"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "wp-data-a"
+    State          = "beanstalk-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "wp-data-b" {
+  vpc_id                  = aws_vpc.vpc-beanstalk-wordpress.id
+  availability_zone       = "us-west-2b"
+  cidr_block              = "10.41.21.0/24"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "wp-data-b"
     State          = "beanstalk-wordpress"
     Struct8Creator = "Contato Struct"
   }
@@ -476,15 +503,15 @@ resource "aws_efs_file_system" "wp-eb-files" {
   }
 }
 
-resource "aws_efs_mount_target" "mt_wp-eb-files_wp-app-a" {
+resource "aws_efs_mount_target" "mt_wp-eb-files_wp-data-a" {
   file_system_id  = aws_efs_file_system.wp-eb-files.id
-  subnet_id       = aws_subnet.wp-app-a.id
+  subnet_id       = aws_subnet.wp-data-a.id
   security_groups = [aws_security_group.efs_file_system_wp-eb-files_group.id]
 }
 
-resource "aws_efs_mount_target" "mt_wp-eb-files_wp-app-b" {
+resource "aws_efs_mount_target" "mt_wp-eb-files_wp-data-b" {
   file_system_id  = aws_efs_file_system.wp-eb-files.id
-  subnet_id       = aws_subnet.wp-app-b.id
+  subnet_id       = aws_subnet.wp-data-b.id
   security_groups = [aws_security_group.efs_file_system_wp-eb-files_group.id]
 }
 
@@ -497,7 +524,7 @@ resource "aws_db_instance" "wp-eb-db" {
   db_name                     = "wordpress"
   db_subnet_group_name        = aws_db_subnet_group.subnet_group_wp-eb-db.name
   allocated_storage           = 20
-  availability_zone           = aws_subnet.wp-app-a.availability_zone
+  availability_zone           = aws_subnet.wp-data-a.availability_zone
   backup_retention_period     = 0
   copy_tags_to_snapshot       = true
   engine                      = "mysql"
@@ -522,7 +549,7 @@ resource "aws_db_instance" "wp-eb-db" {
 
 resource "aws_db_subnet_group" "subnet_group_wp-eb-db" {
   name       = "wp-eb-db-subnet-group"
-  subnet_ids = [aws_subnet.wp-app-a.id, aws_subnet.wp-app-b.id]
+  subnet_ids = [aws_subnet.wp-data-a.id, aws_subnet.wp-data-b.id]
   tags = {
     Name           = "subnet_group_wp-eb-db"
     State          = "beanstalk-wordpress"
@@ -745,16 +772,7 @@ resource "aws_ssm_parameter" "ebWpAdminPassword" {
   overwrite   = false
   tier        = "Standard"
   type        = "SecureString"
-  value = jsonencode({
-    "aws_subnet" = {
-      "wp-app-a" = {
-        "id"                             = "${aws_subnet.wp-app-a.id}"
-        "arn"                            = "${aws_subnet.wp-app-a.arn}"
-        "owner_id"                       = "${aws_subnet.wp-app-a.owner_id}"
-        "ipv6_cidr_block_association_id" = "${aws_subnet.wp-app-a.ipv6_cidr_block_association_id}"
-      }
-    }
-  })
+  value       = random_password.ebWpAdminPassword.result
   lifecycle {
     ignore_changes = [value]
   }
@@ -763,6 +781,16 @@ resource "aws_ssm_parameter" "ebWpAdminPassword" {
     State          = "beanstalk-wordpress"
     Struct8Creator = "Contato Struct"
   }
+}
+
+
+
+
+### CATEGORY: MISC ###
+
+resource "random_password" "ebWpAdminPassword" {
+  length  = 16
+  special = true
 }
 
 
