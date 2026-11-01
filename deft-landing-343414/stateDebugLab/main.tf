@@ -97,13 +97,34 @@ resource "google_compute_subnetwork" "debug-lab-subnet" {
   depends_on                       = [google_project_service.compute]
 }
 
+resource "google_compute_firewall" "debug-lab-allow-http" {
+  name            = "debug-lab-allow-http"
+  deletion_policy = "DELETE"
+  direction       = "INGRESS"
+  disabled        = false
+  enable_logging  = false
+  network         = google_compute_network.debug-lab-vpc.id
+  priority        = 1000
+  source_ranges   = ["45.166.205.227/32"]
+  target_tags     = ["fw-debug-lab-allow-http"]
+  allow {
+    ports    = ["80"]
+    protocol = "tcp"
+  }
+  depends_on = [google_project_service.compute]
+}
+
 
 
 
 ### CATEGORY: COMPUTE ###
 
+data "local_file" "startup_script_debug-vm-min" {
+  filename = "${path.module}/.external_modules/struct8-templates/templates/gce-wordpress-debug/v1/user_data/wordpress.sh"
+}
+
 data "local_file" "debug_program_debug-lab-access" {
-  filename = "${path.module}/.external_modules/struct8-debug-agent/gce/struct8-debug.sh"
+  filename = "${path.module}/.external_modules/struct8-templates/templates/gce-wordpress-debug/v1/debug/struct8-debug.sh"
 }
 
 resource "google_compute_instance" "debug-vm-min" {
@@ -114,7 +135,8 @@ resource "google_compute_instance" "debug-vm-min" {
   deletion_protection       = false
   desired_status            = "RUNNING"
   enable_display            = false
-  machine_type              = "e2-micro"
+  machine_type              = "e2-small"
+  tags                      = ["fw-debug-lab-allow-http"]
   zone                      = "us-central1-a"
   boot_disk {
     auto_delete  = true
@@ -165,12 +187,17 @@ else
 (set -a; . /etc/struct8-debug.env; set +a; nohup /bin/sh /var/lib/struct8-debug/struct8-debug.sh >> /var/log/struct8-debug.log 2>&1 &)
 fi
 # --- END STRUCT8 DEBUG ACCESS ---
+
+${data.local_file.startup_script_debug-vm-min.content}
     EOF
     struct8-debug-program = data.local_file.debug_program_debug-lab-access.content
     struct8-debug-level   = "shell"
   }
   network_interface {
     subnetwork = google_compute_subnetwork.debug-lab-subnet.id
+    access_config {
+      network_tier = "PREMIUM"
+    }
   }
   service_account {
     email  = google_service_account.debug-vm-min_sa.email
