@@ -408,7 +408,7 @@ curl -s -o /dev/null -X POST -H "Authorization: Bearer $T" -H "Content-Type: app
   -d "{\"entries\":[{\"logName\":\"projects/$P/logs/struct8-debug-lab\",\"resource\":{\"type\":\"gce_instance\",\"labels\":{\"instance_id\":\"$ID\",\"zone\":\"$Z\"}},\"textPayload\":\"startup-script (user): ran at $(date -u +%Y-%m-%dT%H:%M:%S.%NZ), exiting with 1\"}]}"
 exit 1
     EOF
-    struct8-debug-level = "probes"
+    struct8-debug-level = "shell"
   }
   network_interface {
     subnetwork = google_compute_subnetwork.debug-lab-subnet.id
