@@ -285,7 +285,6 @@ resource "aws_dynamodb_table" "eb-lab-items" {
 resource "aws_elastic_beanstalk_application" "beanstalk-lab" {
   name = "beanstalk-lab"
   tags = {
-    Name           = "beanstalk-lab"
     State          = "beanstalk-lab"
     Struct8Creator = "Contato Struct"
   }
@@ -362,7 +361,6 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-lab-web" {
     value     = aws_iam_instance_profile.beanstalk-lab-web_profile.name
   }
   tags = {
-    Name           = "beanstalk-lab-web"
     State          = "beanstalk-lab"
     Struct8Creator = "Contato Struct"
   }
