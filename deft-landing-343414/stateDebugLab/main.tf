@@ -103,7 +103,7 @@ resource "google_compute_subnetwork" "debug-lab-subnet" {
 ### CATEGORY: COMPUTE ###
 
 data "local_file" "debug_program_debug-lab-access" {
-  filename = "${path.module}/.external_modules/struct8-templates/debug-access/struct8-debug.sh"
+  filename = "${path.module}/.external_modules/struct8-debug-agent/gce/struct8-debug.sh"
 }
 
 resource "google_compute_instance" "debug-vm-min" {
