@@ -18,16 +18,6 @@ provider "google" {
   project = "deft-landing-343414"
 }
 
-### RENAMES ###
-
-moved {
-  from = google_storage_bucket_object.runner.sh
-  to   = google_storage_bucket_object.runner-sh
-}
-
-
-
-
 ### CATEGORY: FOUNDATION ###
 
 resource "google_project_service" "cloudresourcemanager" {
