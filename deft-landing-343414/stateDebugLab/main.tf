@@ -234,7 +234,7 @@ resource "google_cloud_run_v2_service" "cr-debug-lab" {
     containers {
       name = "app"
       resources {
-        cpu_idle = false
+        cpu_idle = true
         limits = {
     cpu    = "1"
     memory = "512Mi"
@@ -248,7 +248,7 @@ resource "google_cloud_run_v2_service" "cr-debug-lab" {
     containers {
       name = "struct8-debug"
       resources {
-        cpu_idle = false
+        cpu_idle = true
         limits = {
     cpu    = "1"
     memory = "512Mi"
@@ -271,7 +271,7 @@ resource "google_cloud_run_v2_service" "cr-debug-lab" {
       }
       env {
         name  = "STRUCT8_DEBUG_EXPIRES"
-        value = "1793562803"
+        value = "1793548000"
       }
       env {
         name  = "STRUCT8_DEBUG_INSTANCE"
