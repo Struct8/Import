@@ -1,18 +1,19 @@
 {
   "external_repositories": [
     {
-      "repo_name": "struct8-debug-agent",
+      "repo_name": "struct8-templates",
       "org": "Struct8",
-      "branch": "v1.0.1",
-      "target_dir": ".external_modules/struct8-debug-agent",
+      "branch": "lab/gce-wordpress-debug",
+      "target_dir": ".external_modules/struct8-templates",
       "folders": [
-        "gce"
+        "templates/gce-wordpress-debug/v1/debug",
+        "templates/gce-wordpress-debug/v1/user_data"
       ]
     }
   ],
-  "action": "destroy",
-  "trigger_id": "1793542467481",
-  "triggered_by": "Contato Struct",
+  "action": "apply",
+  "trigger_id": "1793542834612",
+  "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
