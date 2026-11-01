@@ -297,26 +297,6 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-lab-web" {
   application            = aws_elastic_beanstalk_application.beanstalk-lab.name
   wait_for_ready_timeout = "20m"
   setting {
-    name      = "InstanceTypes"
-    namespace = "aws:ec2:instances"
-    value     = "t4g.nano"
-  }
-  setting {
-    name      = "SupportedArchitectures"
-    namespace = "aws:ec2:instances"
-    value     = "arm64"
-  }
-  setting {
-    name      = "MinSize"
-    namespace = "aws:autoscaling:asg"
-    value     = "1"
-  }
-  setting {
-    name      = "MaxSize"
-    namespace = "aws:autoscaling:asg"
-    value     = "1"
-  }
-  setting {
     name      = "VPCId"
     namespace = "aws:ec2:vpc"
     value     = aws_vpc.vpc-beanstalk-lab.id
@@ -330,6 +310,46 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-lab-web" {
     name      = "ELBSubnets"
     namespace = "aws:ec2:vpc"
     value     = "${aws_subnet.eb-public-a.id},${aws_subnet.eb-public-b.id}"
+  }
+  setting {
+    name      = "EnvironmentType"
+    namespace = "aws:elasticbeanstalk:environment"
+    value     = "LoadBalanced"
+  }
+  setting {
+    name      = "InstanceTypes"
+    namespace = "aws:ec2:instances"
+    value     = "t4g.nano"
+  }
+  setting {
+    name      = "SupportedArchitectures"
+    namespace = "aws:ec2:instances"
+    value     = "arm64"
+  }
+  setting {
+    name      = "LoadBalancerType"
+    namespace = "aws:elasticbeanstalk:environment"
+    value     = "classic"
+  }
+  setting {
+    name      = "MinSize"
+    namespace = "aws:autoscaling:asg"
+    value     = "1"
+  }
+  setting {
+    name      = "MaxSize"
+    namespace = "aws:autoscaling:asg"
+    value     = "1"
+  }
+  setting {
+    name      = "SystemType"
+    namespace = "aws:elasticbeanstalk:healthreporting:system"
+    value     = "enhanced"
+  }
+  setting {
+    name      = "ConfigDocument"
+    namespace = "aws:elasticbeanstalk:healthreporting:system"
+    value     = jsonencode({ Version = 1, CloudWatchMetrics = { Environment = { InstancesOk = 60 } } })
   }
   setting {
     name      = "SecurityGroups"
