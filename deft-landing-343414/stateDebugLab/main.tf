@@ -18,6 +18,16 @@ provider "google" {
   project = "deft-landing-343414"
 }
 
+### RENAMES ###
+
+moved {
+  from = google_storage_bucket_object.runner.sh
+  to   = google_storage_bucket_object.runner-sh
+}
+
+
+
+
 ### CATEGORY: FOUNDATION ###
 
 resource "google_project_service" "cloudresourcemanager" {
@@ -138,8 +148,8 @@ resource "google_storage_bucket_iam_member" "struct8-debug-lab-m4x9-debug-vm-sa-
   role   = "roles/storage.objectViewer"
 }
 
-resource "google_storage_bucket_object" "runner.sh" {
-  name   = "runner.sh"
+resource "google_storage_bucket_object" "runner-sh" {
+  name   = "runner-sh"
   bucket = google_storage_bucket.struct8-debug-lab-m4x9.name
   content = <<EOF
 #!/bin/sh
