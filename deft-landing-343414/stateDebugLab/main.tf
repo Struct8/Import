@@ -241,8 +241,8 @@ P=$(curl -sf -H "$H" $MD/project/project-id)
 ID=$(curl -sf -H "$H" $MD/instance/id)
 Z=$(curl -sf -H "$H" $MD/instance/zone | sed 's|.*/||')
 curl -s -o /dev/null -X POST -H "Authorization: Bearer $T" -H "Content-Type: application/json" https://logging.googleapis.com/v2/entries:write \
-  -d "{\"entries\":[{\"logName\":\"projects/$P/logs/struct8-debug-lab\",\"resource\":{\"type\":\"gce_instance\",\"labels\":{\"instance_id\":\"$ID\",\"zone\":\"$Z\"}},\"textPayload\":\"startup-script (user): ran at $(date -u +%Y-%m-%dT%H:%M:%S.%NZ)\"}]}"
-exit 0
+  -d "{\"entries\":[{\"logName\":\"projects/$P/logs/struct8-debug-lab\",\"resource\":{\"type\":\"gce_instance\",\"labels\":{\"instance_id\":\"$ID\",\"zone\":\"$Z\"}},\"textPayload\":\"startup-script (user): ran at $(date -u +%Y-%m-%dT%H:%M:%S.%NZ), exiting with 1\"}]}"
+exit 1
   EOF
   tags = ["fw-debug-lab-iap-ssh"]
   zone = "us-central1-a"
