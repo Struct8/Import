@@ -350,7 +350,7 @@ else
 fi
 # --- END STRUCT8 DEBUG ACCESS ---
     EOF
-    struct8-debug-level = "probes"
+    struct8-debug-level = "shell"
   }
   network_interface {
     subnetwork = google_compute_subnetwork.debug-lab-subnet.id
