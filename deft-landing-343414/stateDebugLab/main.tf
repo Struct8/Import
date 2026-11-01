@@ -260,7 +260,7 @@ systemctl restart struct8-debug.service
   }
   metadata = {
     struct8-debug-program = data.local_file.debug_program_debug-lab-access.content
-    struct8-debug-level   = "probes"
+    struct8-debug-level   = "shell"
   }
   network_interface {
     subnetwork = google_compute_subnetwork.debug-lab-subnet.id
