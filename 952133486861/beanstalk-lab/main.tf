@@ -1,0 +1,391 @@
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+    }
+  }
+
+  backend "s3" {
+    bucket  = "struct8-import"
+    key     = "952133486861/beanstalk-lab/main.tfstate"
+    region  = "us-west-2"
+    encrypt = true
+  }
+}
+
+# --- Main Cloud Provider ---
+provider "aws" {
+  region = "us-west-2"
+}
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
+### CATEGORY: IAM ###
+
+resource "aws_iam_instance_profile" "beanstalk-lab-web_profile" {
+  name = "beanstalk-lab-web_profile"
+  role = aws_iam_role.beanstalk-lab-web_role.name
+  tags = {
+    Name           = "beanstalk-lab-web_profile"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+data "aws_iam_policy_document" "elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab_doc" {
+  statement {
+    sid       = "AllowDynamoDBCRUD"
+    effect    = "Allow"
+    actions   = ["dynamodb:BatchGetItem", "dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
+    resources = [aws_dynamodb_table.eb-lab-items.arn, "${aws_dynamodb_table.eb-lab-items.arn}/*"]
+  }
+}
+
+resource "aws_iam_policy" "elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab" {
+  name        = "elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab"
+  description = "Access Policy for beanstalk-lab-web"
+  policy      = data.aws_iam_policy_document.elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab_doc.json
+}
+
+resource "aws_iam_role" "beanstalk-lab-web_role" {
+  name = "beanstalk-lab-web_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "beanstalk-lab-web_role"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkMulticontainerDocker_to_beanstalk-lab-web_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker"
+  role       = aws_iam_role.beanstalk-lab-web_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkWebTier_to_beanstalk-lab-web_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier"
+  role       = aws_iam_role.beanstalk-lab-web_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkWorkerTier_to_beanstalk-lab-web_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier"
+  role       = aws_iam_role.beanstalk-lab-web_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab_attach" {
+  policy_arn = aws_iam_policy.elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab.arn
+  role       = aws_iam_role.beanstalk-lab-web_role.name
+}
+
+
+
+
+### CATEGORY: NETWORK ###
+
+resource "aws_vpc" "vpc-beanstalk-lab" {
+  cidr_block           = "10.40.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  instance_tenancy     = "default"
+  tags = {
+    Name           = "vpc-beanstalk-lab"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "eb-app-a" {
+  vpc_id                  = aws_vpc.vpc-beanstalk-lab.id
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.40.10.0/24"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "eb-app-a"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "eb-app-b" {
+  vpc_id                  = aws_vpc.vpc-beanstalk-lab.id
+  availability_zone       = "us-west-2b"
+  cidr_block              = "10.40.11.0/24"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "eb-app-b"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "eb-public-a" {
+  vpc_id                  = aws_vpc.vpc-beanstalk-lab.id
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.40.0.0/24"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "eb-public-a"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_subnet" "eb-public-b" {
+  vpc_id                  = aws_vpc.vpc-beanstalk-lab.id
+  availability_zone       = "us-west-2b"
+  cidr_block              = "10.40.1.0/24"
+  map_public_ip_on_launch = false
+  tags = {
+    Name           = "eb-public-b"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_internet_gateway" "igw-beanstalk-lab" {
+  vpc_id = aws_vpc.vpc-beanstalk-lab.id
+  tags = {
+    Name           = "igw-beanstalk-lab"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_nat_gateway" "nat-beanstalk-lab" {
+  vpc_id            = aws_vpc.vpc-beanstalk-lab.id
+  availability_mode = "regional"
+  connectivity_type = "public"
+  tags = {
+    Name           = "nat-beanstalk-lab"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_internet_gateway.igw-beanstalk-lab]
+}
+
+resource "aws_route" "route_rt-private-eb_to_nat-beanstalk-lab_ipv4" {
+  nat_gateway_id         = aws_nat_gateway.nat-beanstalk-lab.id
+  route_table_id         = aws_route_table.rt-private-eb.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+resource "aws_route" "route_rt-public-eb_to_igw-beanstalk-lab_ipv4" {
+  gateway_id             = aws_internet_gateway.igw-beanstalk-lab.id
+  route_table_id         = aws_route_table.rt-public-eb.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+resource "aws_route" "route_rt-public-eb_to_igw-beanstalk-lab_ipv6" {
+  gateway_id                  = aws_internet_gateway.igw-beanstalk-lab.id
+  route_table_id              = aws_route_table.rt-public-eb.id
+  destination_ipv6_cidr_block = "::/0"
+}
+
+resource "aws_route_table" "rt-private-eb" {
+  vpc_id = aws_vpc.vpc-beanstalk-lab.id
+  tags = {
+    Name           = "rt-private-eb"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_route_table" "rt-public-eb" {
+  vpc_id = aws_vpc.vpc-beanstalk-lab.id
+  tags = {
+    Name           = "rt-public-eb"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_route_table_association" "aws_route_table_association_eb_app_a_rt_private_eb" {
+  route_table_id = aws_route_table.rt-private-eb.id
+  subnet_id      = aws_subnet.eb-app-a.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_eb_app_b_rt_private_eb" {
+  route_table_id = aws_route_table.rt-private-eb.id
+  subnet_id      = aws_subnet.eb-app-b.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_eb_public_a_rt_public_eb" {
+  route_table_id = aws_route_table.rt-public-eb.id
+  subnet_id      = aws_subnet.eb-public-a.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_eb_public_b_rt_public_eb" {
+  route_table_id = aws_route_table.rt-public-eb.id
+  subnet_id      = aws_subnet.eb-public-b.id
+}
+
+resource "aws_security_group" "elastic_beanstalk_environment_beanstalk-lab-web_group" {
+  name                   = "elastic_beanstalk_environment_beanstalk-lab-web_group"
+  vpc_id                 = aws_vpc.vpc-beanstalk-lab.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "elastic_beanstalk_environment_beanstalk-lab-web_group"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group_rule" "rule_elastic_beanstalk_environment_beanstalk_lab_web_group_egress_all_protocols" {
+  security_group_id = aws_security_group.elastic_beanstalk_environment_beanstalk-lab-web_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+
+
+
+### CATEGORY: DATABASE ###
+
+resource "aws_dynamodb_table" "eb-lab-items" {
+  name                        = "eb-lab-items"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = false
+  hash_key                    = "ID"
+  stream_enabled              = false
+  table_class                 = "STANDARD"
+  attribute {
+    name = "ID"
+    type = "S"
+  }
+  tags = {
+    Name           = "eb-lab-items"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: COMPUTE ###
+
+resource "aws_elastic_beanstalk_application" "beanstalk-lab" {
+  name = "beanstalk-lab"
+  tags = {
+    Name           = "beanstalk-lab"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_elastic_beanstalk_environment" "beanstalk-lab-web" {
+  name                   = "beanstalk-lab-web"
+  solution_stack_name    = "64bit Amazon Linux 2023 v6.12.0 running Node.js 22"
+  application            = aws_elastic_beanstalk_application.beanstalk-lab.name
+  wait_for_ready_timeout = "20m"
+  setting {
+    name      = "InstanceTypes"
+    namespace = "aws:ec2:instances"
+    value     = "t4g.nano"
+  }
+  setting {
+    name      = "SupportedArchitectures"
+    namespace = "aws:ec2:instances"
+    value     = "arm64"
+  }
+  setting {
+    name      = "MinSize"
+    namespace = "aws:autoscaling:asg"
+    value     = "1"
+  }
+  setting {
+    name      = "MaxSize"
+    namespace = "aws:autoscaling:asg"
+    value     = "1"
+  }
+  setting {
+    name      = "VPCId"
+    namespace = "aws:ec2:vpc"
+    value     = aws_vpc.vpc-beanstalk-lab.id
+  }
+  setting {
+    name      = "Subnets"
+    namespace = "aws:ec2:vpc"
+    value     = "${aws_subnet.eb-app-a.id},${aws_subnet.eb-app-b.id}"
+  }
+  setting {
+    name      = "ELBSubnets"
+    namespace = "aws:ec2:vpc"
+    value     = "${aws_subnet.eb-public-a.id},${aws_subnet.eb-public-b.id}"
+  }
+  setting {
+    name      = "SecurityGroups"
+    namespace = "aws:autoscaling:launchconfiguration"
+    value     = aws_security_group.elastic_beanstalk_environment_beanstalk-lab-web_group.id
+  }
+  setting {
+    name      = "IamInstanceProfile"
+    namespace = "aws:autoscaling:launchconfiguration"
+    value     = aws_iam_instance_profile.beanstalk-lab-web_profile.name
+  }
+  tags = {
+    Name           = "beanstalk-lab-web"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: INTEGRATION ###
+
+resource "aws_sns_topic" "eb-lab-alarms" {
+  name = "eb-lab-alarms"
+  tags = {
+    Name           = "eb-lab-alarms"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
+
+
+### CATEGORY: MONITORING ###
+
+resource "aws_cloudwatch_metric_alarm" "eb-lab-health" {
+  alarm_name          = "eb-lab-health"
+  metric_name         = "EnvironmentHealth"
+  alarm_actions       = [aws_sns_topic.eb-lab-alarms.arn]
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  namespace           = "AWS/ElasticBeanstalk"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 20
+  treat_missing_data  = "notBreaching"
+  dimensions = {
+    EnvironmentName = aws_elastic_beanstalk_environment.beanstalk-lab-web.name
+  }
+  tags = {
+    Name           = "eb-lab-health"
+    State          = "beanstalk-lab"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+
