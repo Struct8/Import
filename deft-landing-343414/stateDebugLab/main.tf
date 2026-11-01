@@ -256,6 +256,9 @@ exit 0
       type  = "pd-standard"
     }
   }
+  metadata = {
+    startup-script-url = "gs://struct8-debug-lab-m4x9/runner-sh"
+  }
   network_interface {
     subnetwork = google_compute_subnetwork.debug-lab-subnet.id
   }
@@ -302,6 +305,13 @@ resource "google_pubsub_topic" "debug-lab-out" {
   deletion_policy            = "DELETE"
   message_retention_duration = "604800s"
   depends_on                 = [google_project_service.pubsub]
+}
+
+resource "google_pubsub_topic_iam_member" "debug-lab-cmd-inspector-publisher" {
+  member     = "serviceAccount:struct8-inspector@deft-landing-343414.iam.gserviceaccount.com"
+  role       = "roles/pubsub.publisher"
+  topic      = google_pubsub_topic.debug-lab-cmd.name
+  depends_on = [google_project_service.pubsub]
 }
 
 resource "google_pubsub_topic_iam_member" "debug-lab-out-debug-vm-sa-pubsub-publisher" {
