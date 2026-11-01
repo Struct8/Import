@@ -33,21 +33,6 @@ resource "aws_iam_instance_profile" "beanstalk-lab-web_profile" {
   }
 }
 
-data "aws_iam_policy_document" "elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab_doc" {
-  statement {
-    sid       = "AllowDynamoDBCRUD"
-    effect    = "Allow"
-    actions   = ["dynamodb:BatchGetItem", "dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
-    resources = [aws_dynamodb_table.eb-lab-items.arn, "${aws_dynamodb_table.eb-lab-items.arn}/*"]
-  }
-}
-
-resource "aws_iam_policy" "elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab" {
-  name        = "elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab"
-  description = "Access Policy for beanstalk-lab-web"
-  policy      = data.aws_iam_policy_document.elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab_doc.json
-}
-
 data "aws_iam_policy_document" "eb-debug_debug_permissions" {
   statement {
     sid       = "SendToTaggedInstancesOnly"
@@ -152,11 +137,6 @@ resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_beans
   role       = aws_iam_role.beanstalk-lab-web_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab_attach" {
-  policy_arn = aws_iam_policy.elastic_beanstalk_environment_beanstalk-lab-web_st_beanstalk-lab.arn
-  role       = aws_iam_role.beanstalk-lab-web_role.name
-}
-
 
 
 
@@ -255,12 +235,6 @@ resource "aws_route" "route_rt-public-eb_to_igw-beanstalk-lab_ipv4" {
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route" "route_rt-public-eb_to_igw-beanstalk-lab_ipv6" {
-  gateway_id                  = aws_internet_gateway.igw-beanstalk-lab.id
-  route_table_id              = aws_route_table.rt-public-eb.id
-  destination_ipv6_cidr_block = "::/0"
-}
-
 resource "aws_route_table" "rt-private-eb" {
   vpc_id = aws_vpc.vpc-beanstalk-lab.id
   tags = {
@@ -322,29 +296,6 @@ resource "aws_security_group_rule" "rule_elastic_beanstalk_environment_beanstalk
 
 
 
-### CATEGORY: DATABASE ###
-
-resource "aws_dynamodb_table" "eb-lab-items" {
-  name                        = "eb-lab-items"
-  billing_mode                = "PAY_PER_REQUEST"
-  deletion_protection_enabled = false
-  hash_key                    = "ID"
-  stream_enabled              = false
-  table_class                 = "STANDARD"
-  attribute {
-    name = "ID"
-    type = "S"
-  }
-  tags = {
-    Name           = "eb-lab-items"
-    State          = "beanstalk-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-
-
-
 ### CATEGORY: COMPUTE ###
 
 resource "aws_elastic_beanstalk_application" "beanstalk-lab" {
@@ -360,6 +311,26 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-lab-web" {
   solution_stack_name    = "64bit Amazon Linux 2023 v6.12.0 running Node.js 22"
   application            = aws_elastic_beanstalk_application.beanstalk-lab.name
   wait_for_ready_timeout = "20m"
+  setting {
+    name      = "NAME"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "beanstalk-lab-web"
+  }
+  setting {
+    name      = "REGION"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${data.aws_region.current.region}"
+  }
+  setting {
+    name      = "ACCOUNT"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${data.aws_caller_identity.current.account_id}"
+  }
+  setting {
+    name      = "AWS_ELASTIC_BEANSTALK_APPLICATION_NAME_0"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "beanstalk-lab"
+  }
   setting {
     name      = "VPCId"
     namespace = "aws:ec2:vpc"
@@ -427,46 +398,6 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-lab-web" {
   }
   tags = {
     Struct8Debug   = "iOhLcXismjKgeOkTBxnCY"
-    State          = "beanstalk-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-
-
-
-### CATEGORY: INTEGRATION ###
-
-resource "aws_sns_topic" "eb-lab-alarms" {
-  name = "eb-lab-alarms"
-  tags = {
-    Name           = "eb-lab-alarms"
-    State          = "beanstalk-lab"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
-
-
-
-### CATEGORY: MONITORING ###
-
-resource "aws_cloudwatch_metric_alarm" "eb-lab-health" {
-  alarm_name          = "eb-lab-health"
-  metric_name         = "EnvironmentHealth"
-  alarm_actions       = [aws_sns_topic.eb-lab-alarms.arn]
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  namespace           = "AWS/ElasticBeanstalk"
-  period              = 300
-  statistic           = "Maximum"
-  threshold           = 20
-  treat_missing_data  = "notBreaching"
-  dimensions = {
-    EnvironmentName = aws_elastic_beanstalk_environment.beanstalk-lab-web.name
-  }
-  tags = {
-    Name           = "eb-lab-health"
     State          = "beanstalk-lab"
     Struct8Creator = "Contato Struct"
   }
