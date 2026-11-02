@@ -72,7 +72,7 @@ resource "aws_efs_access_point" "ap_beanstalk-uptime-kuma_wp-eb-files" {
     uid = 33
   }
   root_directory {
-    path = "/beanstalk-wordpress-blog"
+    path = "/beanstalk-uptime-kuma"
     creation_info {
       owner_gid   = 33
       owner_uid   = 33
