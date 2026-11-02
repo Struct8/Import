@@ -3,15 +3,15 @@
     {
       "repo_name": "struct8-templates",
       "org": "Struct8",
-      "branch": "main",
+      "branch": "feat/beanstalk-wordpress-access-point",
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
-        "templates/beanstalk-wordpress/v1/app"
+        "templates/beanstalk-wordpress/v2/app"
       ]
     }
   ],
-  "action": "destroy",
-  "trigger_id": "1793574174296",
+  "action": "apply",
+  "trigger_id": "1793578204783",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
