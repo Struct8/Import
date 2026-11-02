@@ -294,7 +294,7 @@ resource "aws_subnet" "wp-public-a" {
   vpc_id                  = aws_vpc.vpc-beanstalk-wordpress.id
   availability_zone       = "us-west-2a"
   cidr_block              = "10.41.0.0/24"
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
   tags = {
     Name           = "wp-public-a"
     State          = "beanstalk-wordpress"
@@ -306,7 +306,7 @@ resource "aws_subnet" "wp-public-b" {
   vpc_id                  = aws_vpc.vpc-beanstalk-wordpress.id
   availability_zone       = "us-west-2b"
   cidr_block              = "10.41.1.0/24"
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
   tags = {
     Name           = "wp-public-b"
     State          = "beanstalk-wordpress"
@@ -430,21 +430,10 @@ resource "aws_security_group" "elastic_beanstalk_environment_beanstalk-wordpress
 }
 
 resource "aws_security_group" "lb_wp-shared-alb_group" {
-  name   = "lb_wp-shared-alb_group"
-  vpc_id = aws_vpc.vpc-beanstalk-wordpress.id
-  0 {
-    description            = "Shared ALB of the WordPress sites"
-    revoke_rules_on_delete = false
-    egress {
-      cidr_blocks = ["0.0.0.0/0"]
-      protocol    = "-1"
-    }
-    ingress {
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "HTTP from the internet"
-      protocol    = "tcp"
-    }
-  }
+  name                   = "lb_wp-shared-alb_group"
+  vpc_id                 = aws_vpc.vpc-beanstalk-wordpress.id
+  description            = "Shared ALB of the WordPress sites"
+  revoke_rules_on_delete = false
 }
 
 resource "aws_security_group_rule" "rule_db_instance_wp_eb_db_group_egress_all_protocols" {
@@ -521,6 +510,25 @@ resource "aws_security_group_rule" "rule_elastic_beanstalk_environment_beanstalk
   protocol                 = "tcp"
   to_port                  = 2049
   type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_lb_wp_shared_alb_group_egress_all_protocols" {
+  security_group_id = aws_security_group.lb_wp-shared-alb_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_lb_wp_shared_alb_group_ingress_tcp_80" {
+  security_group_id = aws_security_group.lb_wp-shared-alb_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "HTTP from the internet"
+  from_port         = 80
+  protocol          = "tcp"
+  to_port           = 80
+  type              = "ingress"
 }
 
 resource "aws_lb" "wp-shared-alb" {
