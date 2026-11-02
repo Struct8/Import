@@ -3,16 +3,19 @@
     {
       "repo_name": "struct8-templates",
       "org": "Struct8",
-      "branch": "feat/beanstalk-wordpress-access-point",
+      "branch": "feat/beanstalk-ecr-kuma",
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
-        "templates/beanstalk-wordpress/v2/app"
+        "templates/beanstalk-wordpress/v3/wordpress/app",
+        "templates/beanstalk-wordpress/v3/kuma/app",
+        "templates/beanstalk-wordpress/v3/wordpress/image",
+        "templates/beanstalk-wordpress/v3/kuma/image"
       ]
     }
   ],
-  "action": "destroy",
-  "trigger_id": "1793584200398",
-  "triggered_by": "Contato Struct",
+  "action": "apply",
+  "trigger_id": "1793648223411",
+  "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
