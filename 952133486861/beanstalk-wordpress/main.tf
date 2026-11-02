@@ -29,6 +29,16 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
+resource "aws_iam_instance_profile" "beanstalk-wordpress-blog_profile" {
+  name = "beanstalk-wordpress-blog_profile"
+  role = aws_iam_role.beanstalk-wordpress-blog_role.name
+  tags = {
+    Name           = "beanstalk-wordpress-blog_profile"
+    State          = "beanstalk-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_instance_profile" "beanstalk-wordpress-web_profile" {
   name = "beanstalk-wordpress-web_profile"
   role = aws_iam_role.beanstalk-wordpress-web_role.name
@@ -37,6 +47,50 @@ resource "aws_iam_instance_profile" "beanstalk-wordpress-web_profile" {
     State          = "beanstalk-wordpress"
     Struct8Creator = "Contato Struct"
   }
+}
+
+data "aws_iam_policy_document" "elastic_beanstalk_environment_beanstalk-wordpress-blog_st_beanstalk-wordpress_doc" {
+  statement {
+    sid       = "AllowRDSSecretAccesswpebdb"
+    effect    = "Allow"
+    actions   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
+    resources = [aws_db_instance.wp-eb-db.master_user_secret[0].secret_arn]
+  }
+  statement {
+    sid       = "AllowEFSBasicAccess"
+    effect    = "Allow"
+    actions   = ["elasticfilesystem:ClientMount", "elasticfilesystem:ClientRootAccess", "elasticfilesystem:ClientWrite"]
+    resources = ["${aws_efs_file_system.wp-eb-files.arn}:*"]
+  }
+  statement {
+    sid       = "BeanstalkSourceBundle"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.beanstalk-wordpress-versions.arn}/beanstalk/beanstalk-wordpress-blog/*"]
+  }
+  statement {
+    sid       = "AllowReadParam"
+    effect    = "Allow"
+    actions   = ["ssm:GetParameter"]
+    resources = [aws_ssm_parameter.ebWpAdminPassword.arn]
+  }
+  statement {
+    sid       = "AllowSecureStringDecrypt"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = ["*"]
+    condition {
+      test     = "StringLike"
+      values   = ["ssm.*.amazonaws.com"]
+      variable = "kms:ViaService"
+    }
+  }
+}
+
+resource "aws_iam_policy" "elastic_beanstalk_environment_beanstalk-wordpress-blog_st_beanstalk-wordpress" {
+  name        = "elastic_beanstalk_environment_beanstalk-wordpress-blog_st_beanstalk-wordpress"
+  description = "Access Policy for beanstalk-wordpress-blog"
+  policy      = data.aws_iam_policy_document.elastic_beanstalk_environment_beanstalk-wordpress-blog_st_beanstalk-wordpress_doc.json
 }
 
 data "aws_iam_policy_document" "elastic_beanstalk_environment_beanstalk-wordpress-web_st_beanstalk-wordpress_doc" {
@@ -83,58 +137,28 @@ resource "aws_iam_policy" "elastic_beanstalk_environment_beanstalk-wordpress-web
   policy      = data.aws_iam_policy_document.elastic_beanstalk_environment_beanstalk-wordpress-web_st_beanstalk-wordpress_doc.json
 }
 
-data "aws_iam_policy_document" "wp-eb-debug_debug_permissions" {
-  statement {
-    sid       = "SendToTaggedInstancesOnly"
-    effect    = "Allow"
-    actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ec2:*:*:instance/*"]
-    condition {
-      test     = "StringEquals"
-      values   = ["aGDsiUXGA2lDQXqLSYtfa"]
-      variable = "aws:ResourceTag/Struct8Debug"
+resource "aws_iam_role" "beanstalk-wordpress-blog_role" {
+  name = "beanstalk-wordpress-blog_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      }
     }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "beanstalk-wordpress-blog_role"
+    State          = "beanstalk-wordpress"
+    Struct8Creator = "Contato Struct"
   }
-  statement {
-    sid       = "PinnedDocumentOnly"
-    effect    = "Allow"
-    actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-aGDsiUXGA2lDQXqLSYtfa"]
-  }
-  statement {
-    sid       = "ReadOwnResults"
-    effect    = "Allow"
-    actions   = ["ssm:GetCommandInvocation", "ssm:DescribeInstanceInformation"]
-    resources = ["*"]
-  }
-  statement {
-    sid       = "CancelOnTaggedInstancesOnly"
-    effect    = "Allow"
-    actions   = ["ssm:CancelCommand"]
-    resources = ["arn:aws:ec2:*:*:instance/*"]
-    condition {
-      test     = "StringEquals"
-      values   = ["aGDsiUXGA2lDQXqLSYtfa"]
-      variable = "aws:ResourceTag/Struct8Debug"
-    }
-  }
-}
-
-data "aws_iam_policy_document" "wp-eb-debug_debug_trust" {
-  statement {
-    effect = "Allow"
-    principals {
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
-      type        = "AWS"
-    }
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-resource "aws_iam_role" "Struct8Debug-wp-eb-debug" {
-  name                 = "Struct8Debug-aGDsiUXGA2lDQXqLSYtfa"
-  assume_role_policy   = data.aws_iam_policy_document.wp-eb-debug_debug_trust.json
-  max_session_duration = 3600
 }
 
 resource "aws_iam_role" "beanstalk-wordpress-web_role" {
@@ -161,10 +185,9 @@ resource "aws_iam_role" "beanstalk-wordpress-web_role" {
   }
 }
 
-resource "aws_iam_role_policy" "Struct8Debug-wp-eb-debug_policy" {
-  name   = "Struct8Debug-aGDsiUXGA2lDQXqLSYtfa-policy"
-  policy = data.aws_iam_policy_document.wp-eb-debug_debug_permissions.json
-  role   = aws_iam_role.Struct8Debug-wp-eb-debug.id
+resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkMulticontainerDocker_to_beanstalk-wordpress-blog_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker"
+  role       = aws_iam_role.beanstalk-wordpress-blog_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkMulticontainerDocker_to_beanstalk-wordpress-web_attach" {
@@ -172,9 +195,19 @@ resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkMulticontainerDock
   role       = aws_iam_role.beanstalk-wordpress-web_role.name
 }
 
+resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkWebTier_to_beanstalk-wordpress-blog_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier"
+  role       = aws_iam_role.beanstalk-wordpress-blog_role.name
+}
+
 resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkWebTier_to_beanstalk-wordpress-web_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier"
   role       = aws_iam_role.beanstalk-wordpress-web_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkWorkerTier_to_beanstalk-wordpress-blog_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier"
+  role       = aws_iam_role.beanstalk-wordpress-blog_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkWorkerTier_to_beanstalk-wordpress-web_attach" {
@@ -182,9 +215,9 @@ resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkWorkerTier_to_bean
   role       = aws_iam_role.beanstalk-wordpress-web_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_beanstalk-wordpress-web_attach" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.beanstalk-wordpress-web_role.name
+resource "aws_iam_role_policy_attachment" "elastic_beanstalk_environment_beanstalk-wordpress-blog_st_beanstalk-wordpress_attach" {
+  policy_arn = aws_iam_policy.elastic_beanstalk_environment_beanstalk-wordpress-blog_st_beanstalk-wordpress.arn
+  role       = aws_iam_role.beanstalk-wordpress-blog_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "elastic_beanstalk_environment_beanstalk-wordpress-web_st_beanstalk-wordpress_attach" {
@@ -374,6 +407,17 @@ resource "aws_security_group" "efs_file_system_wp-eb-files_group" {
   }
 }
 
+resource "aws_security_group" "elastic_beanstalk_environment_beanstalk-wordpress-blog_group" {
+  name                   = "elastic_beanstalk_environment_beanstalk-wordpress-blog_group"
+  vpc_id                 = aws_vpc.vpc-beanstalk-wordpress.id
+  revoke_rules_on_delete = false
+  tags = {
+    Name           = "elastic_beanstalk_environment_beanstalk-wordpress-blog_group"
+    State          = "beanstalk-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_security_group" "elastic_beanstalk_environment_beanstalk-wordpress-web_group" {
   name                   = "elastic_beanstalk_environment_beanstalk-wordpress-web_group"
   vpc_id                 = aws_vpc.vpc-beanstalk-wordpress.id
@@ -382,6 +426,24 @@ resource "aws_security_group" "elastic_beanstalk_environment_beanstalk-wordpress
     Name           = "elastic_beanstalk_environment_beanstalk-wordpress-web_group"
     State          = "beanstalk-wordpress"
     Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "lb_wp-shared-alb_group" {
+  name   = "lb_wp-shared-alb_group"
+  vpc_id = aws_vpc.vpc-beanstalk-wordpress.id
+  0 {
+    description            = "Shared ALB of the WordPress sites"
+    revoke_rules_on_delete = false
+    egress {
+      cidr_blocks = ["0.0.0.0/0"]
+      protocol    = "-1"
+    }
+    ingress {
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "HTTP from the internet"
+      protocol    = "tcp"
+    }
   }
 }
 
@@ -401,6 +463,35 @@ resource "aws_security_group_rule" "rule_efs_file_system_wp_eb_files_group_egres
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_elastic_beanstalk_environment_beanstalk_wordpress_blog_group_egress_all_protocols" {
+  security_group_id = aws_security_group.elastic_beanstalk_environment_beanstalk-wordpress-blog_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_elastic_beanstalk_environment_beanstalk_wordpress_blog_group_to_db_instance_wp_eb_db_group_tcp_3306" {
+  security_group_id        = aws_security_group.db_instance_wp-eb-db_group.id
+  source_security_group_id = aws_security_group.elastic_beanstalk_environment_beanstalk-wordpress-blog_group.id
+  description              = "Allow from elastic_beanstalk_environment_beanstalk-wordpress-blog_group (tcp:3306-3306)"
+  from_port                = 3306
+  protocol                 = "tcp"
+  to_port                  = 3306
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_elastic_beanstalk_environment_beanstalk_wordpress_blog_group_to_efs_file_system_wp_eb_files_group_tcp_2049" {
+  security_group_id        = aws_security_group.efs_file_system_wp-eb-files_group.id
+  source_security_group_id = aws_security_group.elastic_beanstalk_environment_beanstalk-wordpress-blog_group.id
+  description              = "Allow from elastic_beanstalk_environment_beanstalk-wordpress-blog_group (tcp:2049-2049)"
+  from_port                = 2049
+  protocol                 = "tcp"
+  to_port                  = 2049
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_elastic_beanstalk_environment_beanstalk_wordpress_web_group_egress_all_protocols" {
@@ -430,6 +521,40 @@ resource "aws_security_group_rule" "rule_elastic_beanstalk_environment_beanstalk
   protocol                 = "tcp"
   to_port                  = 2049
   type                     = "ingress"
+}
+
+resource "aws_lb" "wp-shared-alb" {
+  name               = "wp-shared-alb"
+  idle_timeout       = 60
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.lb_wp-shared-alb_group.id]
+  subnets            = [aws_subnet.wp-public-a.id, aws_subnet.wp-public-b.id]
+  tags = {
+    Name           = "wp-shared-alb"
+    State          = "beanstalk-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_lb_listener" "wp-shared-http" {
+  load_balancer_arn                    = aws_lb.wp-shared-alb.arn
+  port                                 = 80
+  protocol                             = "HTTP"
+  routing_http_response_server_enabled = true
+  default_action {
+    order = 1
+    type  = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "No site answers at this address."
+      status_code  = "404"
+    }
+  }
+  tags = {
+    Name           = "wp-shared-http"
+    State          = "beanstalk-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 
@@ -482,6 +607,17 @@ resource "aws_s3_bucket_versioning" "beanstalk-wordpress-versions_versioning" {
   }
 }
 
+resource "aws_s3_object" "beanstalk-wordpress-blog_bundle" {
+  source       = data.archive_file.eb_struct8-templates_beanstalk-wordpress-blog.output_path
+  bucket       = aws_s3_bucket.beanstalk-wordpress-versions.id
+  content_type = "application/zip"
+  etag         = filemd5("${data.archive_file.eb_struct8-templates_beanstalk-wordpress-blog.output_path}")
+  key          = "beanstalk/beanstalk-wordpress-blog/${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app/${f}")}"])), 0, 16)}.zip"
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_s3_object" "beanstalk-wordpress-web_bundle" {
   source       = data.archive_file.eb_struct8-templates_beanstalk-wordpress-web.output_path
   bucket       = aws_s3_bucket.beanstalk-wordpress-versions.id
@@ -490,6 +626,27 @@ resource "aws_s3_object" "beanstalk-wordpress-web_bundle" {
   key          = "beanstalk/beanstalk-wordpress-web/${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app/${f}")}"])), 0, 16)}.zip"
   lifecycle {
     create_before_destroy = true
+  }
+}
+
+resource "aws_efs_access_point" "ap_beanstalk-wordpress-blog_wp-eb-files" {
+  file_system_id = aws_efs_file_system.wp-eb-files.id
+  posix_user {
+    gid = 33
+    uid = 33
+  }
+  root_directory {
+    path = "/beanstalk-wordpress-blog"
+    creation_info {
+      owner_gid   = 33
+      owner_uid   = 33
+      permissions = "0755"
+    }
+  }
+  tags = {
+    Name           = "ap_beanstalk-wordpress-blog_wp-eb-files"
+    State          = "beanstalk-wordpress"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -591,6 +748,16 @@ resource "aws_elastic_beanstalk_application" "beanstalk-wordpress" {
   }
 }
 
+resource "aws_elastic_beanstalk_application_version" "beanstalk-wordpress-blog_version" {
+  name        = "beanstalk-wordpress-blog-${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app/${f}")}"])), 0, 16)}"
+  application = aws_elastic_beanstalk_application.beanstalk-wordpress.name
+  bucket      = aws_s3_bucket.beanstalk-wordpress-versions.id
+  key         = aws_s3_object.beanstalk-wordpress-blog_bundle.key
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_elastic_beanstalk_application_version" "beanstalk-wordpress-web_version" {
   name        = "beanstalk-wordpress-web-${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app/${f}")}"])), 0, 16)}"
   application = aws_elastic_beanstalk_application.beanstalk-wordpress.name
@@ -599,6 +766,170 @@ resource "aws_elastic_beanstalk_application_version" "beanstalk-wordpress-web_ve
   lifecycle {
     create_before_destroy = true
   }
+}
+
+data "archive_file" "eb_struct8-templates_beanstalk-wordpress-blog" {
+  output_path = "${path.module}/eb_struct8-templates_beanstalk-wordpress-blog_${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app/${f}")}"])), 0, 16)}.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app"
+  type        = "zip"
+}
+
+resource "aws_elastic_beanstalk_environment" "beanstalk-wordpress-blog" {
+  name                   = "beanstalk-wordpress-blog"
+  solution_stack_name    = "64bit Amazon Linux 2023 v4.14.0 running Docker"
+  application            = aws_elastic_beanstalk_application.beanstalk-wordpress.name
+  version_label          = aws_elastic_beanstalk_application_version.beanstalk-wordpress-blog_version.name
+  wait_for_ready_timeout = "20m"
+  setting {
+    name      = "WORDPRESS_DB_NAME"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "wordpress_blog"
+  }
+  setting {
+    name      = "WORDPRESS_DB_USER"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "wordpress_blog"
+  }
+  setting {
+    name      = "WP_SITE_TITLE"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "WordPress Blog"
+  }
+  setting {
+    name      = "NAME"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "beanstalk-wordpress-blog"
+  }
+  setting {
+    name      = "REGION"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${data.aws_region.current.region}"
+  }
+  setting {
+    name      = "ACCOUNT"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${data.aws_caller_identity.current.account_id}"
+  }
+  setting {
+    name      = "AWS_ELASTIC_BEANSTALK_APPLICATION_NAME_0"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "beanstalk-wordpress"
+  }
+  setting {
+    name      = "AWS_DB_INSTANCE_NAME_0"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${aws_db_instance.wp-eb-db.identifier}"
+  }
+  setting {
+    name      = "AWS_DB_INSTANCE_ENGINE_0"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${aws_db_instance.wp-eb-db.engine}"
+  }
+  setting {
+    name      = "AWS_DB_INSTANCE_ENDPOINT_0"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${aws_db_instance.wp-eb-db.endpoint}"
+  }
+  setting {
+    name      = "AWS_DB_INSTANCE_DB_NAME_0"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${aws_db_instance.wp-eb-db.db_name}"
+  }
+  setting {
+    name      = "AWS_DB_INSTANCE_SECRET_ARN_0"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${one(aws_db_instance.wp-eb-db.master_user_secret[*].secret_arn)}"
+  }
+  setting {
+    name      = "AWS_DB_INSTANCE_USER_NAME_0"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${one(aws_db_instance.wp-eb-db.master_user_secret[*].secret_arn)}:username::"
+  }
+  setting {
+    name      = "AWS_EFS_FILE_SYSTEM_ID_0"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${aws_efs_file_system.wp-eb-files.id}"
+  }
+  setting {
+    name      = "AWS_SSM_PARAMETER_NAME_ADMIN"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "ebWpAdminPassword"
+  }
+  setting {
+    name      = "AWS_EFS_ACCESS_POINT_ID_0"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "${aws_efs_access_point.ap_beanstalk-wordpress-blog_wp-eb-files.id}"
+  }
+  setting {
+    name      = "VPCId"
+    namespace = "aws:ec2:vpc"
+    value     = aws_vpc.vpc-beanstalk-wordpress.id
+  }
+  setting {
+    name      = "Subnets"
+    namespace = "aws:ec2:vpc"
+    value     = "${aws_subnet.wp-app-a.id},${aws_subnet.wp-app-b.id}"
+  }
+  setting {
+    name      = "EnvironmentType"
+    namespace = "aws:elasticbeanstalk:environment"
+    value     = "LoadBalanced"
+  }
+  setting {
+    name      = "LoadBalancerType"
+    namespace = "aws:elasticbeanstalk:environment"
+    value     = "application"
+  }
+  setting {
+    name      = "LoadBalancerIsShared"
+    namespace = "aws:elasticbeanstalk:environment"
+    value     = true
+  }
+  setting {
+    name      = "SharedLoadBalancer"
+    namespace = "aws:elbv2:loadbalancer"
+    value     = aws_lb.wp-shared-alb.arn
+  }
+  setting {
+    name      = "SecurityGroups"
+    namespace = "aws:elbv2:loadbalancer"
+    value     = join(",", aws_lb.wp-shared-alb.security_groups)
+  }
+  setting {
+    name      = "InstanceTypes"
+    namespace = "aws:ec2:instances"
+    value     = "t4g.small"
+  }
+  setting {
+    name      = "SupportedArchitectures"
+    namespace = "aws:ec2:instances"
+    value     = "arm64"
+  }
+  setting {
+    name      = "MinSize"
+    namespace = "aws:autoscaling:asg"
+    value     = "1"
+  }
+  setting {
+    name      = "MaxSize"
+    namespace = "aws:autoscaling:asg"
+    value     = "2"
+  }
+  setting {
+    name      = "SecurityGroups"
+    namespace = "aws:autoscaling:launchconfiguration"
+    value     = aws_security_group.elastic_beanstalk_environment_beanstalk-wordpress-blog_group.id
+  }
+  setting {
+    name      = "IamInstanceProfile"
+    namespace = "aws:autoscaling:launchconfiguration"
+    value     = aws_iam_instance_profile.beanstalk-wordpress-blog_profile.name
+  }
+  tags = {
+    State          = "beanstalk-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [aws_lb_listener.wp-shared-http]
 }
 
 data "archive_file" "eb_struct8-templates_beanstalk-wordpress-web" {
@@ -689,14 +1020,29 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-wordpress-web" {
     value     = "${aws_subnet.wp-app-a.id},${aws_subnet.wp-app-b.id}"
   }
   setting {
-    name      = "ELBSubnets"
-    namespace = "aws:ec2:vpc"
-    value     = "${aws_subnet.wp-public-a.id},${aws_subnet.wp-public-b.id}"
-  }
-  setting {
     name      = "EnvironmentType"
     namespace = "aws:elasticbeanstalk:environment"
     value     = "LoadBalanced"
+  }
+  setting {
+    name      = "LoadBalancerType"
+    namespace = "aws:elasticbeanstalk:environment"
+    value     = "application"
+  }
+  setting {
+    name      = "LoadBalancerIsShared"
+    namespace = "aws:elasticbeanstalk:environment"
+    value     = true
+  }
+  setting {
+    name      = "SharedLoadBalancer"
+    namespace = "aws:elbv2:loadbalancer"
+    value     = aws_lb.wp-shared-alb.arn
+  }
+  setting {
+    name      = "SecurityGroups"
+    namespace = "aws:elbv2:loadbalancer"
+    value     = join(",", aws_lb.wp-shared-alb.security_groups)
   }
   setting {
     name      = "InstanceTypes"
@@ -707,11 +1053,6 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-wordpress-web" {
     name      = "SupportedArchitectures"
     namespace = "aws:ec2:instances"
     value     = "arm64"
-  }
-  setting {
-    name      = "LoadBalancerType"
-    namespace = "aws:elasticbeanstalk:environment"
-    value     = "application"
   }
   setting {
     name      = "MinSize"
@@ -734,62 +1075,16 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-wordpress-web" {
     value     = aws_iam_instance_profile.beanstalk-wordpress-web_profile.name
   }
   tags = {
-    Struct8Debug   = "aGDsiUXGA2lDQXqLSYtfa"
     State          = "beanstalk-wordpress"
     Struct8Creator = "Contato Struct"
   }
+  depends_on = [aws_lb_listener.wp-shared-http]
 }
 
 
 
 
 ### CATEGORY: CONFIG ###
-
-resource "aws_ssm_document" "Struct8Probe-wp-eb-debug" {
-  name = "Struct8Probe-aGDsiUXGA2lDQXqLSYtfa"
-  content = <<EOF
-{
-  "schemaVersion": "2.2",
-  "description": "Struct8 network probe. The command text is fixed here; the caller supplies only a target and a port.",
-  "parameters": {
-    "target": {
-      "type": "String",
-      "description": "Hostname or IP address to probe.",
-      "interpolationType": "ENV_VAR",
-      "allowedPattern": "^[A-Za-z0-9._-]{1,253}$"
-    },
-    "port": {
-      "type": "String",
-      "description": "TCP port to test.",
-      "default": "443",
-      "interpolationType": "ENV_VAR",
-      "allowedPattern": "^[0-9]{1,5}$"
-    }
-  },
-  "mainSteps": [
-    {
-      "action": "aws:runShellScript",
-      "name": "struct8Probe",
-      "inputs": {
-        "timeoutSeconds": "60",
-        "runCommand": [
-          "if [ -z \"$SSM_target\" ]; then export SSM_target=\"{{target}}\"; fi",
-          "if [ -z \"$SSM_port\" ]; then export SSM_port=\"{{port}}\"; fi",
-          "echo '--- resolve ---'",
-          "getent hosts \"$SSM_target\" || echo \"no DNS answer\"",
-          "echo '--- icmp ---'",
-          "ping -c 3 -W 2 \"$SSM_target\" || echo \"no ICMP reply (often filtered, not conclusive)\"",
-          "echo '--- tcp ---'",
-          "if timeout 5 bash -c 'exec 3<>/dev/tcp/\"$1\"/\"$2\"' _ \"$SSM_target\" \"$SSM_port\" 2>/dev/null; then echo \"port $SSM_port open\"; else echo \"port $SSM_port closed or filtered\"; fi"
-        ]
-      }
-    }
-  ]
-}
-  EOF
-  document_format = "JSON"
-  document_type   = "Command"
-}
 
 resource "aws_ssm_parameter" "ebWpAdminPassword" {
   name        = "ebWpAdminPassword"
