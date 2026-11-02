@@ -91,7 +91,7 @@ data "aws_iam_policy_document" "wp-eb-debug_debug_permissions" {
     resources = ["arn:aws:ec2:*:*:instance/*"]
     condition {
       test     = "StringEquals"
-      values   = ["vcKwUxgX387SjdjWFmDL_"]
+      values   = ["aGDsiUXGA2lDQXqLSYtfa"]
       variable = "aws:ResourceTag/Struct8Debug"
     }
   }
@@ -99,7 +99,7 @@ data "aws_iam_policy_document" "wp-eb-debug_debug_permissions" {
     sid       = "PinnedDocumentOnly"
     effect    = "Allow"
     actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-vcKwUxgX387SjdjWFmDL_"]
+    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-aGDsiUXGA2lDQXqLSYtfa"]
   }
   statement {
     sid       = "ReadOwnResults"
@@ -114,7 +114,7 @@ data "aws_iam_policy_document" "wp-eb-debug_debug_permissions" {
     resources = ["arn:aws:ec2:*:*:instance/*"]
     condition {
       test     = "StringEquals"
-      values   = ["vcKwUxgX387SjdjWFmDL_"]
+      values   = ["aGDsiUXGA2lDQXqLSYtfa"]
       variable = "aws:ResourceTag/Struct8Debug"
     }
   }
@@ -132,7 +132,7 @@ data "aws_iam_policy_document" "wp-eb-debug_debug_trust" {
 }
 
 resource "aws_iam_role" "Struct8Debug-wp-eb-debug" {
-  name                 = "Struct8Debug-vcKwUxgX387SjdjWFmDL_"
+  name                 = "Struct8Debug-aGDsiUXGA2lDQXqLSYtfa"
   assume_role_policy   = data.aws_iam_policy_document.wp-eb-debug_debug_trust.json
   max_session_duration = 3600
 }
@@ -162,7 +162,7 @@ resource "aws_iam_role" "beanstalk-wordpress-web_role" {
 }
 
 resource "aws_iam_role_policy" "Struct8Debug-wp-eb-debug_policy" {
-  name   = "Struct8Debug-vcKwUxgX387SjdjWFmDL_-policy"
+  name   = "Struct8Debug-aGDsiUXGA2lDQXqLSYtfa-policy"
   policy = data.aws_iam_policy_document.wp-eb-debug_debug_permissions.json
   role   = aws_iam_role.Struct8Debug-wp-eb-debug.id
 }
@@ -487,9 +487,30 @@ resource "aws_s3_object" "beanstalk-wordpress-web_bundle" {
   bucket       = aws_s3_bucket.beanstalk-wordpress-versions.id
   content_type = "application/zip"
   etag         = filemd5("${data.archive_file.eb_struct8-templates_beanstalk-wordpress-web.output_path}")
-  key          = "beanstalk/beanstalk-wordpress-web/${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v1/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v1/app/${f}")}"])), 0, 16)}.zip"
+  key          = "beanstalk/beanstalk-wordpress-web/${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app/${f}")}"])), 0, 16)}.zip"
   lifecycle {
     create_before_destroy = true
+  }
+}
+
+resource "aws_efs_access_point" "ap_beanstalk-wordpress-web_wp-eb-files" {
+  file_system_id = aws_efs_file_system.wp-eb-files.id
+  posix_user {
+    gid = 33
+    uid = 33
+  }
+  root_directory {
+    path = "/beanstalk-wordpress-web"
+    creation_info {
+      owner_gid   = 33
+      owner_uid   = 33
+      permissions = "0755"
+    }
+  }
+  tags = {
+    Name           = "ap_beanstalk-wordpress-web_wp-eb-files"
+    State          = "beanstalk-wordpress"
+    Struct8Creator = "Contato Struct"
   }
 }
 
@@ -571,7 +592,7 @@ resource "aws_elastic_beanstalk_application" "beanstalk-wordpress" {
 }
 
 resource "aws_elastic_beanstalk_application_version" "beanstalk-wordpress-web_version" {
-  name        = "beanstalk-wordpress-web-${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v1/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v1/app/${f}")}"])), 0, 16)}"
+  name        = "beanstalk-wordpress-web-${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app/${f}")}"])), 0, 16)}"
   application = aws_elastic_beanstalk_application.beanstalk-wordpress.name
   bucket      = aws_s3_bucket.beanstalk-wordpress-versions.id
   key         = aws_s3_object.beanstalk-wordpress-web_bundle.key
@@ -581,8 +602,8 @@ resource "aws_elastic_beanstalk_application_version" "beanstalk-wordpress-web_ve
 }
 
 data "archive_file" "eb_struct8-templates_beanstalk-wordpress-web" {
-  output_path = "${path.module}/eb_struct8-templates_beanstalk-wordpress-web_${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v1/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v1/app/${f}")}"])), 0, 16)}.zip"
-  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v1/app"
+  output_path = "${path.module}/eb_struct8-templates_beanstalk-wordpress-web_${substr(sha1(join(",", [for f in sort(fileset("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app", "**")) : "${f}:${filesha1("${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app/${f}")}"])), 0, 16)}.zip"
+  source_dir  = "${path.module}/.external_modules/struct8-templates/templates/beanstalk-wordpress/v2/app"
   type        = "zip"
 }
 
@@ -643,14 +664,19 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-wordpress-web" {
     value     = "${one(aws_db_instance.wp-eb-db.master_user_secret[*].secret_arn)}:username::"
   }
   setting {
+    name      = "AWS_SSM_PARAMETER_NAME_ADMIN"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value     = "ebWpAdminPassword"
+  }
+  setting {
     name      = "AWS_EFS_FILE_SYSTEM_ID_0"
     namespace = "aws:elasticbeanstalk:application:environment"
     value     = "${aws_efs_file_system.wp-eb-files.id}"
   }
   setting {
-    name      = "AWS_SSM_PARAMETER_NAME_ADMIN"
+    name      = "AWS_EFS_ACCESS_POINT_ID_0"
     namespace = "aws:elasticbeanstalk:application:environment"
-    value     = "ebWpAdminPassword"
+    value     = "${aws_efs_access_point.ap_beanstalk-wordpress-web_wp-eb-files.id}"
   }
   setting {
     name      = "VPCId"
@@ -708,7 +734,7 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-wordpress-web" {
     value     = aws_iam_instance_profile.beanstalk-wordpress-web_profile.name
   }
   tags = {
-    Struct8Debug   = "vcKwUxgX387SjdjWFmDL_"
+    Struct8Debug   = "aGDsiUXGA2lDQXqLSYtfa"
     State          = "beanstalk-wordpress"
     Struct8Creator = "Contato Struct"
   }
@@ -720,7 +746,7 @@ resource "aws_elastic_beanstalk_environment" "beanstalk-wordpress-web" {
 ### CATEGORY: CONFIG ###
 
 resource "aws_ssm_document" "Struct8Probe-wp-eb-debug" {
-  name = "Struct8Probe-vcKwUxgX387SjdjWFmDL_"
+  name = "Struct8Probe-aGDsiUXGA2lDQXqLSYtfa"
   content = <<EOF
 {
   "schemaVersion": "2.2",
