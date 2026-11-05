@@ -18,12 +18,12 @@ resource "aws_lambda_function" "cross-caller" {
   timeout                        = 60
   environment {
     variables = {
-      GOOGLE_CLOUDFUNCTIONS2_FUNCTION_URL_0     = "https://us-central1-deft-landing-343414.cloudfunctions.net/cross-gateway"
       NAME                                      = "cross-caller"
       REGION                                    = data.aws_region.current.region
       ACCOUNT                                   = data.aws_caller_identity.current.account_id
       AWS_XRAY_GROUP_NAME_0                     = "cross-traces"
       CROSS_CLOUD_PARAMETER                     = "/cross-cloud/cross-link/google"
+      GOOGLE_CLOUDFUNCTIONS2_FUNCTION_URL_0     = "https://us-central1-deft-landing-343414.cloudfunctions.net/cross-gateway"
       GOOGLE_CLOUDFUNCTIONS2_FUNCTION_ACCOUNT_0 = "deft-landing-343414"
       GOOGLE_PUBSUB_TOPIC_NAME_0                = "cross-events"
       GOOGLE_PUBSUB_TOPIC_ACCOUNT_0             = "deft-landing-343414"
