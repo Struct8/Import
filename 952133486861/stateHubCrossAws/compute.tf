@@ -18,6 +18,7 @@ resource "aws_lambda_function" "cross-caller" {
   timeout                        = 60
   environment {
     variables = {
+      GOOGLE_CLOUDFUNCTIONS2_FUNCTION_URL_0     = "https://us-central1-deft-landing-343414.cloudfunctions.net/cross-gateway"
       NAME                                      = "cross-caller"
       REGION                                    = data.aws_region.current.region
       ACCOUNT                                   = data.aws_caller_identity.current.account_id
