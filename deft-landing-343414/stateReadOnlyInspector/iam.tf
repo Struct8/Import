@@ -1,40 +1,3 @@
-terraform {
-  required_providers {
-    google = {
-      source = "hashicorp/google"
-    }
-  }
-
-  backend "s3" {
-    bucket  = "struct8-import"
-    key     = "deft-landing-343414/stateReadOnlyInspector/main.tfstate"
-    region  = "us-west-2"
-    encrypt = true
-  }
-}
-
-# --- Main Cloud Provider ---
-provider "google" {
-  project = "deft-landing-343414"
-}
-
-### CATEGORY: FOUNDATION ###
-
-resource "google_project_service" "cloudresourcemanager" {
-  disable_on_destroy = false
-  service            = "cloudresourcemanager.googleapis.com"
-}
-
-resource "google_project_service" "iam" {
-  disable_on_destroy = false
-  service            = "iam.googleapis.com"
-}
-
-
-
-
-### CATEGORY: IAM ###
-
 resource "google_project_iam_member" "inspector-bigquery-metadata-viewer" {
   member     = google_service_account.struct8-inspector.member
   project    = "deft-landing-343414"
@@ -164,27 +127,9 @@ resource "google_service_account" "struct8-inspector" {
   depends_on                   = [google_project_service.iam]
 }
 
-resource "google_service_account" "struct8-reader" {
-  account_id                   = "struct8-reader"
-  display_name                 = "Struct8 reader (debug lab)"
-  create_ignore_already_exists = true
-  deletion_policy              = "DELETE"
-  disabled                     = false
-  depends_on                   = [google_project_service.iam]
-}
-
 resource "google_service_account_iam_member" "inspector-owner-token-creator" {
   service_account_id = google_service_account.struct8-inspector.name
   member             = "user:rbpmconsulting@gmail.com"
   role               = "roles/iam.serviceAccountTokenCreator"
   depends_on         = [google_project_service.iam]
 }
-
-resource "google_service_account_iam_member" "reader-inspector-token" {
-  service_account_id = google_service_account.struct8-reader.name
-  member             = "serviceAccount:struct8-inspector@deft-landing-343414.iam.gserviceaccount.com"
-  role               = "roles/iam.serviceAccountTokenCreator"
-  depends_on         = [google_project_service.iam]
-}
-
-
