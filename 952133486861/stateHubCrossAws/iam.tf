@@ -11,12 +11,6 @@ data "aws_iam_policy_document" "lambda_function_cross-caller_st_stateHubCrossAws
     actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
     resources = ["*"]
   }
-  statement {
-    sid       = "AllowReadCrossCloudKeys"
-    effect    = "Allow"
-    actions   = ["ssm:GetParameter"]
-    resources = ["arn:aws:ssm:*:*:parameter/cross-cloud/cross-link/google"]
-  }
 }
 
 resource "aws_iam_policy" "lambda_function_cross-caller_st_stateHubCrossAws" {
