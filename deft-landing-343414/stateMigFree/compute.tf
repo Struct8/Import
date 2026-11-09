@@ -1,100 +1,3 @@
-terraform {
-  required_providers {
-    google = {
-      source = "hashicorp/google"
-    }
-  }
-
-  backend "s3" {
-    bucket  = "struct8-import"
-    key     = "deft-landing-343414/stateMigFree/main.tfstate"
-    region  = "us-west-2"
-    encrypt = true
-  }
-}
-
-# --- Main Cloud Provider ---
-provider "google" {
-  project = "deft-landing-343414"
-}
-
-### CATEGORY: FOUNDATION ###
-
-resource "google_project_service" "compute" {
-  disable_on_destroy = false
-  service            = "compute.googleapis.com"
-}
-
-resource "google_project_service" "iam" {
-  disable_on_destroy = false
-  service            = "iam.googleapis.com"
-}
-
-
-
-
-### CATEGORY: IAM ###
-
-resource "google_service_account" "mig-template_sa" {
-  account_id                   = "mig-template-sa"
-  create_ignore_already_exists = false
-  deletion_policy              = "DELETE"
-  disabled                     = false
-  depends_on                   = [google_project_service.iam]
-}
-
-
-
-
-### CATEGORY: NETWORK ###
-
-resource "google_compute_network" "mig-vpc" {
-  name                                      = "mig-vpc"
-  auto_create_subnetworks                   = false
-  delete_bgp_always_compare_med             = false
-  delete_default_routes_on_create           = false
-  deletion_policy                           = "DELETE"
-  enable_ula_internal_ipv6                  = false
-  network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
-  routing_mode                              = "REGIONAL"
-  depends_on                                = [google_project_service.compute]
-}
-
-resource "google_compute_subnetwork" "mig-subnet" {
-  name                             = "mig-subnet"
-  allow_subnet_cidr_routes_overlap = false
-  deletion_policy                  = "DELETE"
-  ip_cidr_range                    = "10.30.0.0/24"
-  network                          = google_compute_network.mig-vpc.id
-  private_ip_google_access         = true
-  purpose                          = "PRIVATE"
-  region                           = "us-central1"
-  send_secondary_ip_range_if_empty = false
-  stack_type                       = "IPV4_ONLY"
-  depends_on                       = [google_project_service.compute]
-}
-
-resource "google_compute_firewall" "kuma-3001" {
-  name            = "kuma-3001"
-  deletion_policy = "DELETE"
-  direction       = "INGRESS"
-  disabled        = false
-  enable_logging  = false
-  network         = google_compute_network.mig-vpc.id
-  priority        = 1000
-  source_ranges   = ["45.166.205.227/32"]
-  allow {
-    ports    = ["3001"]
-    protocol = "tcp"
-  }
-  depends_on = [google_project_service.compute]
-}
-
-
-
-
-### CATEGORY: COMPUTE ###
-
 data "local_file" "startup_script_mig-template" {
   filename = "${path.module}/.external_modules/struct8-templates/templates/multi-cloud-uptime-kuma/v1/user_data/Kuma.sh"
 }
@@ -115,7 +18,6 @@ echo "REGION=\"$(echo "$STRUCT8_ZONE" | sed 's/-[^-]*$//')\"" >> /etc/struct8_en
 cat << 'EOFENV' >> /etc/struct8_env
 NAME="mig-template"
 GOOGLE_COMPUTE_REGION_INSTANCE_GROUP_MANAGER_NAME_0="mig-group"
-GOOGLE_SERVICE_ACCOUNT_NAME_0="mig-template_sa"
 EOFENV
 chmod 644 /etc/struct8_env
 sed 's/^/export /' /etc/struct8_env > /etc/profile.d/struct8_vars.sh
@@ -145,6 +47,9 @@ ${data.local_file.startup_script_mig-template.content}
     stack_type = "IPV4_ONLY"
     subnetwork = google_compute_subnetwork.mig-subnet.id
     access_config {
+      network_tier = "PREMIUM"
+    }
+    ipv6_access_config {
       network_tier = "PREMIUM"
     }
   }
@@ -188,5 +93,3 @@ resource "google_compute_region_autoscaler" "mig-autoscaler" {
   }
   depends_on = [google_project_service.compute]
 }
-
-
