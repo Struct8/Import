@@ -18,7 +18,5 @@ jobs:
   infrastructure:
     name: Call GitOps Engine
     uses: Struct8/cloudman-core/.github/workflows/engine.yml@devlocal
-    secrets:
-      STRUCT8_SECRETS: ${{ toJSON(secrets) }}
     with:
       stage: dev
