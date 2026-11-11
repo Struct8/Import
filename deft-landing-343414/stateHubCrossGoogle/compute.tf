@@ -32,6 +32,10 @@ resource "google_cloudfunctions2_function" "cross-gateway" {
     entry_point = "handler"
     runtime     = "nodejs22"
   }
+  labels = {
+    struct8_state   = "statehubcrossgoogle"
+    struct8_creator = "contato_struct"
+  }
   service_config {
     service_account_email = google_service_account.cross-gateway_sa.email
     environment_variables = {
@@ -64,6 +68,10 @@ resource "google_cloudfunctions2_function" "cross-listener" {
     service_account_email = google_service_account.cross-listener_sa.email
     trigger_region        = "us-central1"
   }
+  labels = {
+    struct8_state   = "statehubcrossgoogle"
+    struct8_creator = "contato_struct"
+  }
   service_config {
     service_account_email = google_service_account.cross-listener_sa.email
     environment_variables = {
@@ -86,6 +94,10 @@ resource "google_cloudfunctions2_function" "cross-worker" {
     }
     entry_point = "handler"
     runtime     = "nodejs22"
+  }
+  labels = {
+    struct8_state   = "statehubcrossgoogle"
+    struct8_creator = "contato_struct"
   }
   service_config {
     service_account_email = google_service_account.cross-worker_sa.email

@@ -3,9 +3,6 @@ terraform {
     archive = {
       source = "hashicorp/archive"
     }
-    aws = {
-      source = "hashicorp/aws"
-    }
     google = {
       source = "hashicorp/google"
     }

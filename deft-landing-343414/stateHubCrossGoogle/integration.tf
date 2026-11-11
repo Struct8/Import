@@ -2,7 +2,11 @@ resource "google_pubsub_topic" "cross-events" {
   name                       = "cross-events"
   deletion_policy            = "DELETE"
   message_retention_duration = "604800s"
-  depends_on                 = [google_project_service.pubsub]
+  labels = {
+    struct8_state   = "statehubcrossgoogle"
+    struct8_creator = "contato_struct"
+  }
+  depends_on = [google_project_service.pubsub]
 }
 
 resource "google_pubsub_topic_iam_member" "cross-events-cross-gateway_sa-pubsub-publisher" {

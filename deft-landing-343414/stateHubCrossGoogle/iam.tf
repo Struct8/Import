@@ -79,6 +79,10 @@ resource "google_secret_manager_secret" "cross-secret" {
   secret_id           = "cross-secret"
   deletion_policy     = "DELETE"
   deletion_protection = false
+  labels = {
+    struct8_state   = "statehubcrossgoogle"
+    struct8_creator = "contato_struct"
+  }
   replication {
     user_managed {
       replicas {

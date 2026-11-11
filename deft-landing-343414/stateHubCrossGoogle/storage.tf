@@ -9,7 +9,11 @@ resource "google_storage_bucket" "deft-landing-343414-cross-code" {
   requester_pays              = false
   storage_class               = "STANDARD"
   uniform_bucket_level_access = true
-  depends_on                  = [google_project_service.storage]
+  labels = {
+    struct8_state   = "statehubcrossgoogle"
+    struct8_creator = "contato_struct"
+  }
+  depends_on = [google_project_service.storage]
 }
 
 resource "google_storage_bucket" "deft-landing-343414-cross-data" {
@@ -23,7 +27,11 @@ resource "google_storage_bucket" "deft-landing-343414-cross-data" {
   requester_pays              = false
   storage_class               = "STANDARD"
   uniform_bucket_level_access = true
-  depends_on                  = [google_project_service.storage]
+  labels = {
+    struct8_state   = "statehubcrossgoogle"
+    struct8_creator = "contato_struct"
+  }
+  depends_on = [google_project_service.storage]
 }
 
 resource "google_storage_bucket_iam_member" "deft-landing-343414-cross-data-cross-link-storage-objectUser" {
