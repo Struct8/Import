@@ -10,9 +10,9 @@
       ]
     }
   ],
-  "action": "state_rm",
-  "trigger_id": "1794402170710",
-  "triggered_by": "assistant.Contato_Struct",
+  "action": "apply",
+  "trigger_id": "1794402363334",
+  "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
@@ -32,11 +32,6 @@
           "target_auth": {
             "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
             "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
-          },
-          "state_rm": {
-            "addresses": [
-              "aws_ssm_parameter.cross-link"
-            ]
           }
         }
       ]
