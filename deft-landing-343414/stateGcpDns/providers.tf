@@ -5,5 +5,6 @@ provider "google" {
 
 # --- Extra Providers ---
 provider "aws" {
-  region = "us-east-1"
+  profile = "acct_952133486861"
+  region  = "us-east-1"
 }

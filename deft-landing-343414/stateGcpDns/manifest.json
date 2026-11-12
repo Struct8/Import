@@ -1,8 +1,8 @@
 {
   "external_repositories": [],
   "action": "apply",
-  "trigger_id": "1794520707633",
-  "triggered_by": "Contato Struct",
+  "trigger_id": "1794523129178",
+  "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
@@ -22,7 +22,15 @@
           "target_auth": {
             "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
             "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
-          }
+          },
+          "additional_auth": [
+            {
+              "provider": "aws",
+              "account_id": "952133486861",
+              "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+              "region": "us-east-1"
+            }
+          ]
         }
       ]
     }
