@@ -1,0 +1,37 @@
+{
+  "external_repositories": [],
+  "action": "apply",
+  "trigger_id": "1794577326111",
+  "triggered_by": "Contato Struct",
+  "engine_ref": "devlocal",
+  "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
+  "backend_global_config": {
+    "provider": "aws",
+    "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+    "region": "us-west-2",
+    "bucket": "struct8-import"
+  },
+  "pipeline_stages": [
+    {
+      "stage_name": "Manual Trigger: stateGcpDnsTarget",
+      "parallel_execution": false,
+      "states": [
+        {
+          "path": "deft-landing-343414/stateGcpDnsTarget",
+          "provider": "google",
+          "target_auth": {
+            "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
+            "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
+          },
+          "additional_auth": [
+            {
+              "provider": "cloudflare",
+              "account_id": "bf9638139fc9b9a92fa0334ae15ac3ac",
+              "secret_name": "AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
