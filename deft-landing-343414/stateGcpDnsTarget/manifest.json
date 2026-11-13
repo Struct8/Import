@@ -1,7 +1,7 @@
 {
   "external_repositories": [],
   "action": "apply",
-  "trigger_id": "1794577326111",
+  "trigger_id": "1794605442922",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -22,14 +22,7 @@
           "target_auth": {
             "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
             "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
-          },
-          "additional_auth": [
-            {
-              "provider": "cloudflare",
-              "account_id": "bf9638139fc9b9a92fa0334ae15ac3ac",
-              "secret_name": "AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC"
-            }
-          ]
+          }
         }
       ]
     }
