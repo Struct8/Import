@@ -1,0 +1,137 @@
+{
+  "external_repositories": [],
+  "action": "plan",
+  "trigger_id": "1794682216177",
+  "triggered_by": "assistant.Contato_Struct",
+  "engine_ref": "devlocal",
+  "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
+  "backend_global_config": {
+    "provider": "aws",
+    "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+    "region": "us-west-2",
+    "bucket": "struct8-import"
+  },
+  "pipeline_stages": [
+    {
+      "stage_name": "Manual Trigger: stateAwsDnsTarget",
+      "parallel_execution": false,
+      "states": [
+        {
+          "path": "952133486861/stateAwsDnsTarget",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "additional_auth": [
+            {
+              "provider": "google",
+              "account_id": "deft-landing-343414",
+              "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
+              "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
+            }
+          ],
+          "credentials": [
+            {
+              "id": "aws-952133486861",
+              "provider": "aws",
+              "account": "952133486861",
+              "own": true,
+              "method": "oidc-aws",
+              "inputs": {
+                "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+                "region": "us-west-2",
+                "session_scope": ""
+              },
+              "deliver": [
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/credentials",
+                  "seed": "~/.aws/credentials",
+                  "section": "target",
+                  "keys": {
+                    "aws_access_key_id": {
+                      "from": "access_key_id"
+                    },
+                    "aws_secret_access_key": {
+                      "from": "secret_access_key"
+                    },
+                    "aws_session_token": {
+                      "from": "session_token"
+                    }
+                  }
+                },
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/config",
+                  "seed": "~/.aws/config",
+                  "section": "profile target",
+                  "keys": {
+                    "region": {
+                      "value": "us-west-2"
+                    }
+                  }
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "AWS_SHARED_CREDENTIALS_FILE": {
+                      "value": "{state_dir}/aws/credentials"
+                    },
+                    "AWS_CONFIG_FILE": {
+                      "value": "{state_dir}/aws/config"
+                    },
+                    "AWS_PROFILE": {
+                      "value": "target"
+                    },
+                    "AWS_REGION": {
+                      "value": "us-west-2"
+                    }
+                  },
+                  "unset": [
+                    "AWS_ACCESS_KEY_ID",
+                    "AWS_SECRET_ACCESS_KEY",
+                    "AWS_SESSION_TOKEN"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "google-deft-landing-343414",
+              "provider": "google",
+              "account": "deft-landing-343414",
+              "own": false,
+              "method": "oidc-gcp",
+              "inputs": {
+                "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
+                "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
+              },
+              "deliver": [
+                {
+                  "kind": "file",
+                  "path": "{state_dir}/google/google-deft-landing-343414.json",
+                  "from": "credential_json"
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "GOOGLE_APPLICATION_CREDENTIALS": {
+                      "value": "{state_dir}/google/google-deft-landing-343414.json"
+                    }
+                  },
+                  "unset": [
+                    "GOOGLE_CREDENTIALS",
+                    "GOOGLE_CLOUD_KEYFILE_JSON",
+                    "GCLOUD_KEYFILE_JSON",
+                    "GOOGLE_OAUTH_ACCESS_TOKEN"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
