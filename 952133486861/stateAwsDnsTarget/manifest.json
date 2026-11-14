@@ -1,7 +1,7 @@
 {
   "external_repositories": [],
   "action": "plan",
-  "trigger_id": "1794689103858",
+  "trigger_id": "1794700665161",
   "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -112,20 +112,6 @@
                   "kind": "file",
                   "path": "{state_dir}/google/google-deft-landing-343414.json",
                   "from": "credential_json"
-                },
-                {
-                  "kind": "env",
-                  "vars": {
-                    "GOOGLE_APPLICATION_CREDENTIALS": {
-                      "value": "{state_dir}/google/google-deft-landing-343414.json"
-                    }
-                  },
-                  "unset": [
-                    "GOOGLE_CREDENTIALS",
-                    "GOOGLE_CLOUD_KEYFILE_JSON",
-                    "GCLOUD_KEYFILE_JSON",
-                    "GOOGLE_OAUTH_ACCESS_TOKEN"
-                  ]
                 },
                 {
                   "kind": "env",
