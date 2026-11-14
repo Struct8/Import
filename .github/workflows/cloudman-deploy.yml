@@ -18,5 +18,8 @@ jobs:
   infrastructure:
     name: Call GitOps Engine
     uses: Struct8/cloudman-core/.github/workflows/engine.yml@devlocal
+    secrets:
+      STRUCT8_SECRET_1: ${{ secrets.AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC }}
     with:
       stage: dev
+      secret_names: '{"STRUCT8_SECRET_1":"AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC"}'
