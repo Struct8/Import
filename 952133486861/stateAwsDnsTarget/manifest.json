@@ -1,7 +1,7 @@
 {
   "external_repositories": [],
-  "action": "apply",
-  "trigger_id": "1794682324500",
+  "action": "plan",
+  "trigger_id": "1794685499897",
   "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -126,6 +126,14 @@
                     "GCLOUD_KEYFILE_JSON",
                     "GOOGLE_OAUTH_ACCESS_TOKEN"
                   ]
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "TF_VAR_struct8_credentials_google_deft_landing_343414": {
+                      "value": "{state_dir}/google/google-deft-landing-343414.json"
+                    }
+                  }
                 }
               ]
             }

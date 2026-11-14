@@ -8,5 +8,12 @@ data "aws_region" "current" {}
 
 # --- Extra Providers ---
 provider "google" {
-  project = "deft-landing-343414"
+  alias       = "acct_deft_landing_343414"
+  credentials = var.struct8_credentials_google_deft_landing_343414
+  project     = "deft-landing-343414"
+}
+
+variable "struct8_credentials_google_deft_landing_343414" {
+  type    = string
+  default = null
 }
