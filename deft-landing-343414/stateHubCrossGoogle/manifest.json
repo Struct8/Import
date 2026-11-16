@@ -10,8 +10,8 @@
       ]
     }
   ],
-  "action": "apply",
-  "trigger_id": "1794402363334",
+  "action": "destroy",
+  "trigger_id": "1794854811316",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -32,7 +32,41 @@
           "target_auth": {
             "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
             "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
-          }
+          },
+          "credentials": [
+            {
+              "id": "google-deft-landing-343414",
+              "provider": "google",
+              "account": "deft-landing-343414",
+              "own": true,
+              "method": "oidc-gcp",
+              "inputs": {
+                "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
+                "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
+              },
+              "deliver": [
+                {
+                  "kind": "file",
+                  "path": "{state_dir}/google/google-deft-landing-343414.json",
+                  "from": "credential_json"
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "GOOGLE_APPLICATION_CREDENTIALS": {
+                      "value": "{state_dir}/google/google-deft-landing-343414.json"
+                    }
+                  },
+                  "unset": [
+                    "GOOGLE_CREDENTIALS",
+                    "GOOGLE_CLOUD_KEYFILE_JSON",
+                    "GCLOUD_KEYFILE_JSON",
+                    "GOOGLE_OAUTH_ACCESS_TOKEN"
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
