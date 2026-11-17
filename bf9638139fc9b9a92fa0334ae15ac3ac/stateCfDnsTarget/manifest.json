@@ -1,8 +1,8 @@
 {
   "external_repositories": [],
-  "action": "destroy",
-  "trigger_id": "1794619605643",
-  "triggered_by": "assistant.Contato_Struct",
+  "action": "plan",
+  "trigger_id": "1794938185953",
+  "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
@@ -22,7 +22,31 @@
           "target_auth": {
             "account_id": "bf9638139fc9b9a92fa0334ae15ac3ac",
             "secret_name": "AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC"
-          }
+          },
+          "credentials": [
+            {
+              "id": "cloudflare-bf9638139fc9b9a92fa0334ae15ac3ac",
+              "provider": "cloudflare",
+              "account": "bf9638139fc9b9a92fa0334ae15ac3ac",
+              "own": true,
+              "method": "secret",
+              "inputs": {
+                "secrets": {
+                  "token": "AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC"
+                }
+              },
+              "deliver": [
+                {
+                  "kind": "env",
+                  "vars": {
+                    "CLOUDFLARE_API_TOKEN": {
+                      "from": "token"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
         }
       ]
     }
