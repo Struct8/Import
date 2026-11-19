@@ -42,7 +42,7 @@ resource "aws_kms_alias" "kmsWordpress_cross_state_alias" {
 
 resource "aws_kms_key" "kmsWordpress" {
   bypass_policy_lockout_safety_check = false
-  deletion_window_in_days            = 30
+  deletion_window_in_days            = 7
   enable_key_rotation                = true
   is_enabled                         = true
   multi_region                       = false
