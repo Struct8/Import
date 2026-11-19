@@ -211,6 +211,14 @@ service:
       {
         name  = "WP_SETUP_SCRIPT_ETAG"
         value = tostring(aws_s3_object.wpSetupScript.etag)
+      },
+      {
+        name  = "WP_DOMAIN"
+        value = "wp.cloudman.pro"
+      },
+      {
+        name  = "WP_ZONE_DOMAIN"
+        value = tostring(data.aws_route53_zone.Cloudman.name)
       }
     ]
     mountPoints            = []
@@ -256,10 +264,6 @@ service:
         value = "wordpress"
       },
       {
-        name  = "WORDPRESS_CONFIG_EXTRA"
-        value = "define('WP_HOME', 'https://wp.${data.aws_route53_zone.zoneWordpress.name}'); define('WP_SITEURL', 'https://wp.${data.aws_route53_zone.zoneWordpress.name}'); $_SERVER['HTTP_HOST'] = 'wp.${data.aws_route53_zone.zoneWordpress.name}'; define('FORCE_SSL_ADMIN', true); define('DISALLOW_FILE_EDIT', true); define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT); define('WP_REDIS_HOST', '${aws_elasticache_replication_group.wpRedis.primary_endpoint_address}'); define('WP_REDIS_PORT', 6379); define('WP_REDIS_SCHEME', 'tls'); define('AS3CF_SETTINGS', serialize(array('provider' => 'aws', 'use-server-roles' => true, 'bucket' => '${aws_s3_bucket.wpMedia.bucket}', 'region' => '${data.aws_region.current.region}', 'copy-to-s3' => true, 'enable-object-prefix' => true, 'object-prefix' => 'wp-content/media/', 'use-yearmonth-folders' => true, 'object-versioning' => true, 'delivery-provider' => 'aws', 'serve-from-s3' => true, 'enable-delivery-domain' => true, 'delivery-domain' => 'wp.${data.aws_route53_zone.zoneWordpress.name}', 'force-https' => true, 'remove-local-file' => false))); define('WPOSES_AWS_USE_EC2_IAM_ROLE', true); define('WPOSES_SETTINGS', serialize(array('region' => '${data.aws_region.current.region}', 'send-via-ses' => true, 'completed-setup' => true, 'enable-open-tracking' => false, 'enable-click-tracking' => false, 'enable-health-report' => false, 'log-duration' => 30)));"
-      },
-      {
         name  = "WP_DB_BOOTSTRAP"
         value = "<?php mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); $q = chr(39); $b = chr(96); $user = getenv('WORDPRESS_DB_USER'); $m = null; for ($i = 1; $i <= 20 && $m === null; $i++) { try { $c = mysqli_init(); $c->real_connect(getenv('WORDPRESS_DB_HOST'), getenv('DB_ADMIN_USER'), getenv('DB_ADMIN_PASSWORD'), '', 3306, null, MYSQLI_CLIENT_SSL | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT); $m = $c; } catch (mysqli_sql_exception $e) { fwrite(STDERR, 'db-bootstrap: attempt ' . $i . ': ' . $e->getMessage() . PHP_EOL); sleep(10); } } if ($m === null) { exit(1); } $account = $q . $m->real_escape_string($user) . $q . '@' . $q . '%' . $q; $password = $q . $m->real_escape_string(getenv('WORDPRESS_DB_PASSWORD')) . $q; $m->query('CREATE USER IF NOT EXISTS ' . $account . ' IDENTIFIED BY ' . $password . ' REQUIRE SSL'); $m->query('ALTER USER ' . $account . ' IDENTIFIED BY ' . $password . ' REQUIRE SSL'); $m->query('GRANT ALL PRIVILEGES ON ' . $b . str_replace($b, $b . $b, getenv('WORDPRESS_DB_NAME')) . $b . '.* TO ' . $account); echo 'db-bootstrap: database user ' . $user . ' is ready' . PHP_EOL;"
       },
@@ -272,20 +276,12 @@ service:
         value = "true"
       },
       {
-        name  = "WP_SITE_URL"
-        value = "https://wp.${data.aws_route53_zone.zoneWordpress.name}"
-      },
-      {
         name  = "WP_SITE_TITLE"
         value = "My WordPress site"
       },
       {
         name  = "WP_ADMIN_USER"
         value = "wpadmin"
-      },
-      {
-        name  = "WP_ADMIN_EMAIL"
-        value = "admin@${data.aws_route53_zone.zoneWordpress.name}"
       },
       {
         name  = "WP_LOCALE"
@@ -310,6 +306,18 @@ service:
       {
         name  = "APACHE_MAX_WORKERS"
         value = "12"
+      },
+      {
+        name  = "WORDPRESS_CONFIG_EXTRA"
+        value = "define('WP_HOME', 'https://wp.cloudman.pro'); define('WP_SITEURL', 'https://wp.cloudman.pro'); $_SERVER['HTTP_HOST'] = 'wp.cloudman.pro'; define('FORCE_SSL_ADMIN', true); define('DISALLOW_FILE_EDIT', true); define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT); define('WP_REDIS_HOST', '${aws_elasticache_replication_group.wpRedis.primary_endpoint_address}'); define('WP_REDIS_PORT', 6379); define('WP_REDIS_SCHEME', 'tls'); define('AS3CF_SETTINGS', serialize(array('provider' => 'aws', 'use-server-roles' => true, 'bucket' => '${aws_s3_bucket.wpMedia.bucket}', 'region' => '${data.aws_region.current.region}', 'copy-to-s3' => true, 'enable-object-prefix' => true, 'object-prefix' => 'wp-content/media/', 'use-yearmonth-folders' => true, 'object-versioning' => true, 'delivery-provider' => 'aws', 'serve-from-s3' => true, 'enable-delivery-domain' => true, 'delivery-domain' => 'wp.cloudman.pro', 'force-https' => true, 'remove-local-file' => false))); define('WPOSES_AWS_USE_EC2_IAM_ROLE', true); define('WPOSES_SETTINGS', serialize(array('region' => '${data.aws_region.current.region}', 'send-via-ses' => true, 'completed-setup' => true, 'enable-open-tracking' => false, 'enable-click-tracking' => false, 'enable-health-report' => false, 'log-duration' => 30)));"
+      },
+      {
+        name  = "WP_SITE_URL"
+        value = "https://wp.cloudman.pro"
+      },
+      {
+        name  = "WP_ADMIN_EMAIL"
+        value = "admin@${data.aws_route53_zone.Cloudman.name}"
       },
       {
         name  = "NAME"
@@ -394,6 +402,14 @@ service:
       {
         name  = "WP_SETUP_SCRIPT_ETAG"
         value = tostring(aws_s3_object.wpSetupScript.etag)
+      },
+      {
+        name  = "WP_DOMAIN"
+        value = "wp.cloudman.pro"
+      },
+      {
+        name  = "WP_ZONE_DOMAIN"
+        value = tostring(data.aws_route53_zone.Cloudman.name)
       }
     ]
     secrets = [
