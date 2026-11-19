@@ -17,7 +17,6 @@ resource "aws_instance" "nat-instance" {
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.nat-instance_profile.name
   instance_type               = var.nat-instance
-  private_ip                  = var.ip
   source_dest_check           = false
   user_data_base64 = base64encode(<<-EOFUData
 #!/bin/bash
