@@ -41,6 +41,20 @@ resource "aws_rds_cluster" "wp-aurora" {
   }
 }
 
+resource "aws_rds_cluster_instance" "wp-aurora-reader" {
+  cluster_identifier    = aws_rds_cluster.wp-aurora.id
+  copy_tags_to_snapshot = true
+  engine                = aws_rds_cluster.wp-aurora.engine
+  identifier            = "wp-aurora-reader"
+  instance_class        = "db.serverless"
+  promotion_tier        = 2
+  tags = {
+    Name           = "wp-aurora-reader"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_rds_cluster_instance" "wp-aurora-writer" {
   cluster_identifier    = aws_rds_cluster.wp-aurora.id
   copy_tags_to_snapshot = true

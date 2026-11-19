@@ -29,6 +29,48 @@ resource "aws_vpc_endpoint" "vpce-s3_S3" {
   }
 }
 
+resource "aws_vpc_endpoint" "vpceLogs_LOGS" {
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.logs"
+  vpc_id              = aws_vpc.wordpress-professional.id
+  ip_address_type     = "dualstack"
+  private_dns_enabled = true
+  security_group_ids  = [aws_security_group.sg_vpce_vpceLogs.id]
+  subnet_ids          = [aws_subnet.appB.id, aws_subnet.appA.id]
+  vpc_endpoint_type   = "Interface"
+  tags = {
+    Name           = "vpceLogs"
+    DifName        = "vpceLogs_LOGS"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+  timeouts {
+    create = "10m"
+    delete = "10m"
+    update = "10m"
+  }
+}
+
+resource "aws_vpc_endpoint" "vpceSecrets_SECRETSMANAGER" {
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.secretsmanager"
+  vpc_id              = aws_vpc.wordpress-professional.id
+  ip_address_type     = "dualstack"
+  private_dns_enabled = true
+  security_group_ids  = [aws_security_group.sg_vpce_vpceSecrets.id]
+  subnet_ids          = [aws_subnet.appB.id, aws_subnet.appA.id]
+  vpc_endpoint_type   = "Interface"
+  tags = {
+    Name           = "vpceSecrets"
+    DifName        = "vpceSecrets_SECRETSMANAGER"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+  timeouts {
+    create = "10m"
+    delete = "10m"
+    update = "10m"
+  }
+}
+
 resource "aws_subnet" "appA" {
   vpc_id                          = aws_vpc.wordpress-professional.id
   assign_ipv6_address_on_creation = true
@@ -155,7 +197,7 @@ resource "aws_route53_record" "Route53_Record_certAlb_origin_wp_cloudman_pro" {
     if dvo.domain_name == "origin.wp.cloudman.pro"
   }
   name            = each.value.resource_record_name
-  zone_id         = data.aws_route53_zone.zoneWordpress.zone_id
+  zone_id         = data.aws_route53_zone.Cloudman.zone_id
   allow_overwrite = true
   records         = [each.value.resource_record_value]
   ttl             = 300
@@ -168,7 +210,7 @@ resource "aws_route53_record" "Route53_Record_certWordpress_wp_cloudman_pro" {
     if dvo.domain_name == "wp.cloudman.pro"
   }
   name            = each.value.resource_record_name
-  zone_id         = data.aws_route53_zone.zoneWordpress.zone_id
+  zone_id         = data.aws_route53_zone.Cloudman.zone_id
   allow_overwrite = true
   records         = [each.value.resource_record_value]
   ttl             = 300
@@ -177,7 +219,7 @@ resource "aws_route53_record" "Route53_Record_certWordpress_wp_cloudman_pro" {
 
 resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_cdnWordpress_wp_cloudman_pro" {
   name    = "wp.cloudman.pro"
-  zone_id = data.aws_route53_zone.zoneWordpress.zone_id
+  zone_id = data.aws_route53_zone.Cloudman.zone_id
   type    = "A"
   alias {
     name                   = aws_cloudfront_distribution.cdnWordpress.domain_name
@@ -188,7 +230,7 @@ resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_cdnWordpress_
 
 resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_cdnWordpress_wp_cloudman_pro" {
   name    = "wp.cloudman.pro"
-  zone_id = data.aws_route53_zone.zoneWordpress.zone_id
+  zone_id = data.aws_route53_zone.Cloudman.zone_id
   type    = "AAAA"
   alias {
     name                   = aws_cloudfront_distribution.cdnWordpress.domain_name
@@ -199,7 +241,7 @@ resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_cdnWordpre
 
 resource "aws_route53_record" "alias_aaaa_aws_lb_alb-wp_origin_wp_cloudman_pro" {
   name    = "origin.wp.cloudman.pro"
-  zone_id = data.aws_route53_zone.zoneWordpress.zone_id
+  zone_id = data.aws_route53_zone.Cloudman.zone_id
   type    = "AAAA"
   alias {
     name                   = aws_lb.alb-wp.dns_name
@@ -216,7 +258,7 @@ resource "aws_route53_record" "dkim_wpMail_wp_cloudman_pro" {
     }
   }
   name            = each.value.name
-  zone_id         = data.aws_route53_zone.zoneWordpress.zone_id
+  zone_id         = data.aws_route53_zone.Cloudman.zone_id
   allow_overwrite = true
   records         = [each.value.value]
   ttl             = 300
@@ -345,6 +387,30 @@ resource "aws_security_group" "rds_cluster_wp-aurora_group" {
   revoke_rules_on_delete = false
   tags = {
     Name           = "rds_cluster_wp-aurora_group"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "sg_vpce_vpceLogs" {
+  name        = "vpce-sg-vpcelogs"
+  vpc_id      = aws_vpc.wordpress-professional.id
+  description = "Auto-generated SG for vpceLogs"
+  tags = {
+    Name           = "vpceLogs"
+    DifName        = "sg_vpce_vpceLogs"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_security_group" "sg_vpce_vpceSecrets" {
+  name        = "vpce-sg-vpcesecrets"
+  vpc_id      = aws_vpc.wordpress-professional.id
+  description = "Auto-generated SG for vpceSecrets"
+  tags = {
+    Name           = "vpceSecrets"
+    DifName        = "sg_vpce_vpceSecrets"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
@@ -482,6 +548,46 @@ resource "aws_security_group_rule" "rule_rds_cluster_wp_aurora_group_egress_all_
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_sg_vpce_vpceLogs_egress_all_protocols" {
+  security_group_id = aws_security_group.sg_vpce_vpceLogs.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow all outbound traffic"
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_sg_vpce_vpceLogs_ingress_tcp_443" {
+  security_group_id = aws_security_group.sg_vpce_vpceLogs.id
+  cidr_blocks       = ["10.0.0.0/16"]
+  description       = "Allow HTTPS from VPC"
+  from_port         = 443
+  protocol          = "tcp"
+  to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "rule_sg_vpce_vpceSecrets_egress_all_protocols" {
+  security_group_id = aws_security_group.sg_vpce_vpceSecrets.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow all outbound traffic"
+  from_port         = 0
+  protocol          = "-1"
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_sg_vpce_vpceSecrets_ingress_tcp_443" {
+  security_group_id = aws_security_group.sg_vpce_vpceSecrets.id
+  cidr_blocks       = ["10.0.0.0/16"]
+  description       = "Allow HTTPS from VPC"
+  from_port         = 443
+  protocol          = "tcp"
+  to_port           = 443
+  type              = "ingress"
 }
 
 resource "aws_lb" "alb-wp" {
