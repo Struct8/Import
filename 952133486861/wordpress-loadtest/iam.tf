@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "Debug1_debug_permissions" {
     sid       = "PinnedDocumentOnly"
     effect    = "Allow"
     actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-2zeRq_EaN5iT0PSAbe6RL"]
+    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-2zeRq_EaN5iT0PSAbe6RL", "arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Diag-2zeRq_EaN5iT0PSAbe6RL"]
   }
   statement {
     sid       = "ReadOwnResults"
@@ -86,6 +86,12 @@ data "aws_iam_policy_document" "Debug1_debug_permissions" {
       values   = ["2zeRq_EaN5iT0PSAbe6RL"]
       variable = "aws:ResourceTag/Struct8Debug"
     }
+  }
+  statement {
+    sid       = "RunShellScriptDocument"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*::document/AWS-RunShellScript"]
   }
 }
 

@@ -1,3 +1,3 @@
-data "aws_route53_zone" "zoneWordpress" {
+data "aws_route53_zone" "Cloudman" {
   name = "cloudman.pro"
 }
