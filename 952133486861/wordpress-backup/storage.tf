@@ -31,7 +31,8 @@ resource "aws_backup_selection" "wpDailyBackup_selection" {
 }
 
 resource "aws_backup_vault" "wpBackupVault" {
-  name = "wpBackupVault"
+  name          = "wpBackupVault"
+  force_destroy = true
   tags = {
     Name           = "wpBackupVault"
     State          = "wordpress-backup"
