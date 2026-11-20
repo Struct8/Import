@@ -7,13 +7,20 @@
       "target_dir": ".external_modules/struct8-templates",
       "folders": [
         "templates/vpc-k6-load-generator/v3/user_data",
-        "templates/wordpress-professional/v1/canary"
+        "templates/wordpress-professional/v1/canary",
+        "templates/vpc-flowlogs-amp/v1/lambda/process-flow-logs",
+        "templates/wordpress-professional/v1/lambda/db-query",
+        "templates/wordpress-professional/v1/lambda/web-chat",
+        "templates/ec2-nat-private/v1/user_data",
+        "templates/wordpress-professional/v1/container",
+        "templates/wordpress-professional/v1/lambda/analytics",
+        "templates/wordpress-professional/v1/lambda/csp-receiver"
       ]
     }
   ],
-  "action": "apply",
-  "trigger_id": "1795182567363",
-  "triggered_by": "assistant.Contato_Struct",
+  "action": "destroy",
+  "trigger_id": "1795213249940",
+  "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
@@ -24,8 +31,9 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "Manual Trigger: wordpress-loadtest",
-      "parallel_execution": false,
+      "stage_name": "DESTROY ALL: wordpress-backup (1/4)",
+      "parallel_execution": true,
+      "max_parallel": 4,
       "states": [
         {
           "path": "952133486861/wordpress-loadtest",
@@ -101,8 +109,420 @@
               ]
             }
           ]
+        },
+        {
+          "path": "952133486861/wp-flowlogs",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "credentials": [
+            {
+              "id": "aws-952133486861",
+              "provider": "aws",
+              "account": "952133486861",
+              "own": true,
+              "method": "oidc-aws",
+              "inputs": {
+                "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+                "region": "us-west-2",
+                "session_scope": ""
+              },
+              "deliver": [
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/credentials",
+                  "seed": "~/.aws/credentials",
+                  "section": "target",
+                  "keys": {
+                    "aws_access_key_id": {
+                      "from": "access_key_id"
+                    },
+                    "aws_secret_access_key": {
+                      "from": "secret_access_key"
+                    },
+                    "aws_session_token": {
+                      "from": "session_token"
+                    }
+                  }
+                },
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/config",
+                  "seed": "~/.aws/config",
+                  "section": "profile target",
+                  "keys": {
+                    "region": {
+                      "value": "us-west-2"
+                    }
+                  }
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "AWS_SHARED_CREDENTIALS_FILE": {
+                      "value": "{state_dir}/aws/credentials"
+                    },
+                    "AWS_CONFIG_FILE": {
+                      "value": "{state_dir}/aws/config"
+                    },
+                    "AWS_PROFILE": {
+                      "value": "target"
+                    },
+                    "AWS_REGION": {
+                      "value": "us-west-2"
+                    }
+                  },
+                  "unset": [
+                    "AWS_ACCESS_KEY_ID",
+                    "AWS_SECRET_ACCESS_KEY",
+                    "AWS_SESSION_TOKEN"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "path": "952133486861/chat-aurora",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "credentials": [
+            {
+              "id": "aws-952133486861",
+              "provider": "aws",
+              "account": "952133486861",
+              "own": true,
+              "method": "oidc-aws",
+              "inputs": {
+                "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+                "region": "us-west-2",
+                "session_scope": ""
+              },
+              "deliver": [
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/credentials",
+                  "seed": "~/.aws/credentials",
+                  "section": "target",
+                  "keys": {
+                    "aws_access_key_id": {
+                      "from": "access_key_id"
+                    },
+                    "aws_secret_access_key": {
+                      "from": "secret_access_key"
+                    },
+                    "aws_session_token": {
+                      "from": "session_token"
+                    }
+                  }
+                },
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/config",
+                  "seed": "~/.aws/config",
+                  "section": "profile target",
+                  "keys": {
+                    "region": {
+                      "value": "us-west-2"
+                    }
+                  }
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "AWS_SHARED_CREDENTIALS_FILE": {
+                      "value": "{state_dir}/aws/credentials"
+                    },
+                    "AWS_CONFIG_FILE": {
+                      "value": "{state_dir}/aws/config"
+                    },
+                    "AWS_PROFILE": {
+                      "value": "target"
+                    },
+                    "AWS_REGION": {
+                      "value": "us-west-2"
+                    }
+                  },
+                  "unset": [
+                    "AWS_ACCESS_KEY_ID",
+                    "AWS_SECRET_ACCESS_KEY",
+                    "AWS_SESSION_TOKEN"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage_name": "DESTROY ALL: wordpress-backup (2/4)",
+      "parallel_execution": true,
+      "max_parallel": 4,
+      "states": [
+        {
+          "path": "952133486861/wordpress-professional",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "credentials": [
+            {
+              "id": "aws-952133486861",
+              "provider": "aws",
+              "account": "952133486861",
+              "own": true,
+              "method": "oidc-aws",
+              "inputs": {
+                "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+                "region": "us-west-2",
+                "session_scope": ""
+              },
+              "deliver": [
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/credentials",
+                  "seed": "~/.aws/credentials",
+                  "section": "target",
+                  "keys": {
+                    "aws_access_key_id": {
+                      "from": "access_key_id"
+                    },
+                    "aws_secret_access_key": {
+                      "from": "secret_access_key"
+                    },
+                    "aws_session_token": {
+                      "from": "session_token"
+                    }
+                  }
+                },
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/config",
+                  "seed": "~/.aws/config",
+                  "section": "profile target",
+                  "keys": {
+                    "region": {
+                      "value": "us-west-2"
+                    }
+                  }
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "AWS_SHARED_CREDENTIALS_FILE": {
+                      "value": "{state_dir}/aws/credentials"
+                    },
+                    "AWS_CONFIG_FILE": {
+                      "value": "{state_dir}/aws/config"
+                    },
+                    "AWS_PROFILE": {
+                      "value": "target"
+                    },
+                    "AWS_REGION": {
+                      "value": "us-west-2"
+                    }
+                  },
+                  "unset": [
+                    "AWS_ACCESS_KEY_ID",
+                    "AWS_SECRET_ACCESS_KEY",
+                    "AWS_SESSION_TOKEN"
+                  ]
+                }
+              ]
+            }
+          ],
+          "depends_on": [
+            "952133486861/wordpress-loadtest",
+            "952133486861/wp-flowlogs",
+            "952133486861/chat-aurora"
+          ]
+        }
+      ]
+    },
+    {
+      "stage_name": "DESTROY ALL: wordpress-backup (3/4)",
+      "parallel_execution": true,
+      "max_parallel": 4,
+      "states": [
+        {
+          "path": "952133486861/wp-analytics",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "credentials": [
+            {
+              "id": "aws-952133486861",
+              "provider": "aws",
+              "account": "952133486861",
+              "own": true,
+              "method": "oidc-aws",
+              "inputs": {
+                "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+                "region": "us-west-2",
+                "session_scope": ""
+              },
+              "deliver": [
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/credentials",
+                  "seed": "~/.aws/credentials",
+                  "section": "target",
+                  "keys": {
+                    "aws_access_key_id": {
+                      "from": "access_key_id"
+                    },
+                    "aws_secret_access_key": {
+                      "from": "secret_access_key"
+                    },
+                    "aws_session_token": {
+                      "from": "session_token"
+                    }
+                  }
+                },
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/config",
+                  "seed": "~/.aws/config",
+                  "section": "profile target",
+                  "keys": {
+                    "region": {
+                      "value": "us-west-2"
+                    }
+                  }
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "AWS_SHARED_CREDENTIALS_FILE": {
+                      "value": "{state_dir}/aws/credentials"
+                    },
+                    "AWS_CONFIG_FILE": {
+                      "value": "{state_dir}/aws/config"
+                    },
+                    "AWS_PROFILE": {
+                      "value": "target"
+                    },
+                    "AWS_REGION": {
+                      "value": "us-west-2"
+                    }
+                  },
+                  "unset": [
+                    "AWS_ACCESS_KEY_ID",
+                    "AWS_SECRET_ACCESS_KEY",
+                    "AWS_SESSION_TOKEN"
+                  ]
+                }
+              ]
+            }
+          ],
+          "depends_on": [
+            "952133486861/wordpress-professional"
+          ]
+        }
+      ]
+    },
+    {
+      "stage_name": "DESTROY ALL: wordpress-backup (4/4)",
+      "parallel_execution": true,
+      "max_parallel": 4,
+      "states": [
+        {
+          "path": "952133486861/wordpress-backup",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+            "region": "us-west-2",
+            "secret_name": "AUTH_AWS_952133486861"
+          },
+          "credentials": [
+            {
+              "id": "aws-952133486861",
+              "provider": "aws",
+              "account": "952133486861",
+              "own": true,
+              "method": "oidc-aws",
+              "inputs": {
+                "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+                "region": "us-west-2",
+                "session_scope": ""
+              },
+              "deliver": [
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/credentials",
+                  "seed": "~/.aws/credentials",
+                  "section": "target",
+                  "keys": {
+                    "aws_access_key_id": {
+                      "from": "access_key_id"
+                    },
+                    "aws_secret_access_key": {
+                      "from": "secret_access_key"
+                    },
+                    "aws_session_token": {
+                      "from": "session_token"
+                    }
+                  }
+                },
+                {
+                  "kind": "ini",
+                  "path": "{state_dir}/aws/config",
+                  "seed": "~/.aws/config",
+                  "section": "profile target",
+                  "keys": {
+                    "region": {
+                      "value": "us-west-2"
+                    }
+                  }
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "AWS_SHARED_CREDENTIALS_FILE": {
+                      "value": "{state_dir}/aws/credentials"
+                    },
+                    "AWS_CONFIG_FILE": {
+                      "value": "{state_dir}/aws/config"
+                    },
+                    "AWS_PROFILE": {
+                      "value": "target"
+                    },
+                    "AWS_REGION": {
+                      "value": "us-west-2"
+                    }
+                  },
+                  "unset": [
+                    "AWS_ACCESS_KEY_ID",
+                    "AWS_SECRET_ACCESS_KEY",
+                    "AWS_SESSION_TOKEN"
+                  ]
+                }
+              ]
+            }
+          ],
+          "depends_on": [
+            "952133486861/wordpress-professional",
+            "952133486861/wp-analytics"
+          ]
         }
       ]
     }
-  ]
+  ],
+  "pipeline_schedule": {
+    "mode": "dependency",
+    "max_parallel": 4
+  }
 }
