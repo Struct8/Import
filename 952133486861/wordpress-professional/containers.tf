@@ -219,6 +219,18 @@ service:
       {
         name  = "WP_ZONE_DOMAIN"
         value = tostring(data.aws_route53_zone.Cloudman.name)
+      },
+      {
+        name  = "WP_SETUP_ASSETS_BUCKET"
+        value = tostring(aws_s3_object.wpSetupAssets.bucket)
+      },
+      {
+        name  = "WP_SETUP_ASSETS_KEY"
+        value = tostring(aws_s3_object.wpSetupAssets.key)
+      },
+      {
+        name  = "WP_SETUP_ASSETS_ETAG"
+        value = tostring(aws_s3_object.wpSetupAssets.etag)
       }
     ]
     mountPoints            = []
@@ -237,7 +249,7 @@ service:
   }
   container_def_wordpress_wordpress_1 = {
     name              = "wordpress"
-    image             = "public.ecr.aws/docker/library/wordpress:latest"
+    image             = "public.ecr.aws/docker/library/wordpress:7.1.5-php8.3-apache@sha256:2e5145737f46b8fd53f333a05eb3a4f21321c90e20475b7827082dd5f75b62b0"
     essential         = true
     cpu               = 1024
     memory            = 768
@@ -410,6 +422,18 @@ service:
       {
         name  = "WP_ZONE_DOMAIN"
         value = tostring(data.aws_route53_zone.Cloudman.name)
+      },
+      {
+        name  = "WP_SETUP_ASSETS_BUCKET"
+        value = tostring(aws_s3_object.wpSetupAssets.bucket)
+      },
+      {
+        name  = "WP_SETUP_ASSETS_KEY"
+        value = tostring(aws_s3_object.wpSetupAssets.key)
+      },
+      {
+        name  = "WP_SETUP_ASSETS_ETAG"
+        value = tostring(aws_s3_object.wpSetupAssets.etag)
       }
     ]
     secrets = [

@@ -193,6 +193,19 @@ resource "aws_s3_bucket_versioning" "wpSetupFiles_versioning" {
   }
 }
 
+resource "aws_s3_object" "wpSetupAssets" {
+  source       = "${path.module}/.external_modules/struct8-templates/templates/wordpress-professional/v1/container/wp-setup-assets.tar.gz"
+  bucket       = aws_s3_bucket.wpSetupFiles.bucket
+  content_type = "application/gzip"
+  etag         = filemd5("${path.module}/.external_modules/struct8-templates/templates/wordpress-professional/v1/container/wp-setup-assets.tar.gz")
+  key          = "wordpress/wp-setup-assets.tar.gz"
+  tags = {
+    Name           = "wpSetupAssets"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_s3_object" "wpSetupScript" {
   source       = "${path.module}/.external_modules/struct8-templates/templates/wordpress-professional/v1/container/wp-auto-setup.sh"
   bucket       = aws_s3_bucket.wpSetupFiles.bucket
