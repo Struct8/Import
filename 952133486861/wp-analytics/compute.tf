@@ -22,6 +22,7 @@ resource "aws_lambda_function" "analyticsPage" {
       ATHENA_WORKGROUP               = aws_athena_workgroup.cdnAnalytics.name
       GLUE_DATABASE                  = aws_glue_catalog_database.cdn_analytics.name
       GLUE_TABLE                     = aws_glue_catalog_table.cdn_log.name
+      ACCESS_KEY                     = "wp-analytics"
       NAME                           = "analyticsPage"
       REGION                         = data.aws_region.current.region
       ACCOUNT                        = data.aws_caller_identity.current.account_id
@@ -30,12 +31,16 @@ resource "aws_lambda_function" "analyticsPage" {
       AWS_ATHENA_WORKGROUP_NAME_0    = "cdnAnalytics"
       AWS_GLUE_CATALOG_TABLE_NAME_0  = "cdn_log"
       AWS_DYNAMODB_TABLE_NAME_0      = "cspTable"
+      AWS_XRAY_GROUP_NAME_0          = "analyticsTraces"
     }
   }
   tags = {
     Name           = "analyticsPage"
     State          = "wp-analytics"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_analyticsPage_st_wp-analytics_attach]
 }
@@ -66,6 +71,7 @@ resource "aws_lambda_function" "cspReceiver" {
       ACCOUNT                        = data.aws_caller_identity.current.account_id
       AWS_LAMBDA_FUNCTION_URL_NAME_0 = "cspReceiverUrl"
       AWS_DYNAMODB_TABLE_NAME_0      = "cspTable"
+      AWS_XRAY_GROUP_NAME_0          = "analyticsTraces"
       SITE_HOST                      = "wp.cloudman.pro"
     }
   }
@@ -73,6 +79,9 @@ resource "aws_lambda_function" "cspReceiver" {
     Name           = "cspReceiver"
     State          = "wp-analytics"
     Struct8Creator = "Contato Struct"
+  }
+  tracing_config {
+    mode = "Active"
   }
   depends_on = [aws_iam_role_policy_attachment.lambda_function_cspReceiver_st_wp-analytics_attach]
 }

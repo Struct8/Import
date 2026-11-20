@@ -21,3 +21,13 @@ resource "aws_cloudwatch_log_group" "cspReceiverLogs" {
     Struct8Creator = "Contato Struct"
   }
 }
+
+resource "aws_xray_group" "analyticsTraces" {
+  group_name        = "analyticsTraces"
+  filter_expression = "service(\"analyticsPage\") OR service(\"cspReceiver\")"
+  tags = {
+    Name           = "analyticsTraces"
+    State          = "wp-analytics"
+    Struct8Creator = "Contato Struct"
+  }
+}

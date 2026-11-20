@@ -84,6 +84,12 @@ data "aws_iam_policy_document" "lambda_function_analyticsPage_st_wp-analytics_do
     resources = ["${aws_s3_bucket.cdnLogBucket.arn}/cdn-log/*"]
   }
   statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
+  }
+  statement {
     sid       = "AllowReadDatabase"
     effect    = "Allow"
     actions   = ["glue:GetDatabase"]
@@ -109,6 +115,12 @@ data "aws_iam_policy_document" "lambda_function_cspReceiver_st_wp-analytics_doc"
     effect    = "Allow"
     actions   = ["dynamodb:UpdateItem"]
     resources = [aws_dynamodb_table.cspTable.arn]
+  }
+  statement {
+    sid       = "AllowSendTracesToXRay"
+    effect    = "Allow"
+    actions   = ["xray:PutTelemetryRecords", "xray:PutTraceSegments"]
+    resources = ["*"]
   }
 }
 
