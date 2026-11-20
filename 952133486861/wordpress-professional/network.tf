@@ -745,6 +745,10 @@ resource "aws_cloudfront_distribution" "cdnWordpress" {
     cached_methods             = ["GET", "HEAD"]
     path_pattern               = "/analytics*"
     viewer_protocol_policy     = "redirect-to-https"
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.traceStartLambda.arn
+    }
   }
   origin {
     domain_name              = aws_s3_bucket.wpMedia.bucket_regional_domain_name
@@ -823,6 +827,44 @@ EOF
   runtime = "cloudfront-js-2.0"
   tags = {
     Name           = "traceStart"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_cloudfront_function" "traceStartLambda" {
+  name = "traceStartLambda"
+  code = <<-EOF
+// Starts the trace of each request at the edge, for an origin that is a Lambda
+// function URL. X-Amzn-Trace-Id carries a new Root, a Parent and Sampled=1: the
+// function joins this trace under the Parent, and its code writes the segment of
+// that id, which stands for this distribution. X-Request-Start is the time the
+// request reached CloudFront in milliseconds, and X-Cdn-Distribution-Id names the
+// distribution. Values sent by the visitor are replaced.
+// Date returns the time this function started, the same value for the whole run.
+function hex(length) {
+  var text = '';
+  for (var i = 0; i < length; i++) {
+    text += Math.floor(Math.random() * 16).toString(16);
+  }
+  return text;
+}
+
+function handler(event) {
+  var request = event.request;
+  var now = Date.now();
+  var root = '1-' + Math.floor(now / 1000).toString(16) + '-' + hex(24);
+  request.headers['x-amzn-trace-id'] = { value: 'Root=' + root + ';Parent=' + hex(16) + ';Sampled=1' };
+  request.headers['x-request-start'] = { value: 't=' + now };
+  request.headers['x-cdn-distribution-id'] = { value: event.context.distributionId };
+  return request;
+}
+EOF
+  comment = "Starts the trace at the edge for a Lambda origin: X-Amzn-Trace-Id with Root, Parent and Sampled."
+  publish = true
+  runtime = "cloudfront-js-2.0"
+  tags = {
+    Name           = "traceStartLambda"
     State          = "wordpress-professional"
     Struct8Creator = "Contato Struct"
   }
