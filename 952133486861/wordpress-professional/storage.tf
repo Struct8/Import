@@ -13,7 +13,7 @@ resource "aws_s3_bucket" "albLogs" {
 resource "aws_s3_bucket" "wpMedia" {
   bucket              = "wp-pro-media-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
   bucket_namespace    = "account-regional"
-  force_destroy       = true
+  force_destroy       = var.allow_data_loss
   object_lock_enabled = false
   tags = {
     "Struct8:Backup:wpDailyBackup-uZbC08JN" = true

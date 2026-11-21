@@ -149,6 +149,19 @@ resource "aws_subnet" "pubB" {
   }
 }
 
+resource "aws_subnet" "pubLoadTest" {
+  vpc_id                  = aws_vpc.wordpress-professional.id
+  availability_zone       = "us-west-2a"
+  cidr_block              = "10.0.3.0/24"
+  ipv6_cidr_block         = cidrsubnet(aws_vpc.wordpress-professional.ipv6_cidr_block, 8, 3)
+  map_public_ip_on_launch = true
+  tags = {
+    Name           = "pubLoadTest"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_internet_gateway" "igw-wp" {
   vpc_id = aws_vpc.wordpress-professional.id
   tags = {
@@ -301,6 +314,11 @@ resource "aws_route_table_association" "aws_route_table_association_pubA_rt_publ
 resource "aws_route_table_association" "aws_route_table_association_pubB_rt_public_wp" {
   route_table_id = aws_route_table.rt-public-wp.id
   subnet_id      = aws_subnet.pubB.id
+}
+
+resource "aws_route_table_association" "aws_route_table_association_pubLoadTest_rt_public_wp" {
+  route_table_id = aws_route_table.rt-public-wp.id
+  subnet_id      = aws_subnet.pubLoadTest.id
 }
 
 resource "aws_security_group" "alb-cloudfront-wp" {
@@ -588,6 +606,14 @@ resource "aws_security_group_rule" "rule_sg_vpce_vpceSecrets_ingress_tcp_443" {
   protocol          = "tcp"
   to_port           = 443
   type              = "ingress"
+}
+
+resource "aws_eip" "eip-generator" {
+  tags = {
+    Name           = "eip-generator"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "aws_lb" "alb-wp" {
@@ -885,6 +911,22 @@ resource "aws_cloudfront_origin_access_control" "oac_wpmedia" {
   signing_protocol                  = "sigv4"
 }
 
+resource "aws_wafv2_ip_set" "k6IpSet" {
+  name               = "k6IpSet"
+  addresses          = ["${aws_eip.eip-generator.public_ip}/32"]
+  ip_address_version = "IPV4"
+  region             = "us-east-1"
+  scope              = "CLOUDFRONT"
+  lifecycle {
+    create_before_destroy = true
+  }
+  tags = {
+    Name           = "k6IpSet"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_wafv2_web_acl" "wpWaf" {
   name   = "wpWaf"
   region = "us-east-1"
@@ -927,8 +969,17 @@ resource "aws_wafv2_web_acl" "wpWaf" {
     "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "php" }
   },
   {
+    "Name": "k6-load-generator",
+    "Priority": 8,
+    "Statement": {
+      "IPSetReferenceStatement": { "ARN": "${aws_wafv2_ip_set.k6IpSet.arn}" }
+    },
+    "Action": { "Allow": {} },
+    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "k6-load-generator" }
+  },
+  {
     "Name": "login-rate-limit",
-    "Priority": 4,
+    "Priority": 10,
     "Statement": {
       "RateBasedStatement": {
         "Limit": 100,
@@ -947,7 +998,7 @@ resource "aws_wafv2_web_acl" "wpWaf" {
   },
   {
     "Name": "rate-limit",
-    "Priority": 5,
+    "Priority": 11,
     "Statement": {
       "RateBasedStatement": { "Limit": 2000, "AggregateKeyType": "IP" }
     },

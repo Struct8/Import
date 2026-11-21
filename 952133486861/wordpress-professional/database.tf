@@ -25,7 +25,7 @@ resource "aws_rds_cluster" "wp-aurora" {
   monitoring_interval         = 0
   network_type                = "IPV4"
   port                        = 3306
-  skip_final_snapshot         = true
+  skip_final_snapshot         = var.allow_data_loss
   storage_encrypted           = true
   vpc_security_group_ids      = [aws_security_group.rds_cluster_wp-aurora_group.id]
   serverlessv2_scaling_configuration {
