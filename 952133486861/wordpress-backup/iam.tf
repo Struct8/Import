@@ -58,7 +58,7 @@ resource "aws_secretsmanager_secret" "wpSecrets" {
   kms_key_id              = aws_kms_key.kmsWordpress.id
   name                    = "wpSecrets"
   description             = "Password of the WordPress database user. Terraform generates it, and each WordPress task creates or updates that user at startup with the Aurora master credentials."
-  recovery_window_in_days = 0
+  recovery_window_in_days = var.secret_recovery_days
   tags = {
     Name           = "wpSecrets"
     State          = "wordpress-backup"
