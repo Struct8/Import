@@ -22,7 +22,7 @@ resource "aws_lambda_function" "analyticsPage" {
       ATHENA_WORKGROUP               = aws_athena_workgroup.cdnAnalytics.name
       GLUE_DATABASE                  = aws_glue_catalog_database.cdn_analytics.name
       GLUE_TABLE                     = aws_glue_catalog_table.cdn_log.name
-      ACCESS_KEY                     = "wp-analytics"
+      ACCESS_KEY                     = "exWbqC7VVvpmIIHk3C8homBj"
       NAME                           = "analyticsPage"
       REGION                         = data.aws_region.current.region
       ACCOUNT                        = data.aws_caller_identity.current.account_id
