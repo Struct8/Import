@@ -8,6 +8,16 @@ resource "aws_iam_instance_profile" "asgWordpress_profile" {
   }
 }
 
+resource "aws_iam_instance_profile" "k6Generator_profile" {
+  name = "k6Generator_profile"
+  role = aws_iam_role.k6Generator_role.name
+  tags = {
+    Name           = "k6Generator_profile"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_instance_profile" "nat-instance_profile" {
   name = "nat-instance_profile"
   role = aws_iam_role.nat-instance_role.name
@@ -140,6 +150,54 @@ resource "aws_iam_policy" "ecs_task_definition_wordpress_st_wordpress-profession
   policy      = data.aws_iam_policy_document.ecs_task_definition_wordpress_st_wordpress-professional_doc.json
 }
 
+data "aws_iam_policy_document" "Debug1_debug_permissions" {
+  statement {
+    sid       = "SendToTaggedInstancesOnly"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["2zeRq_EaN5iT0PSAbe6RL"]
+      variable = "aws:ResourceTag/Struct8Debug"
+    }
+  }
+  statement {
+    sid       = "PinnedDocumentOnly"
+    effect    = "Allow"
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:document/Struct8Probe-2zeRq_EaN5iT0PSAbe6RL"]
+  }
+  statement {
+    sid       = "ReadOwnResults"
+    effect    = "Allow"
+    actions   = ["ssm:GetCommandInvocation", "ssm:DescribeInstanceInformation"]
+    resources = ["*"]
+  }
+  statement {
+    sid       = "CancelOnTaggedInstancesOnly"
+    effect    = "Allow"
+    actions   = ["ssm:CancelCommand"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    condition {
+      test     = "StringEquals"
+      values   = ["2zeRq_EaN5iT0PSAbe6RL"]
+      variable = "aws:ResourceTag/Struct8Debug"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "Debug1_debug_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/CrossAccountStruct8"]
+      type        = "AWS"
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
 data "aws_iam_policy_document" "debug-wp_debug_permissions" {
   statement {
     sid       = "RunProbeTaskwordpress"
@@ -213,6 +271,12 @@ data "aws_iam_policy_document" "debug-wp_wordpress_probe_logs" {
   }
 }
 
+resource "aws_iam_role" "Struct8Debug-Debug1" {
+  name                 = "Struct8Debug-2zeRq_EaN5iT0PSAbe6RL"
+  assume_role_policy   = data.aws_iam_policy_document.Debug1_debug_trust.json
+  max_session_duration = 3600
+}
+
 resource "aws_iam_role" "Struct8Debug-debug-wp" {
   name                 = "Struct8Debug-t1eAUxGPRo-vo6lIyc15I"
   assume_role_policy   = data.aws_iam_policy_document.debug-wp_debug_trust.json
@@ -267,6 +331,30 @@ resource "aws_iam_role" "execution_role_ecs_wordpress" {
   }
 }
 
+resource "aws_iam_role" "k6Generator_role" {
+  name = "k6Generator_role"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      }
+    }
+  ]
+})
+  force_detach_policies = false
+  max_session_duration  = 3600
+  path                  = "/"
+  tags = {
+    Name           = "k6Generator_role"
+    State          = "wordpress-professional"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role" "nat-instance_role" {
   name = "nat-instance_role"
   assume_role_policy = jsonencode({
@@ -315,6 +403,12 @@ resource "aws_iam_role" "task_role_ecs_wordpress" {
   }
 }
 
+resource "aws_iam_role_policy" "Struct8Debug-Debug1_policy" {
+  name   = "Struct8Debug-2zeRq_EaN5iT0PSAbe6RL-policy"
+  policy = data.aws_iam_policy_document.Debug1_debug_permissions.json
+  role   = aws_iam_role.Struct8Debug-Debug1.id
+}
+
 resource "aws_iam_role_policy" "Struct8Debug-debug-wp_policy" {
   name   = "Struct8Debug-t1eAUxGPRo-vo6lIyc15I-policy"
   policy = data.aws_iam_policy_document.debug-wp_debug_permissions.json
@@ -325,6 +419,11 @@ resource "aws_iam_role_policy" "Struct8ProbeLogs-debug-wp-wordpress" {
   name   = "Struct8ProbeLogs-t1eAUxGPRo-vo6lIyc15I-wordpress"
   policy = data.aws_iam_policy_document.debug-wp_wordpress_probe_logs.json
   role   = aws_iam_role.execution_role_ecs_wordpress.id
+}
+
+resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore_to_k6Generator_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.k6Generator_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "autoscaling_group_asgWordpress_st_wordpress-professional_attach" {
