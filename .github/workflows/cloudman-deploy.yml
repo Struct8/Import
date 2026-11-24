@@ -20,6 +20,7 @@ jobs:
     uses: Struct8/cloudman-core/.github/workflows/engine.yml@devlocal
     secrets:
       STRUCT8_SECRET_1: ${{ secrets.AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC }}
+      STRUCT8_SECRET_2: ${{ secrets.AUTH_OCI_RBPMCONSULTING }}
     with:
       stage: dev
-      secret_names: '{"STRUCT8_SECRET_1":"AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC"}'
+      secret_names: '{"STRUCT8_SECRET_1":"AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC","STRUCT8_SECRET_2":"AUTH_OCI_RBPMCONSULTING"}'
