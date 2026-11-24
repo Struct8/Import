@@ -1,7 +1,7 @@
 {
   "external_repositories": [],
-  "action": "apply",
-  "trigger_id": "1795485065286",
+  "action": "destroy",
+  "trigger_id": "1795485515219",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
