@@ -11,4 +11,5 @@ resource "oci_mysql_mysql_db_system" "wordpress-db" {
   is_highly_available     = false
   nsg_ids                 = [oci_core_network_security_group.db-nsg.id]
   state                   = "ACTIVE"
+  depends_on              = [oci_identity_policy.mysql_db_system_nsgs]
 }
