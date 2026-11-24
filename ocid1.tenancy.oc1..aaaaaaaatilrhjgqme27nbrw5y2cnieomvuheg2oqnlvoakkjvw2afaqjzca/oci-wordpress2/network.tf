@@ -38,76 +38,10 @@ resource "oci_core_route_table" "public-rt2" {
   }
 }
 
-resource "oci_core_network_security_group" "db-nsg2" {
-  compartment_id = oci_identity_compartment.wordpress2.id
-  display_name   = "db-nsg2"
-  vcn_id         = oci_core_vcn.wp-net2.id
-}
-
 resource "oci_core_network_security_group" "web-nsg2" {
   compartment_id = oci_identity_compartment.wordpress2.id
   display_name   = "web-nsg2"
   vcn_id         = oci_core_vcn.wp-net2.id
-}
-
-resource "oci_core_network_security_group_security_rule" "nsg_rule2_in_tcp_3306" {
-  source                    = oci_core_network_security_group.web-nsg2.id
-  network_security_group_id = oci_core_network_security_group.db-nsg2.id
-  description               = "MySQL"
-  direction                 = "INGRESS"
-  protocol                  = "6"
-  source_type               = "NETWORK_SECURITY_GROUP"
-  tcp_options {
-    destination_port_range {
-      max = 3306
-      min = 3306
-    }
-  }
-}
-
-resource "oci_core_network_security_group_security_rule" "nsg_rule2_in_tcp_33060" {
-  source                    = oci_core_network_security_group.web-nsg2.id
-  network_security_group_id = oci_core_network_security_group.db-nsg2.id
-  description               = "MySQL X Protocol"
-  direction                 = "INGRESS"
-  protocol                  = "6"
-  source_type               = "NETWORK_SECURITY_GROUP"
-  tcp_options {
-    destination_port_range {
-      max = 33060
-      min = 33060
-    }
-  }
-}
-
-resource "oci_core_network_security_group_security_rule" "nsg_rule2_out_tcp_3306" {
-  network_security_group_id = oci_core_network_security_group.web-nsg2.id
-  description               = "MySQL"
-  destination               = oci_core_network_security_group.db-nsg2.id
-  destination_type          = "NETWORK_SECURITY_GROUP"
-  direction                 = "EGRESS"
-  protocol                  = "6"
-  tcp_options {
-    destination_port_range {
-      max = 3306
-      min = 3306
-    }
-  }
-}
-
-resource "oci_core_network_security_group_security_rule" "nsg_rule2_out_tcp_33060" {
-  network_security_group_id = oci_core_network_security_group.web-nsg2.id
-  description               = "MySQL X Protocol"
-  destination               = oci_core_network_security_group.db-nsg2.id
-  destination_type          = "NETWORK_SECURITY_GROUP"
-  direction                 = "EGRESS"
-  protocol                  = "6"
-  tcp_options {
-    destination_port_range {
-      max = 33060
-      min = 33060
-    }
-  }
 }
 
 resource "oci_core_network_security_group_security_rule" "web_nsg2_cidr_in_tcp_443_0_0_0_0_0" {
