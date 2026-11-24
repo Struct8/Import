@@ -2,7 +2,7 @@ resource "oci_core_instance" "wordpress" {
   compartment_id      = oci_identity_compartment.wordpress.id
   display_name        = "wordpress"
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
-  shape               = "VM.Standard.A2.Flex"
+  shape               = "VM.Standard.A1.Flex"
   state               = "RUNNING"
   create_vnic_details {
     subnet_id        = oci_core_subnet.web.id
