@@ -38,21 +38,21 @@ resource "oci_core_route_table" "public-rt" {
   }
 }
 
-resource "oci_core_network_security_group" "db-nsg" {
+resource "oci_core_network_security_group" "wordpress-db_nsg" {
   compartment_id = oci_identity_compartment.wordpress.id
-  display_name   = "db-nsg"
+  display_name   = "wordpress-db_nsg"
   vcn_id         = oci_core_vcn.wp-net.id
 }
 
-resource "oci_core_network_security_group" "web-nsg" {
+resource "oci_core_network_security_group" "wordpress_nsg" {
   compartment_id = oci_identity_compartment.wordpress.id
-  display_name   = "web-nsg"
+  display_name   = "wordpress_nsg"
   vcn_id         = oci_core_vcn.wp-net.id
 }
 
-resource "oci_core_network_security_group_security_rule" "nsg_rule_in_tcp_3306" {
-  source                    = oci_core_network_security_group.web-nsg.id
-  network_security_group_id = oci_core_network_security_group.db-nsg.id
+resource "oci_core_network_security_group_security_rule" "nsg_rule3_in_tcp_3306" {
+  source                    = oci_core_network_security_group.wordpress_nsg.id
+  network_security_group_id = oci_core_network_security_group.wordpress-db_nsg.id
   description               = "MySQL"
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -65,9 +65,9 @@ resource "oci_core_network_security_group_security_rule" "nsg_rule_in_tcp_3306" 
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "nsg_rule_in_tcp_33060" {
-  source                    = oci_core_network_security_group.web-nsg.id
-  network_security_group_id = oci_core_network_security_group.db-nsg.id
+resource "oci_core_network_security_group_security_rule" "nsg_rule3_in_tcp_33060" {
+  source                    = oci_core_network_security_group.wordpress_nsg.id
+  network_security_group_id = oci_core_network_security_group.wordpress-db_nsg.id
   description               = "MySQL X Protocol"
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -80,10 +80,10 @@ resource "oci_core_network_security_group_security_rule" "nsg_rule_in_tcp_33060"
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "nsg_rule_out_tcp_3306" {
-  network_security_group_id = oci_core_network_security_group.web-nsg.id
+resource "oci_core_network_security_group_security_rule" "nsg_rule3_out_tcp_3306" {
+  network_security_group_id = oci_core_network_security_group.wordpress_nsg.id
   description               = "MySQL"
-  destination               = oci_core_network_security_group.db-nsg.id
+  destination               = oci_core_network_security_group.wordpress-db_nsg.id
   destination_type          = "NETWORK_SECURITY_GROUP"
   direction                 = "EGRESS"
   protocol                  = "6"
@@ -95,10 +95,10 @@ resource "oci_core_network_security_group_security_rule" "nsg_rule_out_tcp_3306"
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "nsg_rule_out_tcp_33060" {
-  network_security_group_id = oci_core_network_security_group.web-nsg.id
+resource "oci_core_network_security_group_security_rule" "nsg_rule3_out_tcp_33060" {
+  network_security_group_id = oci_core_network_security_group.wordpress_nsg.id
   description               = "MySQL X Protocol"
-  destination               = oci_core_network_security_group.db-nsg.id
+  destination               = oci_core_network_security_group.wordpress-db_nsg.id
   destination_type          = "NETWORK_SECURITY_GROUP"
   direction                 = "EGRESS"
   protocol                  = "6"
@@ -110,9 +110,9 @@ resource "oci_core_network_security_group_security_rule" "nsg_rule_out_tcp_33060
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "web_nsg_cidr_in_tcp_443_0_0_0_0_0" {
+resource "oci_core_network_security_group_security_rule" "wordpress_nsg_cidr_in_tcp_443_0_0_0_0_0" {
   source                    = "0.0.0.0/0"
-  network_security_group_id = oci_core_network_security_group.web-nsg.id
+  network_security_group_id = oci_core_network_security_group.wordpress_nsg.id
   description               = "HTTPS"
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -125,9 +125,9 @@ resource "oci_core_network_security_group_security_rule" "web_nsg_cidr_in_tcp_44
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "web_nsg_cidr_in_tcp_80_0_0_0_0_0" {
+resource "oci_core_network_security_group_security_rule" "wordpress_nsg_cidr_in_tcp_80_0_0_0_0_0" {
   source                    = "0.0.0.0/0"
-  network_security_group_id = oci_core_network_security_group.web-nsg.id
+  network_security_group_id = oci_core_network_security_group.wordpress_nsg.id
   description               = "HTTP"
   direction                 = "INGRESS"
   protocol                  = "6"

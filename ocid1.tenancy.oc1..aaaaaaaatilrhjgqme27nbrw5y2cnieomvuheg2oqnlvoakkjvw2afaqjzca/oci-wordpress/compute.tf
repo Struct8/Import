@@ -2,12 +2,12 @@ resource "oci_core_instance" "wordpress" {
   compartment_id      = oci_identity_compartment.wordpress.id
   display_name        = "wordpress"
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
-  shape               = "VM.Standard.E5.Flex"
+  shape               = "VM.Standard.A2.Flex"
   state               = "RUNNING"
   create_vnic_details {
     subnet_id        = oci_core_subnet.web.id
     assign_public_ip = true
-    nsg_ids          = [oci_core_network_security_group.web-nsg.id]
+    nsg_ids          = [oci_core_network_security_group.wordpress_nsg.id]
   }
   lifecycle {
     ignore_changes       = [source_details[0].source_id]

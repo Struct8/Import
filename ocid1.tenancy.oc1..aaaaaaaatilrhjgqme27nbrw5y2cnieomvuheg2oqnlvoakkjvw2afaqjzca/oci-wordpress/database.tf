@@ -9,7 +9,7 @@ resource "oci_mysql_mysql_db_system" "wordpress-db" {
   data_storage_size_in_gb = 50
   ip_address              = "10.0.1.10"
   is_highly_available     = false
-  nsg_ids                 = [oci_core_network_security_group.db-nsg.id]
+  nsg_ids                 = [oci_core_network_security_group.wordpress-db_nsg.id]
   state                   = "ACTIVE"
   depends_on              = [oci_identity_policy.mysql_db_system_nsgs]
 }
