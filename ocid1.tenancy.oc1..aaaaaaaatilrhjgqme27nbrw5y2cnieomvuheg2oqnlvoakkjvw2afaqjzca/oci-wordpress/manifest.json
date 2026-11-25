@@ -1,7 +1,17 @@
 {
-  "external_repositories": [],
-  "action": "destroy",
-  "trigger_id": "1795602563297",
+  "external_repositories": [
+    {
+      "repo_name": "Import",
+      "org": "Struct8",
+      "branch": "main",
+      "target_dir": ".external_modules/Import",
+      "folders": [
+        "oci-wordpress"
+      ]
+    }
+  ],
+  "action": "apply",
+  "trigger_id": "1795607005209",
   "triggered_by": "Contato Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
@@ -26,6 +36,13 @@
             "home_region_": "sa-saopaulo-1",
             "secret_name": "AUTH_OCI_RBPMCONSULTING"
           },
+          "additional_auth": [
+            {
+              "provider": "cloudflare",
+              "account_id": "bf9638139fc9b9a92fa0334ae15ac3ac",
+              "secret_name": "AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC"
+            }
+          ],
           "credentials": [
             {
               "id": "oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca",
@@ -74,6 +91,28 @@
                     "OCI_RESOURCE_PRINCIPAL_PRIVATE_PEM_PASSPHRASE",
                     "OCI_CONFIG_FILE"
                   ]
+                }
+              ]
+            },
+            {
+              "id": "cloudflare-bf9638139fc9b9a92fa0334ae15ac3ac",
+              "provider": "cloudflare",
+              "account": "bf9638139fc9b9a92fa0334ae15ac3ac",
+              "own": false,
+              "method": "secret",
+              "inputs": {
+                "secrets": {
+                  "token": "AUTH_CLOUDFLARE_BF9638139FC9B9A92FA0334AE15AC3AC"
+                }
+              },
+              "deliver": [
+                {
+                  "kind": "env",
+                  "vars": {
+                    "CLOUDFLARE_API_TOKEN": {
+                      "from": "token"
+                    }
+                  }
                 }
               ]
             }

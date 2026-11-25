@@ -1,3 +1,8 @@
+data "cloudflare_zero_trust_tunnel_cloudflared_token" "wordpress_tunnel" {
+  account_id = "bf9638139fc9b9a92fa0334ae15ac3ac"
+  tunnel_id  = one([for it in data.cloudflare_zero_trust_tunnel_cloudflareds.orthowp.result : it.id if it.name == "orthowp"])
+}
+
 resource "oci_core_instance" "wordpress" {
   compartment_id      = oci_identity_compartment.wordpress.id
   display_name        = "wordpress"
@@ -14,11 +19,15 @@ resource "oci_core_instance" "wordpress" {
     replace_triggered_by = [terraform_data.wordpress_image]
   }
   metadata = {
-    user_data = base64encode("#!/bin/bash\n# WordPress on Ubuntu 24.04 (OCI Ampere A1), database on the MySQL HeatWave DB system\n# \"wordpress-db\" of the same VCN. Log: /var/log/wordpress-setup.log\nset -euxo pipefail\nexec >/var/log/wordpress-setup.log 2>&1\n\n# The DB system: its fixed private IP and its administrator. Use here the same\n# user and password as in the form of the DB system \"wordpress-db\".\nDB_HOST=10.0.1.10\nDB_ADMIN_USER=wpadmin\nDB_ADMIN_PASSWORD='Troque-Esta-Senha-1'\n\nexport DEBIAN_FRONTEND=noninteractive\napt-get update\napt-get install -y apache2 php libapache2-mod-php php-mysql php-curl php-gd \\\n  php-mbstring php-xml php-zip php-intl mysql-client\n\n# The Ubuntu images of OCI reject every new connection except SSH (iptables).\n# Allow HTTP and HTTPS before the REJECT rule, and keep it after a reboot.\nREJECT_LINE=$(iptables -L INPUT --line-numbers -n | awk '$2 == \"REJECT\" { print $1; exit }')\nif [ -z \"$REJECT_LINE\" ]; then REJECT_LINE=1; fi\niptables -I INPUT \"$REJECT_LINE\" -p tcp -m multiport --dports 80,443 -m state --state NEW -j ACCEPT\nnetfilter-persistent save || true\n\n# The DB system takes longer to create than the instance: wait up to 60 minutes.\nfor attempt in $(seq 1 120); do\n  if mysqladmin ping -h \"$DB_HOST\" -u \"$DB_ADMIN_USER\" -p\"$DB_ADMIN_PASSWORD\" --silent; then break; fi\n  sleep 30\ndone\n\n# A database and a user of WordPress. The password of that user is made here\n# and stays only in wp-config.php on this instance.\nWP_DB_PASSWORD=\"Wp-$(openssl rand -hex 12)-9z\"\nmysql -h \"$DB_HOST\" -u \"$DB_ADMIN_USER\" -p\"$DB_ADMIN_PASSWORD\" <<SQL\nCREATE DATABASE IF NOT EXISTS wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\nCREATE USER IF NOT EXISTS 'wordpress'@'%' IDENTIFIED BY '$WP_DB_PASSWORD';\nGRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'%';\nSQL\n\n# WordPress itself.\ncurl -fsSL -o /tmp/wordpress.tar.gz https://wordpress.org/latest.tar.gz\nrm -f /var/www/html/index.html\ntar -xzf /tmp/wordpress.tar.gz -C /var/www/html --strip-components=1\nSALTS=$(curl -fsSL https://api.wordpress.org/secret-key/1.1/salt/)\ncat >/var/www/html/wp-config.php <<EOF\n<?php\ndefine('DB_NAME', 'wordpress');\ndefine('DB_USER', 'wordpress');\ndefine('DB_PASSWORD', '$WP_DB_PASSWORD');\ndefine('DB_HOST', '$DB_HOST');\ndefine('DB_CHARSET', 'utf8mb4');\ndefine('DB_COLLATE', '');\ndefine('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT);\n$SALTS\n\\$table_prefix = 'wp_';\ndefine('WP_DEBUG', false);\nif (!defined('ABSPATH')) {\n  define('ABSPATH', __DIR__ . '/');\n}\nrequire_once ABSPATH . 'wp-settings.php';\nEOF\nchown -R www-data:www-data /var/www/html\n\n# Permalinks need .htaccess.\nsed -i '/<Directory \\/var\\/www\\/>/,/<\\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf\na2enmod rewrite\nsystemctl restart apache2\n")
+    wp_db_admin_user     = "wpadmin"
+    wp_db_admin_password = "Troque-Esta-Senha-1"
+    wp_db_host           = "10.0.1.10"
+    wp_site_url          = "https://orthowp.struct8.com"
+    user_data            = base64encode(join("\n", ["Content-Type: multipart/mixed; boundary=\"STRUCT8-USER-DATA\"", "MIME-Version: 1.0", "", "--STRUCT8-USER-DATA", "Content-Type: text/x-shellscript; charset=\"utf-8\"", "MIME-Version: 1.0", "", "#!/bin/bash", "set -eu", "case \"$(uname -m)\" in aarch64|arm64) arch=arm64 ;; *) arch=amd64 ;; esac", "curl -fsSL --retry 5 -o /usr/local/bin/cloudflared \"https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$arch\"", "chmod 755 /usr/local/bin/cloudflared", "/usr/local/bin/cloudflared service install ${data.cloudflare_zero_trust_tunnel_cloudflared_token.wordpress_tunnel.token}", "--STRUCT8-USER-DATA", "Content-Type: text/plain; charset=\"utf-8\"", "MIME-Version: 1.0", "Content-Transfer-Encoding: base64", "", filebase64("${path.module}/.external_modules/Import/oci-wordpress/user-data.sh"), "--STRUCT8-USER-DATA--", ""]))
   }
   shape_config {
-    memory_in_gbs = 8
-    ocpus         = 1
+    memory_in_gbs = 12
+    ocpus         = 2
   }
   source_details {
     source_id               = data.oci_core_images.wordpress_image.images[0].id
