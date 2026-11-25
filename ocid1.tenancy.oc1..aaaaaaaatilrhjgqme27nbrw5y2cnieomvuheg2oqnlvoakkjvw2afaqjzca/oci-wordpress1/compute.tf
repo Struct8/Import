@@ -4,10 +4,19 @@ resource "oci_core_instance" "wordpress1" {
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   shape               = "VM.Standard.A1.Flex"
   state               = "RUNNING"
+  agent_config {
+    plugins_config {
+      name          = "Compute Instance Run Command"
+      desired_state = "ENABLED"
+    }
+  }
   create_vnic_details {
     subnet_id        = oci_core_subnet.web1.id
     assign_public_ip = true
-    nsg_ids          = [oci_core_network_security_group.web-nsg1.id]
+  }
+  freeform_tags = {
+    Struct8Debug      = "IKvQlk2Lk8gjbC2iRQ-H5"
+    Struct8DebugLevel = "probes"
   }
   lifecycle {
     ignore_changes       = [source_details[0].source_id]
