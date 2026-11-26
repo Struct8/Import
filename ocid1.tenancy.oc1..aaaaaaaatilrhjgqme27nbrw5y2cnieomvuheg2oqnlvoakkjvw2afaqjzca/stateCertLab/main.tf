@@ -4,6 +4,7 @@ locals {
   compartment_id = "ocid1.compartment.oc1..aaaaaaaa43jynpdmus6zzoz2wkq5jvu3ei23cbsopuq33nwrwemo6ugqb4fq"
   latin1         = "ISO-8859-1"
   audience       = "struct8-cert-lab"
+  sha256_program = "import sys,json,base64,hashlib;d=json.load(sys.stdin);print(json.dumps({'digest':base64.b64encode(hashlib.sha256(base64.b64decode(d['message'])).digest()).decode()}))"
 
   # Fixed DER pieces of a self-signed certificate for an RSA 2048 key: CN=struct8-cert-lab,
   # serial 1, valid 2026-01-01 to 2036-01-01, sha256WithRSAEncryption, no extensions.
@@ -43,13 +44,21 @@ data "oci_kms_key_version" "current" {
   management_endpoint = oci_kms_vault.lab.management_endpoint
 }
 
-# The Vault signs the TBSCertificate; Terraform never holds the private key.
+# SHA-256 of the TBSCertificate. The Vault refuses a RAW message longer than 245 bytes for an
+# RSA 2048 key (the TBS has 411), and HCL hashes only the UTF-8 form of a string, so the lab
+# computes the digest on the runner.
+data "external" "tbs_digest" {
+  program = ["python3", "-c", local.sha256_program]
+  query   = { message = local.tbs }
+}
+
+# The Vault signs the digest of the TBSCertificate; Terraform never holds the private key.
 resource "oci_kms_sign" "certificate" {
   crypto_endpoint   = oci_kms_vault.lab.crypto_endpoint
   key_id            = oci_kms_key.lab.id
   key_version_id    = oci_kms_key.lab.current_key_version
-  message           = local.tbs
-  message_type      = "RAW"
+  message           = data.external.tbs_digest.result.digest
+  message_type      = "DIGEST"
   signing_algorithm = "SHA_256_RSA_PKCS1_V1_5"
 
   lifecycle {
@@ -327,12 +336,17 @@ locals {
   assertion     = "${local.signing_input}.${replace(replace(replace(oci_kms_sign.assertion.signature, "+", "-"), "/", "_"), "=", "")}"
 }
 
+data "external" "assertion_digest" {
+  program = ["python3", "-c", local.sha256_program]
+  query   = { message = base64encode(local.signing_input) }
+}
+
 resource "oci_kms_sign" "assertion" {
   crypto_endpoint   = oci_kms_vault.lab.crypto_endpoint
   key_id            = oci_kms_key.lab.id
   key_version_id    = oci_kms_key.lab.current_key_version
-  message           = base64encode(local.signing_input)
-  message_type      = "RAW"
+  message           = data.external.assertion_digest.result.digest
+  message_type      = "DIGEST"
   signing_algorithm = "SHA_256_RSA_PKCS1_V1_5"
 }
 
