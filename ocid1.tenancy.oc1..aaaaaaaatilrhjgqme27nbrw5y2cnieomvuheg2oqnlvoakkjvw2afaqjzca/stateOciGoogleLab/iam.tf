@@ -87,8 +87,9 @@ data "external" "oci-google-reader_google_certificate_digest" {
 }
 
 locals {
-  oci-google-reader_google_certificate_spki = replace(replace(data.oci_kms_key_version.oci-google-reader_google_certificate.public_key, "/-----[A-Z ]+-----/", ""), "/\\s/", "")
-  oci-google-reader_google_certificate_tbs  = textencodebase64(join("", [textdecodebase64("MIIBoaADAgECAgEBMA0GCSqGSIb3DQEBCwUAMCAxHjAcBgNVBAMMFW9jaS1nY3MtcmVhZGVyLWNsaWVudA==", "ISO-8859-1"), textdecodebase64("MB4XDQ==", "ISO-8859-1"), "${formatdate("YYMMDDhhmmss", data.oci_kms_key_version.oci-google-reader_google_certificate.time_created)}Z", textdecodebase64("Fw0=", "ISO-8859-1"), "${formatdate("YYMMDDhhmmss", timeadd(data.oci_kms_key_version.oci-google-reader_google_certificate.time_created, "87600h"))}Z", textdecodebase64("MCAxHjAcBgNVBAMMFW9jaS1nY3MtcmVhZGVyLWNsaWVudA==", "ISO-8859-1"), textdecodebase64(local.oci-google-reader_google_certificate_spki, "ISO-8859-1")]), "ISO-8859-1")
+  oci-google-reader_google_certificate_spki    = replace(replace(data.oci_kms_key_version.oci-google-reader_google_certificate.public_key, "/-----[A-Z ]+-----/", ""), "/\\s/", "")
+  oci-google-reader_google_certificate_created = format("%sZ", join("T", regex("^([0-9]{4}-[0-9]{2}-[0-9]{2})[ T]([0-9]{2}:[0-9]{2}:[0-9]{2})", data.oci_kms_key_version.oci-google-reader_google_certificate.time_created)))
+  oci-google-reader_google_certificate_tbs     = textencodebase64(join("", [textdecodebase64("MIIBoaADAgECAgEBMA0GCSqGSIb3DQEBCwUAMCAxHjAcBgNVBAMMFW9jaS1nY3MtcmVhZGVyLWNsaWVudA==", "ISO-8859-1"), textdecodebase64("MB4XDQ==", "ISO-8859-1"), "${formatdate("YYMMDDhhmmss", local.oci-google-reader_google_certificate_created)}Z", textdecodebase64("Fw0=", "ISO-8859-1"), "${formatdate("YYMMDDhhmmss", timeadd(local.oci-google-reader_google_certificate_created, "87600h"))}Z", textdecodebase64("MCAxHjAcBgNVBAMMFW9jaS1nY3MtcmVhZGVyLWNsaWVudA==", "ISO-8859-1"), textdecodebase64(local.oci-google-reader_google_certificate_spki, "ISO-8859-1")]), "ISO-8859-1")
 }
 
 # The Vault signs the certificate oci-gcs-reader-client: the SHA-256 of its to-be-signed part, computed by openssl on the machine that runs Terraform.
