@@ -1,0 +1,114 @@
+{
+  "external_repositories": [],
+  "action": "apply",
+  "trigger_id": "1795731874409",
+  "triggered_by": "assistant.Contato_Struct",
+  "engine_ref": "devlocal",
+  "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
+  "backend_global_config": {
+    "provider": "aws",
+    "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+    "region": "us-west-2",
+    "bucket": "struct8-import"
+  },
+  "pipeline_stages": [
+    {
+      "stage_name": "Manual Trigger: stateOciGoogleLabGcp",
+      "parallel_execution": false,
+      "states": [
+        {
+          "path": "deft-landing-343414/stateOciGoogleLabGcp",
+          "provider": "google",
+          "target_auth": {
+            "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
+            "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
+          },
+          "credentials": [
+            {
+              "id": "google-deft-landing-343414",
+              "provider": "google",
+              "account": "deft-landing-343414",
+              "own": true,
+              "method": "oidc-gcp",
+              "inputs": {
+                "workload_identity_provider": "projects/233610591017/locations/global/workloadIdentityPools/struct8-github/providers/gh-1360758768",
+                "service_account": "struct8-gh-1360758768@deft-landing-343414.iam.gserviceaccount.com"
+              },
+              "deliver": [
+                {
+                  "kind": "file",
+                  "path": "{state_dir}/google/google-deft-landing-343414.json",
+                  "from": "credential_json"
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "GOOGLE_APPLICATION_CREDENTIALS": {
+                      "value": "{state_dir}/google/google-deft-landing-343414.json"
+                    }
+                  },
+                  "unset": [
+                    "GOOGLE_CREDENTIALS",
+                    "GOOGLE_CLOUD_KEYFILE_JSON",
+                    "GCLOUD_KEYFILE_JSON",
+                    "GOOGLE_OAUTH_ACCESS_TOKEN"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca",
+              "provider": "oci",
+              "account": "ocid1.tenancy.oc1..aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca",
+              "own": false,
+              "method": "oidc-oci",
+              "inputs": {
+                "domain_url": "https://idcs-b4fd5c4293ab48539b64c95eeb70df35.identity.oraclecloud.com",
+                "client_id": "f21d07d029eb4167945c177d67018da9",
+                "client_secret_name": "AUTH_OCI_RBPMCONSULTING",
+                "resource_type": "struct8_github",
+                "rpst_minutes": "120"
+              },
+              "deliver": [
+                {
+                  "kind": "file",
+                  "path": "{state_dir}/oci/oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca.rpst",
+                  "from": "rpst"
+                },
+                {
+                  "kind": "file",
+                  "path": "{state_dir}/oci/oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca.pem",
+                  "from": "private_key_pem"
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "OCI_AUTH": {
+                      "value": "ResourcePrincipal"
+                    },
+                    "OCI_RESOURCE_PRINCIPAL_VERSION": {
+                      "value": "2.2"
+                    },
+                    "OCI_RESOURCE_PRINCIPAL_RPST": {
+                      "value": "{state_dir}/oci/oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca.rpst"
+                    },
+                    "OCI_RESOURCE_PRINCIPAL_PRIVATE_PEM": {
+                      "value": "{state_dir}/oci/oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca.pem"
+                    },
+                    "OCI_RESOURCE_PRINCIPAL_REGION": {
+                      "value": "sa-saopaulo-1"
+                    }
+                  },
+                  "unset": [
+                    "OCI_RESOURCE_PRINCIPAL_PRIVATE_PEM_PASSPHRASE",
+                    "OCI_CONFIG_FILE"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
