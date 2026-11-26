@@ -221,6 +221,16 @@ resource "aws_security_group_rule" "rule_lb_kuma_alb_group_to_db_instance_kuma_d
   type                     = "ingress"
 }
 
+resource "aws_security_group_rule" "rule_lb_kuma_alb_group_to_eks_kuma_cluster_sg_tcp_8000" {
+  security_group_id        = aws_eks_cluster.eks-kuma.vpc_config[0].cluster_security_group_id
+  source_security_group_id = aws_security_group.lb_kuma-alb_group.id
+  description              = "Allow from lb_kuma-alb_group (tcp:8000-8000)"
+  from_port                = 8000
+  protocol                 = "tcp"
+  to_port                  = 8000
+  type                     = "ingress"
+}
+
 resource "aws_lb" "kuma-alb" {
   name               = "kuma-alb"
   idle_timeout       = 60
