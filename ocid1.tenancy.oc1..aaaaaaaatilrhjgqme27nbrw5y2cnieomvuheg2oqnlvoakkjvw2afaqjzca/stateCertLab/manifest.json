@@ -1,0 +1,85 @@
+{
+  "external_repositories": [],
+  "action": "apply",
+  "trigger_id": "1795727803048",
+  "triggered_by": "assistant.Contato_Struct",
+  "engine_ref": "devlocal",
+  "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
+  "backend_global_config": {
+    "provider": "aws",
+    "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
+    "region": "us-west-2",
+    "bucket": "struct8-import"
+  },
+  "pipeline_stages": [
+    {
+      "stage_name": "Manual Trigger: stateCertLab",
+      "parallel_execution": false,
+      "states": [
+        {
+          "path": "ocid1.tenancy.oc1..aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca/stateCertLab",
+          "provider": "oci",
+          "target_auth": {
+            "tenancy_name": "rbpmconsulting",
+            "identity_domain_url": "https://idcs-b4fd5c4293ab48539b64c95eeb70df35.identity.oraclecloud.com",
+            "client_id": "f21d07d029eb4167945c177d67018da9",
+            "home_region_": "sa-saopaulo-1",
+            "secret_name": "AUTH_OCI_RBPMCONSULTING"
+          },
+          "credentials": [
+            {
+              "id": "oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca",
+              "provider": "oci",
+              "account": "ocid1.tenancy.oc1..aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca",
+              "own": true,
+              "method": "oidc-oci",
+              "inputs": {
+                "domain_url": "https://idcs-b4fd5c4293ab48539b64c95eeb70df35.identity.oraclecloud.com",
+                "client_id": "f21d07d029eb4167945c177d67018da9",
+                "client_secret_name": "AUTH_OCI_RBPMCONSULTING",
+                "resource_type": "struct8_github",
+                "rpst_minutes": "120"
+              },
+              "deliver": [
+                {
+                  "kind": "file",
+                  "path": "{state_dir}/oci/oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca.rpst",
+                  "from": "rpst"
+                },
+                {
+                  "kind": "file",
+                  "path": "{state_dir}/oci/oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca.pem",
+                  "from": "private_key_pem"
+                },
+                {
+                  "kind": "env",
+                  "vars": {
+                    "OCI_AUTH": {
+                      "value": "ResourcePrincipal"
+                    },
+                    "OCI_RESOURCE_PRINCIPAL_VERSION": {
+                      "value": "2.2"
+                    },
+                    "OCI_RESOURCE_PRINCIPAL_RPST": {
+                      "value": "{state_dir}/oci/oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca.rpst"
+                    },
+                    "OCI_RESOURCE_PRINCIPAL_PRIVATE_PEM": {
+                      "value": "{state_dir}/oci/oci-ocid1-tenancy-oc1--aaaaaaaatilrhjgqme27nbrw5y2cnieomvuheg2oqnlvoakkjvw2afaqjzca.pem"
+                    },
+                    "OCI_RESOURCE_PRINCIPAL_REGION": {
+                      "value": "sa-saopaulo-1"
+                    }
+                  },
+                  "unset": [
+                    "OCI_RESOURCE_PRINCIPAL_PRIVATE_PEM_PASSPHRASE",
+                    "OCI_CONFIG_FILE"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
