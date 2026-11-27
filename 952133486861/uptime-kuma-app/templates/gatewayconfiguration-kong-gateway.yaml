@@ -2,11 +2,11 @@ apiVersion: gateway-operator.konghq.com/v1beta1
 kind: GatewayConfiguration
 metadata:
   name: kong-gateway
-  namespace: kong
+  namespace: kuma
   labels:
     app.kubernetes.io/name: kong-gateway
     app.kubernetes.io/managed-by: struct8
-    app.kubernetes.io/instance: kong-app
+    app.kubernetes.io/instance: uptime-kuma-app
     cloudman.io/creator: Contato-Struct
   annotations:
     argocd.argoproj.io/sync-wave: "2"

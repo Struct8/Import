@@ -15,4 +15,4 @@ spec:
     group: gateway-operator.konghq.com
     kind: GatewayConfiguration
     name: kong-gateway
-    namespace: kong
+    namespace: kuma
