@@ -11,6 +11,32 @@ resource "aws_iam_policy" "AWSLoadBalancerControllerIAMPolicy_kuma-alb" {
   policy      = data.http.lbc_iam_policy_kuma-alb.response_body
 }
 
+data "aws_iam_policy_document" "policy_external_dns_eks-kuma_st_eks-kuma-infra_doc" {
+  statement {
+    sid       = "AllowRoute53Changes"
+    effect    = "Allow"
+    actions   = ["route53:ChangeResourceRecordSets"]
+    resources = [aws_route53_zone.k8s-zone.arn, data.aws_route53_zone.Cloudman1.arn]
+  }
+  statement {
+    sid       = "AllowRoute53Listing"
+    effect    = "Allow"
+    actions   = ["route53:ListHostedZones", "route53:ListResourceRecordSets"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "policy_external_dns_eks-kuma_st_eks-kuma-infra" {
+  name        = "policy_external_dns_eks-kuma_st_eks-kuma-infra"
+  description = "External-DNS Route53 permissions for eks-kuma"
+  policy      = data.aws_iam_policy_document.policy_external_dns_eks-kuma_st_eks-kuma-infra_doc.json
+  tags = {
+    Name           = "policy_external_dns_eks-kuma_st_eks-kuma-infra"
+    State          = "eks-kuma-infra"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 data "aws_iam_policy_document" "doc_trust_lbc_kuma-alb" {
   statement {
     effect = "Allow"
@@ -75,6 +101,32 @@ resource "aws_iam_role" "role_eksng_eks-kuma-nodes" {
   }
 }
 
+data "aws_iam_policy_document" "doc_trust_external_dns_eks-kuma" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = [aws_iam_openid_connect_provider.eks_oidc_eks-kuma.arn]
+      type        = "Federated"
+    }
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    condition {
+      test     = "StringEquals"
+      values   = ["system:serviceaccount:kube-system:external-dns"]
+      variable = "${replace(aws_iam_openid_connect_provider.eks_oidc_eks-kuma.url, "https://", "")}:sub"
+    }
+  }
+}
+
+resource "aws_iam_role" "role_external_dns_eks-kuma_st_eks-kuma-infra" {
+  name               = "role_external_dns_eks-kuma_st_eks-kuma-infra"
+  assume_role_policy = data.aws_iam_policy_document.doc_trust_external_dns_eks-kuma.json
+  tags = {
+    Name           = "role_external_dns_eks-kuma_st_eks-kuma-infra"
+    State          = "eks-kuma-infra"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_iam_role" "role_lbc_kuma-alb" {
   name               = "role_lbc_kuma-alb"
   assume_role_policy = data.aws_iam_policy_document.doc_trust_lbc_kuma-alb.json
@@ -105,7 +157,35 @@ resource "aws_iam_role_policy_attachment" "AmazonEKS_CNI_Policy_to_eks-kuma-node
   role       = aws_iam_role.role_eksng_eks-kuma-nodes.name
 }
 
+resource "aws_iam_role_policy_attachment" "attach_ext_dns_eks-kuma_st_eks-kuma-infra" {
+  policy_arn = aws_iam_policy.policy_external_dns_eks-kuma_st_eks-kuma-infra.arn
+  role       = aws_iam_role.role_external_dns_eks-kuma_st_eks-kuma-infra.name
+}
+
 resource "aws_iam_role_policy_attachment" "role_lbc_kuma-alb_attach" {
   policy_arn = aws_iam_policy.AWSLoadBalancerControllerIAMPolicy_kuma-alb.arn
   role       = aws_iam_role.role_lbc_kuma-alb.name
+}
+
+resource "aws_acm_certificate" "kuma-cert" {
+  domain_name       = "kuma.k8s.cloudman.pro"
+  key_algorithm     = "RSA_2048"
+  validation_method = "DNS"
+  lifecycle {
+    create_before_destroy = true
+  }
+  options {
+    certificate_transparency_logging_preference = "ENABLED"
+  }
+  tags = {
+    "kubernetes.io/cluster/kuma-gateway" = "shared"
+    Name                                 = "kuma-cert"
+    State                                = "eks-kuma-infra"
+    Struct8Creator                       = "Contato Struct"
+  }
+}
+
+resource "aws_acm_certificate_validation" "Validation_kuma-cert" {
+  certificate_arn         = aws_acm_certificate.kuma-cert.arn
+  validation_record_fqdns = [for record in aws_route53_record.Route53_Record_kuma-cert_kuma_k8s_cloudman_pro : record.fqdn]
 }

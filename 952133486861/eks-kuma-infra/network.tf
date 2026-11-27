@@ -123,6 +123,48 @@ resource "aws_route" "route_rt-eks-public_to_igw-eks-kuma_ipv4" {
   destination_cidr_block = "0.0.0.0/0"
 }
 
+resource "aws_route53_record" "Route53_Record_kuma-cert_kuma_k8s_cloudman_pro" {
+  for_each = {
+    for dvo in aws_acm_certificate.kuma-cert.domain_validation_options : dvo.domain_name => dvo
+    if dvo.domain_name == "kuma.k8s.cloudman.pro"
+  }
+  name            = each.value.resource_record_name
+  zone_id         = aws_route53_zone.k8s-zone.zone_id
+  allow_overwrite = true
+  records         = [each.value.resource_record_value]
+  ttl             = 300
+  type            = each.value.resource_record_type
+}
+
+resource "aws_route53_record" "alias_a_aws_lb_kuma-alb_kuma_k8s_cloudman_pro" {
+  name    = "kuma.k8s.cloudman.pro"
+  zone_id = aws_route53_zone.k8s-zone.zone_id
+  type    = "A"
+  alias {
+    name                   = aws_lb.kuma-alb.dns_name
+    zone_id                = aws_lb.kuma-alb.zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "ns_aws_route53_zone_k8s_zone_k8s_cloudman_pro" {
+  name    = "k8s.cloudman.pro"
+  zone_id = data.aws_route53_zone.Cloudman1.zone_id
+  records = aws_route53_zone.k8s-zone.name_servers
+  ttl     = 3600
+  type    = "NS"
+}
+
+resource "aws_route53_zone" "k8s-zone" {
+  name          = "k8s.cloudman.pro"
+  force_destroy = true
+  tags = {
+    Name           = "k8s-zone"
+    State          = "eks-kuma-infra"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
 resource "aws_route_table" "rt-eks-private" {
   vpc_id = aws_vpc.eks-kuma-vpc.id
   tags = {
@@ -186,11 +228,6 @@ resource "aws_security_group" "lb_kuma-alb_group" {
   name                   = "lb_kuma-alb_group"
   vpc_id                 = aws_vpc.eks-kuma-vpc.id
   revoke_rules_on_delete = false
-  tags = {
-    Name           = "lb_kuma-alb_group"
-    State          = "eks-kuma-infra"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_security_group_rule" "rule_db_instance_kuma_db_group_egress_all_protocols" {
@@ -209,6 +246,16 @@ resource "aws_security_group_rule" "rule_lb_kuma_alb_group_egress_all_protocols"
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_lb_kuma_alb_group_ingress_tcp_443" {
+  security_group_id = aws_security_group.lb_kuma-alb_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "HTTPS publico para o Uptime Kuma"
+  from_port         = 443
+  protocol          = "tcp"
+  to_port           = 443
+  type              = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_lb_kuma_alb_group_ingress_tcp_80" {
@@ -271,6 +318,30 @@ resource "aws_lb_listener" "kuma-http" {
   }
   tags = {
     Name           = "kuma-http"
+    State          = "eks-kuma-infra"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_lb_listener" "kuma-https" {
+  certificate_arn                      = aws_acm_certificate_validation.Validation_kuma-cert.certificate_arn
+  load_balancer_arn                    = aws_lb.kuma-alb.arn
+  port                                 = 443
+  protocol                             = "HTTPS"
+  routing_http_response_server_enabled = true
+  ssl_policy                           = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  default_action {
+    order            = 1
+    target_group_arn = aws_lb_target_group.tg-kuma.arn
+    type             = "forward"
+    forward {
+      target_group {
+        arn = aws_lb_target_group.tg-kuma.arn
+      }
+    }
+  }
+  tags = {
+    Name           = "kuma-https"
     State          = "eks-kuma-infra"
     Struct8Creator = "Contato Struct"
   }
