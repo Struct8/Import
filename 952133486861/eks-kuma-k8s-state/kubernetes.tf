@@ -93,13 +93,13 @@ resource "helm_release" "helm_argocd" {
   depends_on = [kubernetes_namespace.argocd]
 }
 
-resource "kubernetes_manifest" "netpol-default-deny-kuma" {
+resource "kubernetes_manifest" "netpol-default-deny-kong" {
   manifest = {
     apiVersion = "networking.k8s.io/v1"
     kind       = "NetworkPolicy"
     metadata = {
-      name      = "default-deny-ingress-kuma"
-      namespace = kubernetes_namespace.kuma.metadata[0].name
+      name      = "default-deny-ingress-kong"
+      namespace = kubernetes_namespace.kong.metadata[0].name
     }
     spec = {
       podSelector = {}
