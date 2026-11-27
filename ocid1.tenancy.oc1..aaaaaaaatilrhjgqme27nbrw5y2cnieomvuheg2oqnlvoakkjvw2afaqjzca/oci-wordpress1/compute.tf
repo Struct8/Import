@@ -16,7 +16,7 @@ resource "oci_core_instance" "wordpress1" {
   }
   freeform_tags = {
     Struct8Debug      = "IKvQlk2Lk8gjbC2iRQ-H5"
-    Struct8DebugLevel = "probes"
+    Struct8DebugLevel = "shell"
   }
   lifecycle {
     ignore_changes       = [source_details[0].source_id]

@@ -44,7 +44,7 @@ resource "oci_identity_domains_identity_propagation_trust" "wp-debug1_debug_call
   }
   claim_validations {
     name  = "struct8_debug_level"
-    value = "probes"
+    value = "shell"
   }
 }
 
