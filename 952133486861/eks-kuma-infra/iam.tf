@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "policy_external_dns_eks-kuma_st_eks-kuma-infra_d
     sid       = "AllowRoute53Changes"
     effect    = "Allow"
     actions   = ["route53:ChangeResourceRecordSets"]
-    resources = [aws_route53_zone.k8s-zone.arn, data.aws_route53_zone.Cloudman1.arn]
+    resources = [data.aws_route53_zone.Cloudman1.arn]
   }
   statement {
     sid       = "AllowRoute53Listing"

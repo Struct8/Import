@@ -129,7 +129,7 @@ resource "aws_route53_record" "Route53_Record_kuma-cert_kuma_k8s_cloudman_pro" {
     if dvo.domain_name == "kuma.k8s.cloudman.pro"
   }
   name            = each.value.resource_record_name
-  zone_id         = aws_route53_zone.k8s-zone.zone_id
+  zone_id         = data.aws_route53_zone.Cloudman1.zone_id
   allow_overwrite = true
   records         = [each.value.resource_record_value]
   ttl             = 300
@@ -138,30 +138,12 @@ resource "aws_route53_record" "Route53_Record_kuma-cert_kuma_k8s_cloudman_pro" {
 
 resource "aws_route53_record" "alias_a_aws_lb_kuma-alb_kuma_k8s_cloudman_pro" {
   name    = "kuma.k8s.cloudman.pro"
-  zone_id = aws_route53_zone.k8s-zone.zone_id
+  zone_id = data.aws_route53_zone.Cloudman1.zone_id
   type    = "A"
   alias {
     name                   = aws_lb.kuma-alb.dns_name
     zone_id                = aws_lb.kuma-alb.zone_id
     evaluate_target_health = true
-  }
-}
-
-resource "aws_route53_record" "ns_aws_route53_zone_k8s_zone_k8s_cloudman_pro" {
-  name    = "k8s.cloudman.pro"
-  zone_id = data.aws_route53_zone.Cloudman1.zone_id
-  records = aws_route53_zone.k8s-zone.name_servers
-  ttl     = 3600
-  type    = "NS"
-}
-
-resource "aws_route53_zone" "k8s-zone" {
-  name          = "k8s.cloudman.pro"
-  force_destroy = true
-  tags = {
-    Name           = "k8s-zone"
-    State          = "eks-kuma-infra"
-    Struct8Creator = "Contato Struct"
   }
 }
 

@@ -57,10 +57,6 @@ resource "helm_release" "ext_dns_eks-kuma" {
   }
   set {
     name  = "domainFilters[0]"
-    value = "k8s.cloudman.pro"
-  }
-  set {
-    name  = "domainFilters[1]"
     value = "cloudman.pro"
   }
   depends_on = [aws_iam_role_policy_attachment.attach_ext_dns_eks-kuma_st_eks-kuma-infra, aws_eks_node_group.eks-kuma-nodes]
