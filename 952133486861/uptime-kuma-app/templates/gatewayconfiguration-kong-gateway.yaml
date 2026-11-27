@@ -23,7 +23,8 @@ spec:
           terminationGracePeriodSeconds: 30
           serviceAccountName: deployment-kong-gateway-v1-sa
           containers:
-            - imagePullPolicy: Always
+            - image: "kong:3.9"
+              imagePullPolicy: Always
               name: proxy
         metadata:
           labels:
