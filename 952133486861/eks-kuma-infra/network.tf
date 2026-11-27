@@ -211,6 +211,16 @@ resource "aws_security_group_rule" "rule_lb_kuma_alb_group_egress_all_protocols"
   type              = "egress"
 }
 
+resource "aws_security_group_rule" "rule_lb_kuma_alb_group_ingress_tcp_80" {
+  security_group_id = aws_security_group.lb_kuma-alb_group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "HTTP publico para o Uptime Kuma"
+  from_port         = 80
+  protocol          = "tcp"
+  to_port           = 80
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "rule_lb_kuma_alb_group_to_db_instance_kuma_db_group_tcp_8000" {
   security_group_id        = aws_security_group.db_instance_kuma-db_group.id
   source_security_group_id = aws_security_group.lb_kuma-alb_group.id
