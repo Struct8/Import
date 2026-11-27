@@ -18,7 +18,6 @@ resource "helm_release" "app_kong_operator" {
   name             = "kong-operator"
   chart            = "kong-operator"
   repository       = "https://charts.konghq.com"
-  version          = "2.44.0"
   namespace        = "kong-operator-system"
   create_namespace = true
   atomic           = true
