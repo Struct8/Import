@@ -58,8 +58,8 @@ resource "aws_eks_node_group" "eks-kuma-nodes" {
   node_role_arn   = aws_iam_role.role_eksng_eks-kuma-nodes.arn
   subnet_ids      = [aws_subnet.eks-private-a.id, aws_subnet.eks-private-b.id]
   scaling_config {
-    desired_size = 2
-    max_size     = 3
+    desired_size = 1
+    max_size     = 1
     min_size     = 1
   }
   tags = {
