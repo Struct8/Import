@@ -1,8 +1,8 @@
 {
   "external_repositories": [],
-  "action": "destroy",
-  "trigger_id": "1795785122504",
-  "triggered_by": "Contato Struct",
+  "action": "apply",
+  "trigger_id": "1795817993994",
+  "triggered_by": "assistant.Contato_Struct",
   "engine_ref": "devlocal",
   "progress_url": "https://dev.collab.cf.struct8.com/webhooks/engine-progress",
   "backend_global_config": {
@@ -13,86 +13,11 @@
   },
   "pipeline_stages": [
     {
-      "stage_name": "DESTROY ALL: eks-kuma-infra",
+      "stage_name": "Manual Trigger: eks-kuma-crds-state",
       "parallel_execution": false,
       "states": [
         {
           "path": "952133486861/eks-kuma-crds-state",
-          "provider": "aws",
-          "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-            "region": "us-east-1",
-            "secret_name": "AUTH_AWS_952133486861"
-          },
-          "credentials": [
-            {
-              "id": "aws-952133486861",
-              "provider": "aws",
-              "account": "952133486861",
-              "own": true,
-              "method": "oidc-aws",
-              "inputs": {
-                "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
-                "region": "us-east-1",
-                "session_scope": ""
-              },
-              "deliver": [
-                {
-                  "kind": "ini",
-                  "path": "{state_dir}/aws/credentials",
-                  "seed": "~/.aws/credentials",
-                  "section": "target",
-                  "keys": {
-                    "aws_access_key_id": {
-                      "from": "access_key_id"
-                    },
-                    "aws_secret_access_key": {
-                      "from": "secret_access_key"
-                    },
-                    "aws_session_token": {
-                      "from": "session_token"
-                    }
-                  }
-                },
-                {
-                  "kind": "ini",
-                  "path": "{state_dir}/aws/config",
-                  "seed": "~/.aws/config",
-                  "section": "profile target",
-                  "keys": {
-                    "region": {
-                      "value": "us-east-1"
-                    }
-                  }
-                },
-                {
-                  "kind": "env",
-                  "vars": {
-                    "AWS_SHARED_CREDENTIALS_FILE": {
-                      "value": "{state_dir}/aws/credentials"
-                    },
-                    "AWS_CONFIG_FILE": {
-                      "value": "{state_dir}/aws/config"
-                    },
-                    "AWS_PROFILE": {
-                      "value": "target"
-                    },
-                    "AWS_REGION": {
-                      "value": "us-east-1"
-                    }
-                  },
-                  "unset": [
-                    "AWS_ACCESS_KEY_ID",
-                    "AWS_SECRET_ACCESS_KEY",
-                    "AWS_SESSION_TOKEN"
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "path": "952133486861/eks-kuma-infra",
           "provider": "aws",
           "target_auth": {
             "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-import",
