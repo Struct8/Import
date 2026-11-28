@@ -37,7 +37,7 @@ resource "helm_release" "argocd_applications" {
         }
       })
   ]
-  depends_on = [helm_release.argocd_projects, helm_release.helm_argocd, kubernetes_namespace.argocd, kubernetes_namespace.kong, kubernetes_namespace.kuma]
+  depends_on = [helm_release.argocd_projects, helm_release.helm_argocd, kubernetes_namespace.argocd, kubernetes_namespace.kong, kubernetes_namespace.kuma, aws_security_group.kuma_uptime_kuma_pod_sg, aws_security_group_rule.rule_cluster_to_kuma_uptime_kuma_pod_sg_tcp_3001, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_apiserver, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_dns_tcp, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_dns_udp, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_db_instance_kuma_db_group_tcp_3306]
 }
 
 resource "helm_release" "argocd_projects" {
@@ -108,20 +108,46 @@ resource "kubernetes_manifest" "netpol-default-deny-kuma" {
   }
 }
 
+resource "kubernetes_manifest" "sgp_kuma_uptime_kuma_pod_sg_auto_mode" {
+  manifest = {
+    apiVersion = "eks.amazonaws.com/v1"
+    kind       = "SecurityGroupPolicy"
+    metadata = {
+      name      = "uptime-kuma-sgp"
+      namespace = kubernetes_namespace.kuma.metadata[0].name
+    }
+    spec = {
+      podSelector = {
+        matchLabels = {
+          "app.kubernetes.io/name" = "uptime-kuma"
+        }
+      }
+      securityGroupSelectorTerms = [
+        {
+          id = aws_security_group.kuma_uptime_kuma_pod_sg.id
+        }
+      ]
+    }
+  }
+}
+
 resource "kubernetes_namespace" "argocd" {
   metadata {
     name = "argocd"
   }
+  depends_on = [aws_security_group.kuma_uptime_kuma_pod_sg, aws_security_group_rule.rule_cluster_to_kuma_uptime_kuma_pod_sg_tcp_3001, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_apiserver, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_dns_tcp, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_dns_udp, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_db_instance_kuma_db_group_tcp_3306]
 }
 
 resource "kubernetes_namespace" "kong" {
   metadata {
     name = "kong"
   }
+  depends_on = [aws_security_group.kuma_uptime_kuma_pod_sg, aws_security_group_rule.rule_cluster_to_kuma_uptime_kuma_pod_sg_tcp_3001, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_apiserver, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_dns_tcp, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_dns_udp, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_db_instance_kuma_db_group_tcp_3306]
 }
 
 resource "kubernetes_namespace" "kuma" {
   metadata {
     name = "kuma"
   }
+  depends_on = [aws_security_group.kuma_uptime_kuma_pod_sg, aws_security_group_rule.rule_cluster_to_kuma_uptime_kuma_pod_sg_tcp_3001, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_apiserver, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_dns_tcp, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_cluster_dns_udp, aws_security_group_rule.rule_kuma_uptime_kuma_pod_sg_to_db_instance_kuma_db_group_tcp_3306]
 }
