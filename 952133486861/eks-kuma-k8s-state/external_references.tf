@@ -7,8 +7,5 @@ data "aws_lb_target_group" "tg-kuma" {
 }
 
 data "aws_security_group" "db_instance_kuma-db_group" {
-  filter {
-    name   = "tag:Name"
-    values = ["db_instance_kuma-db_group"]
-  }
+  name = "db_instance_kuma-db_group"
 }
