@@ -142,11 +142,6 @@ resource "aws_iam_role_policy_attachment" "AmazonEKSClusterPolicy_to_eks-kuma_at
   role       = aws_iam_role.eks-kuma_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEKSVPCResourceController_to_eks-kuma_attach" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
-  role       = aws_iam_role.eks-kuma_role.name
-}
-
 resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodePolicy_to_eks-kuma-nodes_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.role_eksng_eks-kuma-nodes.name

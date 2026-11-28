@@ -14,19 +14,10 @@ resource "aws_eks_addon" "kube_proxy_eks-kuma" {
   depends_on                  = [aws_eks_node_group.eks-kuma-nodes]
 }
 
-resource "aws_eks_addon" "vpc_cni_eks-kuma" {
-  addon_name                  = "vpc-cni"
-  cluster_name                = aws_eks_cluster.eks-kuma.name
-  configuration_values        = jsonencode({"env": {"ENABLE_PREFIX_DELEGATION": "true", "WARM_PREFIX_TARGET": "1", "ENABLE_POD_ENI": "true", "POD_SECURITY_GROUP_ENFORCING_MODE": "standard"}})
-  resolve_conflicts_on_create = "OVERWRITE"
-  resolve_conflicts_on_update = "OVERWRITE"
-  depends_on                  = [aws_eks_node_group.eks-kuma-nodes]
-}
-
 resource "aws_eks_cluster" "eks-kuma" {
   version                       = "1.33"
   name                          = "eks-kuma"
-  bootstrap_self_managed_addons = true
+  bootstrap_self_managed_addons = false
   deletion_protection           = false
   enabled_cluster_log_types     = ["api"]
   force_update_version          = false
@@ -46,7 +37,7 @@ resource "aws_eks_cluster" "eks-kuma" {
     public_access_cidrs     = ["0.0.0.0/0"]
     subnet_ids              = [aws_subnet.eks-private-a.id, aws_subnet.eks-private-b.id]
   }
-  depends_on = [aws_cloudwatch_log_group.eks-kuma-logs, aws_iam_role_policy_attachment.AmazonEKSClusterPolicy_to_eks-kuma_attach, aws_iam_role_policy_attachment.AmazonEKSVPCResourceController_to_eks-kuma_attach]
+  depends_on = [aws_cloudwatch_log_group.eks-kuma-logs, aws_iam_role_policy_attachment.AmazonEKSClusterPolicy_to_eks-kuma_attach]
 }
 
 resource "aws_eks_node_group" "eks-kuma-nodes" {

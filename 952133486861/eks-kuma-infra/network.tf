@@ -199,11 +199,6 @@ resource "aws_security_group" "db_instance_kuma-db_group" {
   name                   = "db_instance_kuma-db_group"
   vpc_id                 = aws_vpc.eks-kuma-vpc.id
   revoke_rules_on_delete = false
-  tags = {
-    Name           = "db_instance_kuma-db_group"
-    State          = "eks-kuma-infra"
-    Struct8Creator = "Contato Struct"
-  }
 }
 
 resource "aws_security_group" "lb_kuma-alb_group" {
@@ -219,6 +214,16 @@ resource "aws_security_group_rule" "rule_db_instance_kuma_db_group_egress_all_pr
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "rule_db_instance_kuma_db_group_ingress_tcp_3306" {
+  security_group_id = aws_security_group.db_instance_kuma-db_group.id
+  cidr_blocks       = ["10.40.0.0/16"]
+  description       = "MariaDB from the cluster VPC (Cilium lab)"
+  from_port         = 3306
+  protocol          = "tcp"
+  to_port           = 3306
+  type              = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_lb_kuma_alb_group_egress_all_protocols" {
@@ -248,16 +253,6 @@ resource "aws_security_group_rule" "rule_lb_kuma_alb_group_ingress_tcp_80" {
   protocol          = "tcp"
   to_port           = 80
   type              = "ingress"
-}
-
-resource "aws_security_group_rule" "rule_lb_kuma_alb_group_to_db_instance_kuma_db_group_tcp_8000" {
-  security_group_id        = aws_security_group.db_instance_kuma-db_group.id
-  source_security_group_id = aws_security_group.lb_kuma-alb_group.id
-  description              = "Allow from lb_kuma-alb_group (tcp:8000-8000)"
-  from_port                = 8000
-  protocol                 = "tcp"
-  to_port                  = 8000
-  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_lb_kuma_alb_group_to_eks_kuma_cluster_sg_tcp_8000" {
