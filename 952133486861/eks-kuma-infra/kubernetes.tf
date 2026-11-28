@@ -27,7 +27,7 @@ resource "helm_release" "aws_lbc_kuma-alb" {
     name  = "vpcId"
     value = aws_vpc.eks-kuma-vpc.id
   }
-  depends_on = [aws_iam_role_policy_attachment.role_lbc_kuma-alb_attach, aws_eks_node_group.eks-kuma-nodes]
+  depends_on = [aws_iam_role_policy_attachment.role_lbc_kuma-alb_attach]
 }
 
 resource "helm_release" "ext_dns_eks-kuma" {
@@ -59,5 +59,5 @@ resource "helm_release" "ext_dns_eks-kuma" {
     name  = "domainFilters[0]"
     value = "cloudman.pro"
   }
-  depends_on = [aws_iam_role_policy_attachment.attach_ext_dns_eks-kuma_st_eks-kuma-infra, aws_eks_node_group.eks-kuma-nodes]
+  depends_on = [aws_iam_role_policy_attachment.attach_ext_dns_eks-kuma_st_eks-kuma-infra]
 }

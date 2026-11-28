@@ -40,11 +40,10 @@ resource "aws_subnet" "eks-private-a" {
   cidr_block              = "10.40.11.0/24"
   map_public_ip_on_launch = false
   tags = {
-    "kubernetes.io/cluster/eks-kuma"  = "shared"
-    "kubernetes.io/role/internal-elb" = "1"
-    Name                              = "eks-private-a"
-    State                             = "eks-kuma-infra"
-    Struct8Creator                    = "Contato Struct"
+    "kubernetes.io/cluster/eks-kuma" = "shared"
+    Name                             = "eks-private-a"
+    State                            = "eks-kuma-infra"
+    Struct8Creator                   = "Contato Struct"
   }
 }
 
@@ -54,11 +53,10 @@ resource "aws_subnet" "eks-private-b" {
   cidr_block              = "10.40.12.0/24"
   map_public_ip_on_launch = false
   tags = {
-    "kubernetes.io/cluster/eks-kuma"  = "shared"
-    "kubernetes.io/role/internal-elb" = "1"
-    Name                              = "eks-private-b"
-    State                             = "eks-kuma-infra"
-    Struct8Creator                    = "Contato Struct"
+    "kubernetes.io/cluster/eks-kuma" = "shared"
+    Name                             = "eks-private-b"
+    State                            = "eks-kuma-infra"
+    Struct8Creator                   = "Contato Struct"
   }
 }
 
@@ -214,16 +212,6 @@ resource "aws_security_group_rule" "rule_db_instance_kuma_db_group_egress_all_pr
   protocol          = "-1"
   to_port           = 0
   type              = "egress"
-}
-
-resource "aws_security_group_rule" "rule_db_instance_kuma_db_group_ingress_tcp_3306" {
-  security_group_id = aws_security_group.db_instance_kuma-db_group.id
-  cidr_blocks       = ["10.40.0.0/16"]
-  description       = "MariaDB from the cluster VPC (Cilium lab)"
-  from_port         = 3306
-  protocol          = "tcp"
-  to_port           = 3306
-  type              = "ingress"
 }
 
 resource "aws_security_group_rule" "rule_lb_kuma_alb_group_egress_all_protocols" {

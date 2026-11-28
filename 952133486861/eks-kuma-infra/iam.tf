@@ -101,30 +101,6 @@ resource "aws_iam_role" "role_eksauto_eks-kuma" {
   }
 }
 
-resource "aws_iam_role" "role_eksng_eks-kuma-nodes" {
-  name = "role_eksng_eks-kuma-nodes"
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      }
-    }
-  ]
-})
-  force_detach_policies = false
-  max_session_duration  = 3600
-  path                  = "/"
-  tags = {
-    Name           = "role_eksng_eks-kuma-nodes"
-    State          = "eks-kuma-infra"
-    Struct8Creator = "Contato Struct"
-  }
-}
-
 data "aws_iam_policy_document" "doc_trust_external_dns_eks-kuma" {
   statement {
     effect = "Allow"
@@ -156,14 +132,23 @@ resource "aws_iam_role" "role_lbc_kuma-alb" {
   assume_role_policy = data.aws_iam_policy_document.doc_trust_lbc_kuma-alb.json
 }
 
+resource "aws_iam_role_policy" "eks-kuma_auto_mode_pod_eni" {
+  name = "eks-kuma_auto_mode_pod_eni"
+  policy = jsonencode({
+  Version = "2012-10-17"
+  Statement = [{
+    Sid      = "AssociateBranchNetworkInterfaces"
+    Effect   = "Allow"
+    Action   = ["ec2:CreateNetworkInterfacePermission"]
+    Resource = "arn:aws:ec2:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:network-interface/*"
+  }]
+})
+  role = aws_iam_role.eks-kuma_role.name
+}
+
 resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryPullOnly_to_eks-kuma_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
   role       = aws_iam_role.role_eksauto_eks-kuma.name
-}
-
-resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly_to_eks-kuma-nodes_attach" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.role_eksng_eks-kuma-nodes.name
 }
 
 resource "aws_iam_role_policy_attachment" "AmazonEKSBlockStoragePolicyV2_to_eks-kuma_attach" {
@@ -191,19 +176,14 @@ resource "aws_iam_role_policy_attachment" "AmazonEKSNetworkingPolicy_to_eks-kuma
   role       = aws_iam_role.eks-kuma_role.name
 }
 
+resource "aws_iam_role_policy_attachment" "AmazonEKSVPCResourceController_to_eks-kuma_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+  role       = aws_iam_role.eks-kuma_role.name
+}
+
 resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodeMinimalPolicy_to_eks-kuma_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodeMinimalPolicy"
   role       = aws_iam_role.role_eksauto_eks-kuma.name
-}
-
-resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodePolicy_to_eks-kuma-nodes_attach" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = aws_iam_role.role_eksng_eks-kuma-nodes.name
-}
-
-resource "aws_iam_role_policy_attachment" "AmazonEKS_CNI_Policy_to_eks-kuma-nodes_attach" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.role_eksng_eks-kuma-nodes.name
 }
 
 resource "aws_iam_role_policy_attachment" "attach_ext_dns_eks-kuma_st_eks-kuma-infra" {
