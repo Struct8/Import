@@ -145,32 +145,10 @@ resource "oci_core_network_security_group_security_rule" "nsg_rule3_out_tcp_3306
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "wordpress_nsg_cidr_in_tcp_443_0_0_0_0_0" {
-  source                    = "0.0.0.0/0"
+resource "oci_core_network_security_group_security_rule" "wordpress_nsg_cidr_out_all_0_0_0_0_0" {
   network_security_group_id = oci_core_network_security_group.wordpress_nsg.id
-  description               = "HTTPS"
-  direction                 = "INGRESS"
-  protocol                  = "6"
-  source_type               = "CIDR_BLOCK"
-  tcp_options {
-    destination_port_range {
-      max = 443
-      min = 443
-    }
-  }
-}
-
-resource "oci_core_network_security_group_security_rule" "wordpress_nsg_cidr_in_tcp_80_0_0_0_0_0" {
-  source                    = "0.0.0.0/0"
-  network_security_group_id = oci_core_network_security_group.wordpress_nsg.id
-  description               = "HTTP"
-  direction                 = "INGRESS"
-  protocol                  = "6"
-  source_type               = "CIDR_BLOCK"
-  tcp_options {
-    destination_port_range {
-      max = 80
-      min = 80
-    }
-  }
+  destination               = "0.0.0.0/0"
+  destination_type          = "CIDR_BLOCK"
+  direction                 = "EGRESS"
+  protocol                  = "all"
 }
