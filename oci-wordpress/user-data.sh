@@ -15,6 +15,10 @@
 #   wp_db_host            private IP of the DB system             (default 10.0.1.10)
 #   wp_site_url           public address of the site              (default https://orthowp.struct8.com)
 #
+# Debug Access (Run Command) runs as the ocarun user. This script lets ocarun run
+# commands as www-data, the owner of the site, so wp-cli can manage WordPress through
+# it; ocarun gets no root.
+#
 # Log: /var/log/wordpress-setup.log
 set -euo pipefail
 exec >/var/log/wordpress-setup.log 2>&1
@@ -42,6 +46,17 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y apache2 php libapache2-mod-php php-mysql php-curl php-gd \
   php-mbstring php-xml php-zip php-intl mysql-client
+
+echo "== WP-CLI"
+curl -fsSL --retry 5 -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+chmod 0755 /usr/local/bin/wp
+
+echo "== Debug Access: ocarun runs commands as www-data, never as root"
+SUDOERS_TMP="$(mktemp)"
+echo 'ocarun ALL=(www-data) NOPASSWD: ALL' >"$SUDOERS_TMP"
+visudo -cf "$SUDOERS_TMP"
+install -m 0440 "$SUDOERS_TMP" /etc/sudoers.d/101-oracle-cloud-agent-run-command
+rm -f "$SUDOERS_TMP"
 
 echo "== Apache on 127.0.0.1:80 only"
 sed -i 's/^Listen 80$/Listen 127.0.0.1:80/' /etc/apache2/ports.conf
