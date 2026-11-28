@@ -3,4 +3,9 @@ resource "oci_identity_compartment" "wordpress1" {
   name           = "wordpress1"
   description    = "WordPress site: compute instance and MySQL DB system"
   enable_delete  = true
+  freeform_tags = {
+    Name           = "wordpress1"
+    State          = "oci-wordpress1"
+    Struct8Creator = "Contato Struct"
+  }
 }
