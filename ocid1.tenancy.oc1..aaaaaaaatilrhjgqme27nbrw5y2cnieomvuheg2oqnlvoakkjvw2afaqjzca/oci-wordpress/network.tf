@@ -2,6 +2,11 @@ resource "oci_core_vcn" "wp-net" {
   compartment_id = oci_identity_compartment.wordpress.id
   display_name   = "wp-net"
   cidr_blocks    = ["10.0.0.0/16"]
+  freeform_tags = {
+    Name           = "wp-net"
+    State          = "oci-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "oci_core_subnet" "db" {
@@ -10,6 +15,11 @@ resource "oci_core_subnet" "db" {
   vcn_id                    = oci_core_vcn.wp-net.id
   cidr_block                = "10.0.1.0/24"
   prohibit_internet_ingress = true
+  freeform_tags = {
+    Name           = "db"
+    State          = "oci-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "oci_core_subnet" "web" {
@@ -19,18 +29,33 @@ resource "oci_core_subnet" "web" {
   vcn_id                    = oci_core_vcn.wp-net.id
   cidr_block                = "10.0.0.0/24"
   prohibit_internet_ingress = false
+  freeform_tags = {
+    Name           = "web"
+    State          = "oci-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "oci_core_internet_gateway" "wp-igw" {
   compartment_id = oci_identity_compartment.wordpress.id
   display_name   = "wp-igw"
   vcn_id         = oci_core_vcn.wp-net.id
+  freeform_tags = {
+    Name           = "wp-igw"
+    State          = "oci-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "oci_core_route_table" "public-rt" {
   compartment_id = oci_identity_compartment.wordpress.id
   display_name   = "public-rt"
   vcn_id         = oci_core_vcn.wp-net.id
+  freeform_tags = {
+    Name           = "public-rt"
+    State          = "oci-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
   route_rules {
     network_entity_id = oci_core_internet_gateway.wp-igw.id
     destination       = "0.0.0.0/0"
@@ -42,12 +67,22 @@ resource "oci_core_network_security_group" "wordpress-db_nsg" {
   compartment_id = oci_identity_compartment.wordpress.id
   display_name   = "wordpress-db_nsg"
   vcn_id         = oci_core_vcn.wp-net.id
+  freeform_tags = {
+    Name           = "wordpress-db_nsg"
+    State          = "oci-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "oci_core_network_security_group" "wordpress_nsg" {
   compartment_id = oci_identity_compartment.wordpress.id
   display_name   = "wordpress_nsg"
   vcn_id         = oci_core_vcn.wp-net.id
+  freeform_tags = {
+    Name           = "wordpress_nsg"
+    State          = "oci-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "oci_core_network_security_group_security_rule" "nsg_rule3_in_tcp_3306" {

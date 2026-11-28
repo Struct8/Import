@@ -1,3 +1,3 @@
 resource "terraform_data" "wordpress_image" {
-  input = ["Canonical Ubuntu", "24.04", "arm64"]
+  input = ["Oracle Linux", "10", "x86_64"]
 }

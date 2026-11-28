@@ -11,5 +11,10 @@ resource "oci_mysql_mysql_db_system" "wordpress-db" {
   is_highly_available     = false
   nsg_ids                 = [oci_core_network_security_group.wordpress-db_nsg.id]
   state                   = "ACTIVE"
-  depends_on              = [oci_identity_policy.mysql_db_system_nsgs]
+  freeform_tags = {
+    Name           = "wordpress-db"
+    State          = "oci-wordpress"
+    Struct8Creator = "Contato Struct"
+  }
+  depends_on = [oci_identity_policy.mysql_db_system_nsgs]
 }
