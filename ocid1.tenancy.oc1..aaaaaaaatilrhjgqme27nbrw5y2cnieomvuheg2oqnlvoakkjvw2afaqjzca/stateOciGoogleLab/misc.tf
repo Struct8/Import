@@ -7,7 +7,7 @@ resource "terraform_data" "oci-google-reader_google_deactivate" {
     command = <<EOF
 set -e
 APP_STATUS_URL="${self.triggers_replace}"
-HOST="$(printf '%s' "$APP_STATUS_URL" | sed -e 's|^https://||' -e 's|/.*||')"
+HOST="$(printf '%s' "$APP_STATUS_URL" | sed -e 's|^https://||' -e 's|/.*||' -e 's|:443$||')"
 OUT="$(mktemp)"; HEAD="$(mktemp)"; CLEAN="$OUT $HEAD"
 trap 'rm -f $CLEAN' EXIT
 if [ -n "$OCI_RESOURCE_PRINCIPAL_RPST" ]; then
@@ -63,7 +63,7 @@ resource "terraform_data" "oci-google-reader_google_sts_deactivate" {
     command = <<EOF
 set -e
 APP_STATUS_URL="${self.triggers_replace}"
-HOST="$(printf '%s' "$APP_STATUS_URL" | sed -e 's|^https://||' -e 's|/.*||')"
+HOST="$(printf '%s' "$APP_STATUS_URL" | sed -e 's|^https://||' -e 's|/.*||' -e 's|:443$||')"
 OUT="$(mktemp)"; HEAD="$(mktemp)"; CLEAN="$OUT $HEAD"
 trap 'rm -f $CLEAN' EXIT
 if [ -n "$OCI_RESOURCE_PRINCIPAL_RPST" ]; then

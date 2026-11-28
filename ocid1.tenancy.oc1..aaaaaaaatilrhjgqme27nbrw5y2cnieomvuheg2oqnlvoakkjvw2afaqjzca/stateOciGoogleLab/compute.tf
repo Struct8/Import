@@ -4,6 +4,11 @@ resource "oci_functions_application" "oci-google-lab" {
   network_security_group_ids = [oci_core_network_security_group.oci-google-lab_nsg.id]
   shape                      = "GENERIC_X86"
   subnet_ids                 = [oci_core_subnet.functions.id]
+  freeform_tags = {
+    Name           = "oci-google-lab"
+    State          = "stateOciGoogleLab"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "oci_functions_function" "oci-google-reader" {
@@ -27,6 +32,11 @@ resource "oci_functions_function" "oci-google-reader" {
     LAB_CONTROL_BUCKET                        = "deft-landing-343414-oci-lab-control"
     OCI_CLIENT_ID                             = oci_identity_domains_app.oci-google-reader_google.name
     OCI_IDENTITY_DOMAIN_URL                   = one([for it in data.oci_identity_domains.struct8-google-lab.domains : it.url if it.display_name == "struct8-google-lab"])
+  }
+  freeform_tags = {
+    Name           = "oci-google-reader"
+    State          = "stateOciGoogleLab"
+    Struct8Creator = "Contato Struct"
   }
   source_details {
     image       = "gru.ocir.io/${oci_artifacts_container_repository.oci-google-reader.namespace}/${oci_artifacts_container_repository.oci-google-reader.display_name}:${terraform_data.seed_oci-google-reader.output}"

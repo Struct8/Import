@@ -69,6 +69,11 @@ resource "oci_kms_key" "oci-google-signing" {
   desired_state       = "ENABLED"
   management_endpoint = oci_kms_vault.oci-google-vault.management_endpoint
   protection_mode     = "HSM"
+  freeform_tags = {
+    Name           = "oci-google-signing"
+    State          = "stateOciGoogleLab"
+    Struct8Creator = "Contato Struct"
+  }
   key_shape {
     algorithm = "RSA"
     length    = 256
@@ -106,4 +111,9 @@ resource "oci_kms_vault" "oci-google-vault" {
   compartment_id = one([for it in data.oci_identity_compartments.lab-oci-google.compartments : it.id if it.name == "lab-oci-google"])
   display_name   = "oci-google-vault"
   vault_type     = "DEFAULT"
+  freeform_tags = {
+    Name           = "oci-google-vault"
+    State          = "stateOciGoogleLab"
+    Struct8Creator = "Contato Struct"
+  }
 }

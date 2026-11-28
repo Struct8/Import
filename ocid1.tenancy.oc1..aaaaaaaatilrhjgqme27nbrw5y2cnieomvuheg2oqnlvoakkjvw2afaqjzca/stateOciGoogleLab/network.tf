@@ -2,6 +2,11 @@ resource "oci_core_vcn" "oci-google-net" {
   compartment_id = one([for it in data.oci_identity_compartments.lab-oci-google.compartments : it.id if it.name == "lab-oci-google"])
   display_name   = "oci-google-net"
   cidr_blocks    = ["10.0.0.0/16"]
+  freeform_tags = {
+    Name           = "oci-google-net"
+    State          = "stateOciGoogleLab"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "oci_core_subnet" "functions" {
@@ -11,6 +16,11 @@ resource "oci_core_subnet" "functions" {
   vcn_id                    = oci_core_vcn.oci-google-net.id
   cidr_block                = "10.0.1.0/24"
   prohibit_internet_ingress = true
+  freeform_tags = {
+    Name           = "functions"
+    State          = "stateOciGoogleLab"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 resource "oci_core_nat_gateway" "oci-google-nat" {
@@ -18,6 +28,11 @@ resource "oci_core_nat_gateway" "oci-google-nat" {
   display_name   = "oci-google-nat"
   vcn_id         = oci_core_vcn.oci-google-net.id
   block_traffic  = false
+  freeform_tags = {
+    Name           = "oci-google-nat"
+    State          = "stateOciGoogleLab"
+    Struct8Creator = "Contato Struct"
+  }
 }
 
 data "oci_core_services" "oci-google-sgw_services" {
@@ -32,6 +47,11 @@ resource "oci_core_service_gateway" "oci-google-sgw" {
   compartment_id = one([for it in data.oci_identity_compartments.lab-oci-google.compartments : it.id if it.name == "lab-oci-google"])
   display_name   = "oci-google-sgw"
   vcn_id         = oci_core_vcn.oci-google-net.id
+  freeform_tags = {
+    Name           = "oci-google-sgw"
+    State          = "stateOciGoogleLab"
+    Struct8Creator = "Contato Struct"
+  }
   services {
     service_id = data.oci_core_services.oci-google-sgw_services.services[0].id
   }
@@ -49,6 +69,11 @@ resource "oci_core_route_table" "private-rt" {
   compartment_id = one([for it in data.oci_identity_compartments.lab-oci-google.compartments : it.id if it.name == "lab-oci-google"])
   display_name   = "private-rt"
   vcn_id         = oci_core_vcn.oci-google-net.id
+  freeform_tags = {
+    Name           = "private-rt"
+    State          = "stateOciGoogleLab"
+    Struct8Creator = "Contato Struct"
+  }
   route_rules {
     network_entity_id = oci_core_nat_gateway.oci-google-nat.id
     destination       = "0.0.0.0/0"
@@ -65,4 +90,9 @@ resource "oci_core_network_security_group" "oci-google-lab_nsg" {
   compartment_id = one([for it in data.oci_identity_compartments.lab-oci-google.compartments : it.id if it.name == "lab-oci-google"])
   display_name   = "oci-google-lab_nsg"
   vcn_id         = oci_core_vcn.oci-google-net.id
+  freeform_tags = {
+    Name           = "oci-google-lab_nsg"
+    State          = "stateOciGoogleLab"
+    Struct8Creator = "Contato Struct"
+  }
 }
