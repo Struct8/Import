@@ -30,6 +30,24 @@ resource "helm_release" "aws_lbc_kuma-alb" {
   depends_on = [aws_iam_role_policy_attachment.role_lbc_kuma-alb_attach, aws_eks_node_group.eks-kuma-nodes]
 }
 
+resource "helm_release" "calico_eks-kuma" {
+  version          = "v3.33.1"
+  name             = "calico"
+  chart            = "tigera-operator"
+  create_namespace = true
+  namespace        = "tigera-operator"
+  repository       = "https://docs.tigera.io/calico/charts"
+  set {
+    name  = "installation.kubernetesProvider"
+    value = "EKS"
+  }
+  set {
+    name  = "manageCRDs"
+    value = false
+  }
+  depends_on = [kubectl_manifest.calico_crds_eks-kuma, aws_eks_node_group.eks-kuma-nodes, aws_eks_addon.coredns_eks-kuma, aws_eks_addon.kube_proxy_eks-kuma, aws_eks_addon.vpc_cni_eks-kuma]
+}
+
 resource "helm_release" "ext_dns_eks-kuma" {
   name       = "external-dns"
   chart      = "external-dns"

@@ -17,7 +17,7 @@ resource "aws_eks_addon" "kube_proxy_eks-kuma" {
 resource "aws_eks_addon" "vpc_cni_eks-kuma" {
   addon_name                  = "vpc-cni"
   cluster_name                = aws_eks_cluster.eks-kuma.name
-  configuration_values        = jsonencode({"env": {"ENABLE_PREFIX_DELEGATION": "true", "WARM_PREFIX_TARGET": "1", "ENABLE_POD_ENI": "true", "POD_SECURITY_GROUP_ENFORCING_MODE": "standard"}, "enableNetworkPolicy": "true"})
+  configuration_values        = jsonencode({"env": {"ENABLE_PREFIX_DELEGATION": "true", "WARM_PREFIX_TARGET": "1", "ENABLE_POD_ENI": "true", "POD_SECURITY_GROUP_ENFORCING_MODE": "standard"}})
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
   depends_on                  = [aws_eks_node_group.eks-kuma-nodes]
