@@ -59,7 +59,10 @@ resource "aws_iam_role" "eks-kuma_role" {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Action": "sts:AssumeRole",
+      "Action": [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ],
       "Effect": "Allow",
       "Principal": {
         "Service": "eks.amazonaws.com"
@@ -72,6 +75,27 @@ resource "aws_iam_role" "eks-kuma_role" {
   path                  = "/"
   tags = {
     Name           = "eks-kuma_role"
+    State          = "eks-kuma-infra"
+    Struct8Creator = "Contato Struct"
+  }
+}
+
+resource "aws_iam_role" "role_eksauto_eks-kuma" {
+  name = "role_eksauto_eks-kuma"
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags = {
+    Name           = "role_eksauto_eks-kuma"
     State          = "eks-kuma-infra"
     Struct8Creator = "Contato Struct"
   }
@@ -132,14 +156,44 @@ resource "aws_iam_role" "role_lbc_kuma-alb" {
   assume_role_policy = data.aws_iam_policy_document.doc_trust_lbc_kuma-alb.json
 }
 
+resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryPullOnly_to_eks-kuma_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
+  role       = aws_iam_role.role_eksauto_eks-kuma.name
+}
+
 resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly_to_eks-kuma-nodes_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.role_eksng_eks-kuma-nodes.name
 }
 
+resource "aws_iam_role_policy_attachment" "AmazonEKSBlockStoragePolicyV2_to_eks-kuma_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSBlockStoragePolicyV2"
+  role       = aws_iam_role.eks-kuma_role.name
+}
+
 resource "aws_iam_role_policy_attachment" "AmazonEKSClusterPolicy_to_eks-kuma_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.eks-kuma_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "AmazonEKSComputePolicy_to_eks-kuma_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSComputePolicy"
+  role       = aws_iam_role.eks-kuma_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "AmazonEKSLoadBalancingPolicy_to_eks-kuma_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSLoadBalancingPolicy"
+  role       = aws_iam_role.eks-kuma_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "AmazonEKSNetworkingPolicy_to_eks-kuma_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSNetworkingPolicy"
+  role       = aws_iam_role.eks-kuma_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodeMinimalPolicy_to_eks-kuma_attach" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodeMinimalPolicy"
+  role       = aws_iam_role.role_eksauto_eks-kuma.name
 }
 
 resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodePolicy_to_eks-kuma-nodes_attach" {

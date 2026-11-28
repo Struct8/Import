@@ -30,44 +30,6 @@ resource "helm_release" "aws_lbc_kuma-alb" {
   depends_on = [aws_iam_role_policy_attachment.role_lbc_kuma-alb_attach, aws_eks_node_group.eks-kuma-nodes]
 }
 
-resource "helm_release" "cilium_eks-kuma" {
-  name       = "cilium"
-  chart      = "cilium"
-  namespace  = "kube-system"
-  repository = "https://helm.cilium.io/"
-  timeout    = 900
-  set {
-    name  = "eni.enabled"
-    value = true
-  }
-  set {
-    name  = "ipam.mode"
-    value = "eni"
-  }
-  set {
-    name  = "cluster.name"
-    type  = "string"
-    value = trim(substr(replace(lower(aws_eks_cluster.eks-kuma.name), "/[^a-z0-9-]+/", "-"), 0, 32), "-")
-  }
-  set {
-    name  = "k8sServiceHost"
-    value = trimprefix(aws_eks_cluster.eks-kuma.endpoint, "https://")
-  }
-  set {
-    name  = "k8sServicePort"
-    value = "443"
-  }
-  set {
-    name  = "enableIPv4Masquerade"
-    value = true
-  }
-  set {
-    name  = "egressMasqueradeInterfaces"
-    type  = "string"
-    value = "eth+ ens+"
-  }
-}
-
 resource "helm_release" "ext_dns_eks-kuma" {
   name       = "external-dns"
   chart      = "external-dns"
